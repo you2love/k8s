@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes 学习教程</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Left Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <i class="material-icons">cloud</i>
+                <span>K8s 教程</span>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#home" data-target="home">
+                        <i class="material-icons">home</i>
+                        <span>首页</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#concepts" data-target="concepts">
+                        <i class="material-icons">widgets</i>
+                        <span>核心概念</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#installation" data-target="installation">
+                        <i class="material-icons">download</i>
+                        <span>安装指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#practice" data-target="practice">
+                        <i class="material-icons">play_circle</i>
+                        <span>实践指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#troubleshooting" data-target="troubleshooting">
+                        <i class="material-icons">help</i>
+                        <span>常见问题</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#best-practices" data-target="best-practices">
+                        <i class="material-icons">stars</i>
+                        <span>最佳实践</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#resources" data-target="resources">
+                        <i class="material-icons">menu_book</i>
+                        <span>学习资源</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <header class="hero-section" id="home">
+        <div class="container text-center">
+            <h1 class="display-3 fw-bold">学习 Kubernetes</h1>
+            <p class="lead">从零开始掌握容器编排技术</p>
+            <a href="#concepts" class="btn btn-lg btn-raised btn-light shadow-lg">开始学习</a>
+        </div>
+    </header>
+
+    <section class="py-5" id="concepts">
+        <div class="container">
+            <h2 class="text-center mb-5">核心概念</h2>
+            <div class="row g-4" id="concepts-container">
+                <div class="col-md-6 col-lg-4">
+                    <div class="card concept-card h-100">
+                        <div class="card-body text-center">
+                            <i class="material-icons material-icons-large text-primary">widgets</i>
+                            <h3 class="card-title mt-3">Pod</h3>
+                            <p class="card-text">Kubernetes 最小的部署单元，包含一个或多个容器</p>
+                            <button class="btn btn-primary concept-btn" data-topic="pod">了解更多</button>
+                        </div>
+                        <div class="concept-detail-content d-none" id="pod-detail"></div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card concept-card h-100">
+                        <div class="card-body text-center">
+                            <i class="material-icons material-icons-large text-success">backup</i>
+                            <h3 class="card-title mt-3">Deployment</h3>
+                            <p class="card-text">管理 Pod 的副本数量和更新策略</p>
+                            <button class="btn btn-success concept-btn" data-topic="deployment">了解更多</button>
+                        </div>
+                        <div class="concept-detail-content d-none" id="deployment-detail"></div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card concept-card h-100">
+                        <div class="card-body text-center">
+                            <i class="material-icons material-icons-large text-info">device_hub</i>
+                            <h3 class="card-title mt-3">Service</h3>
+                            <p class="card-text">为 Pod 提供稳定的网络访问入口</p>
+                            <button class="btn btn-info concept-btn" data-topic="service">了解更多</button>
+                        </div>
+                        <div class="concept-detail-content d-none" id="service-detail"></div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card concept-card h-100">
+                        <div class="card-body text-center">
+                            <i class="material-icons material-icons-large text-warning">dns</i>
+                            <h3 class="card-title mt-3">Node</h3>
+                            <p class="card-text">运行容器的物理或虚拟机器</p>
+                            <button class="btn btn-warning concept-btn" data-topic="node">了解更多</button>
+                        </div>
+                        <div class="concept-detail-content d-none" id="node-detail"></div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card concept-card h-100">
+                        <div class="card-body text-center">
+                            <i class="material-icons material-icons-large text-danger">volume_up</i>
+                            <h3 class="card-title mt-3">ConfigMap</h3>
+                            <p class="card-text">存储配置数据，实现配置与代码分离</p>
+                            <button class="btn btn-danger concept-btn" data-topic="configmap">了解更多</button>
+                        </div>
+                        <div class="concept-detail-content d-none" id="configmap-detail"></div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card concept-card h-100">
+                        <div class="card-body text-center">
+                            <i class="material-icons material-icons-large text-dark">vpn_key</i>
+                            <h3 class="card-title mt-3">Secret</h3>
+                            <p class="card-text">安全地存储敏感信息如密码和密钥</p>
+                            <button class="btn btn-dark concept-btn" data-topic="secret">了解更多</button>
+                        </div>
+                        <div class="concept-detail-content d-none" id="secret-detail"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5 bg-light" id="installation">
+        <div class="container">
+            <h2 class="text-center mb-5">安装指南</h2>
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="accordion" id="installationAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#install1">
+                                    <i class="material-icons me-2">apple</i>
+                                    macOS 安装 Minikube
+                                </button>
+                            </h2>
+                            <div id="install1" class="accordion-collapse collapse show" data-bs-parent="#installationAccordion">
+                                <div class="accordion-body">
+                                    <h5>使用 Homebrew 安装</h5>
+                                    <pre><code># 安装 Homebrew（如果尚未安装）
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# 安装 Minikube
+brew install minikube
+
+# 安装 kubectl
+brew install kubectl
+
+# 启动 Minikube
+minikube start
+
+# 验证安装
+kubectl cluster-info</code></pre>
+                                    <h5 class="mt-4">可选：使用 Docker 驱动</h5>
+                                    <pre><code># 使用 Docker 驱动启动
+minikube start --driver=docker
+
+# 查看驱动
+minikube config view</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#install2">
+                                    <i class="material-icons me-2">computer</i>
+                                    Linux 安装 Minikube
+                                </button>
+                            </h2>
+                            <div id="install2" class="accordion-collapse collapse" data-bs-parent="#installationAccordion">
+                                <div class="accordion-body">
+                                    <h5>下载并安装 Minikube</h5>
+                                    <pre><code># 下载 Minikube
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
+
+# 安装 kubectl
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+# 启动 Minikube
+minikube start
+
+# 验证安装
+kubectl cluster-info</code></pre>
+                                    <h5 class="mt-4">Ubuntu/Debian 系统</h5>
+                                    <pre><code># 更新包列表
+sudo apt-get update
+
+# 安装依赖
+sudo apt-get install -y conntrack
+
+# 启动 Minikube
+minikube start</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#install3">
+                                    <i class="material-icons me-2">windows</i>
+                                    Windows 安装 Minikube
+                                </button>
+                            </h2>
+                            <div id="install3" class="accordion-collapse collapse" data-bs-parent="#installationAccordion">
+                                <div class="accordion-body">
+                                    <h5>使用 Chocolatey 安装</h5>
+                                    <pre><code># 安装 Chocolatey（如果尚未安装）
+Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+
+# 安装 Minikube
+choco install minikube
+
+# 安装 kubectl
+choco install kubernetes-cli
+
+# 启动 Minikube
+minikube start
+
+# 验证安装
+kubectl cluster-info</code></pre>
+                                    <h5 class="mt-4">手动安装</h5>
+                                    <pre><code># 下载 Minikube
+# 访问 https://minikube.sigs.k8s.io/docs/start/ 下载 Windows 安装包
+
+# 下载 kubectl
+curl -LO "https://dl.k8s.io/release/stable.txt" -o kubectl_version.txt
+curl -LO "https://dl.k8s.io/release/$(cat kubectl_version.txt)/bin/windows/amd64/kubectl.exe"
+
+# 将 kubectl.exe 添加到 PATH 环境变量</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#install4">
+                                    <i class="material-icons me-2">cloud</i>
+                                    云服务商安装（GKE、EKS、AKS）
+                                </button>
+                            </h2>
+                            <div id="install4" class="accordion-collapse collapse" data-bs-parent="#installationAccordion">
+                                <div class="accordion-body">
+                                    <h5>Google Kubernetes Engine (GKE)</h5>
+                                    <pre><code># 安装 gcloud CLI
+curl https://sdk.cloud.google.com | bash
+
+# 初始化 gcloud
+gcloud init
+
+# 创建 GKE 集群
+gcloud container clusters create my-cluster \
+  --num-nodes=3 \
+  --zone=us-central1-a
+
+# 配置 kubectl
+gcloud container clusters get-credentials my-cluster \
+  --zone=us-central1-a
+
+# 验证连接
+kubectl get nodes</code></pre>
+                                    <h5 class="mt-4">Amazon Elastic Kubernetes Service (EKS)</h5>
+                                    <pre><code># 安装 AWS CLI
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+
+# 安装 eksctl
+curl --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+sudo mv /tmp/eksctl /usr/local/bin
+
+# 创建 EKS 集群
+eksctl create cluster --name my-cluster --region us-west-2</code></pre>
+                                    <h5 class="mt-4">Azure Kubernetes Service (AKS)</h5>
+                                    <pre><code># 安装 Azure CLI
+curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
+# 登录 Azure
+az login
+
+# 创建 AKS 集群
+az aks create --resource-group myResourceGroup \
+  --name myAKSCluster \
+  --node-count 3 \
+  --generate-ssh-keys
+
+# 配置 kubectl
+az aks get-credentials --resource-group myResourceGroup \
+  --name myAKSCluster</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#install5">
+                                    <i class="material-icons me-2">settings</i>
+                                    配置 kubectl
+                                </button>
+                            </h2>
+                            <div id="install5" class="accordion-collapse collapse" data-bs-parent="#installationAccordion">
+                                <div class="accordion-body">
+                                    <h5>配置自动补全</h5>
+                                    <pre><code># Bash
+echo 'source <(kubectl completion bash)' >> ~/.bashrc
+source ~/.bashrc
+
+# Zsh
+echo 'source <(kubectl completion zsh)' >> ~/.zshrc
+source ~/.zshrc</code></pre>
+                                    <h5 class="mt-4">配置别名</h5>
+                                    <pre><code># 添加常用别名到 ~/.bashrc 或 ~/.zshrc
+alias k='kubectl'
+alias kgp='kubectl get pods'
+alias kgd='kubectl get deployments'
+alias kgs='kubectl get services'
+alias k logs='kubectl logs'
+alias k exec='kubectl exec -it'</code></pre>
+                                    <h5 class="mt-4">配置多个集群</h5>
+                                    <pre><code># 查看当前上下文
+kubectl config current-context
+
+# 查看所有上下文
+kubectl config get-contexts
+
+# 切换上下文
+kubectl config use-context minikube
+
+# 设置默认命名空间
+kubectl config set-context --current --namespace=default</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5 bg-light" id="practice">
+        <div class="container">
+            <h2 class="text-center mb-5">实践指南</h2>
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="accordion" id="practiceAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#practice1">
+                                    <i class="material-icons me-2">play_arrow</i>
+                                    第一步：安装 Kubernetes
+                                </button>
+                            </h2>
+                            <div id="practice1" class="accordion-collapse collapse show" data-bs-parent="#practiceAccordion">
+                                <div class="accordion-body">
+                                    <h5>Minikube 快速安装</h5>
+                                    <pre><code># macOS
+brew install minikube
+
+# Linux
+curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+chmod +x minikube
+sudo mv minikube /usr/local/bin/
+
+# 启动集群
+minikube start</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#practice2">
+                                    <i class="material-icons me-2">play_arrow</i>
+                                    第二步：创建第一个 Pod
+                                </button>
+                            </h2>
+                            <div id="practice2" class="accordion-collapse collapse" data-bs-parent="#practiceAccordion">
+                                <div class="accordion-body">
+                                    <h5>使用 kubectl 创建 Pod</h5>
+                                    <pre><code># 创建简单的 Nginx Pod
+kubectl run nginx --image=nginx
+
+# 查看 Pod 状态
+kubectl get pods
+
+# 查看详细信息
+kubectl describe pod nginx</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#practice3">
+                                    <i class="material-icons me-2">play_arrow</i>
+                                    第三步：部署应用程序
+                                </button>
+                            </h2>
+                            <div id="practice3" class="accordion-collapse collapse" data-bs-parent="#practiceAccordion">
+                                <div class="accordion-body">
+                                    <h5>创建 Deployment</h5>
+                                    <pre><code># 创建部署
+kubectl create deployment myapp --image=nginx
+
+# 扩展副本数
+kubectl scale deployment myapp --replicas=3
+
+# 查看部署状态
+kubectl get deployments</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#practice4">
+                                    <i class="material-icons me-2">play_arrow</i>
+                                    第四步：暴露服务
+                                </button>
+                            </h2>
+                            <div id="practice4" class="accordion-collapse collapse" data-bs-parent="#practiceAccordion">
+                                <div class="accordion-body">
+                                    <h5>创建 Service</h5>
+                                    <pre><code># 创建 NodePort 服务
+kubectl expose deployment myapp --port=80 --type=NodePort
+
+# 获取服务地址
+minikube service myapp
+
+# 查看服务详情
+kubectl get services</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5" id="troubleshooting">
+        <div class="container">
+            <h2 class="text-center mb-5">常见问题</h2>
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="accordion" id="troubleshootingAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#troubleshoot1">
+                                    <i class="material-icons me-2">error_outline</i>
+                                    Pod 一直处于 Pending 状态
+                                </button>
+                            </h2>
+                            <div id="troubleshoot1" class="accordion-collapse collapse show" data-bs-parent="#troubleshootingAccordion">
+                                <div class="accordion-body">
+                                    <h5>可能原因和解决方案</h5>
+                                    <ul>
+                                        <li><strong>资源不足</strong>：检查节点 CPU、内存是否足够</li>
+                                        <li><strong>调度失败</strong>：查看 Pod 事件，使用 <code>kubectl describe pod &lt;pod-name&gt;</code></li>
+                                        <li><strong>镜像拉取失败</strong>：检查镜像名称、tag 和仓库访问权限</li>
+                                        <li><strong>污点（Taints）</strong>：检查节点是否有污点阻止调度</li>
+                                    </ul>
+                                    <pre><code># 查看详细信息
+kubectl describe pod &lt;pod-name&gt;
+
+# 查看事件
+kubectl get events --sort-by=.metadata.creationTimestamp
+
+# 检查节点资源
+kubectl describe nodes
+
+# 检查节点污点
+kubectl get nodes -o custom-columns=NAME:.metadata.name,TAINTS:.spec.taints</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#troubleshoot2">
+                                    <i class="material-icons me-2">refresh</i>
+                                    Pod 不断重启（CrashLoopBackOff）
+                                </button>
+                            </h2>
+                            <div id="troubleshoot2" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                                <div class="accordion-body">
+                                    <h5>可能原因和解决方案</h5>
+                                    <ul>
+                                        <li><strong>应用错误</strong>：查看应用日志，修复代码问题</li>
+                                        <li><strong>配置错误</strong>：检查环境变量、ConfigMap、Secret</li>
+                                        <li><strong>资源限制</strong>：检查内存或 CPU 限制是否过小</li>
+                                        <li><strong>健康检查失败</strong>：检查 liveness 和 readiness 探针配置</li>
+                                    </ul>
+                                    <pre><code># 查看日志
+kubectl logs &lt;pod-name&gt;
+
+# 查看之前的容器日志
+kubectl logs &lt;pod-name&gt; --previous
+
+# 查看详细信息
+kubectl describe pod &lt;pod-name&gt;
+
+# 进入容器调试
+kubectl exec -it &lt;pod-name&gt; -- /bin/bash</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#troubleshoot3">
+                                    <i class="material-icons me-2">cloud_off</i>
+                                    Service 无法访问
+                                </button>
+                            </h2>
+                            <div id="troubleshoot3" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                                <div class="accordion-body">
+                                    <h5>可能原因和解决方案</h5>
+                                    <ul>
+                                        <li><strong>选择器错误</strong>：检查 Service 的选择器是否匹配 Pod 的标签</li>
+                                        <li><strong>端口配置错误</strong>：检查 targetPort 是否与 Pod 暴露的端口一致</li>
+                                        <li><strong>Pod 未就绪</strong>：检查 Pod 的 readiness 探针是否通过</li>
+                                        <li><strong>网络策略</strong>：检查是否有网络策略阻止访问</li>
+                                    </ul>
+                                    <pre><code># 查看 Service 详情
+kubectl describe service &lt;service-name&gt;
+
+# 查看 Endpoints
+kubectl get endpoints &lt;service-name&gt;
+
+# 查看 Pod 标签
+kubectl get pods --show-labels
+
+# 测试 Service 连接
+kubectl run -it --rm debug --image=busybox --restart=Never -- wget -O- &lt;service-name&gt;</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#troubleshoot4">
+                                    <i class="material-icons me-2">storage</i>
+                                    镜像拉取失败（ImagePullBackOff）
+                                </button>
+                            </h2>
+                            <div id="troubleshoot4" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                                <div class="accordion-body">
+                                    <h5>可能原因和解决方案</h5>
+                                    <ul>
+                                        <li><strong>镜像不存在</strong>：检查镜像名称和 tag 是否正确</li>
+                                        <li><strong>权限问题</strong>：配置 imagePullSecrets，确保有拉取权限</li>
+                                        <li><strong>网络问题</strong>：检查集群是否能访问镜像仓库</li>
+                                        <li><strong>私有仓库</strong>：创建 Docker registry Secret 并配置到 Pod</li>
+                                    </ul>
+                                    <pre><code># 查看详细信息
+kubectl describe pod &lt;pod-name&gt;
+
+# 创建 Docker registry Secret
+kubectl create secret docker-registry regcred \
+  --docker-server=&lt;registry&gt; \
+  --docker-username=&lt;username&gt; \
+  --docker-password=&lt;password&gt;
+
+# 在 Pod 中使用
+spec:
+  imagePullSecrets:
+  - name: regcred</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#troubleshoot5">
+                                    <i class="material-icons me-2">warning</i>
+                                    节点处于 NotReady 状态
+                                </button>
+                            </h2>
+                            <div id="troubleshoot5" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                                <div class="accordion-body">
+                                    <h5>可能原因和解决方案</h5>
+                                    <ul>
+                                        <li><strong>kubelet 未运行</strong>：检查 kubelet 服务状态</li>
+                                        <li><strong>资源压力</strong>：检查 CPU、内存、磁盘是否充足</li>
+                                        <li><strong>网络问题</strong>：检查网络连接和 DNS</li>
+                                        <li><strong>容器运行时问题</strong>：检查 Docker/containerd 状态</li>
+                                    </ul>
+                                    <pre><code># 查看节点详情
+kubectl describe node &lt;node-name&gt;
+
+# 检查节点条件
+kubectl get nodes -o wide
+
+# 在节点上检查 kubelet
+sudo systemctl status kubelet
+
+# 查看节点日志
+sudo journalctl -u kubelet -f</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#troubleshoot6">
+                                    <i class="material-icons me-2">network_check</i>
+                                    DNS 解析问题
+                                </button>
+                            </h2>
+                            <div id="troubleshoot6" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                                <div class="accordion-body">
+                                    <h5>可能原因和解决方案</h5>
+                                    <ul>
+                                        <li><strong>CoreDNS Pod 问题</strong>：检查 CoreDNS Pod 是否正常运行</li>
+                                        <li><strong>DNS 配置错误</strong>：检查 /etc/resolv.conf 配置</li>
+                                        <li><strong>网络策略</strong>：检查是否阻止了 DNS 流量</li>
+                                        <li><strong>Service 名称错误</strong>：确认 Service 名称和命名空间</li>
+                                    </ul>
+                                    <pre><code># 检查 CoreDNS Pod
+kubectl get pods -n kube-system -l k8s-app=kube-dns
+
+# 查看 CoreDNS 日志
+kubectl logs -n kube-system -l k8s-app=kube-dns
+
+# 测试 DNS 解析
+kubectl run -it --rm debug --image=busybox --restart=Never -- nslookup kubernetes.default
+
+# 查看 DNS 配置
+kubectl get configmap coredns -n kube-system -o yaml</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5 bg-light" id="best-practices">
+        <div class="container">
+            <h2 class="text-center mb-5">最佳实践</h2>
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="accordion" id="bestPracticesAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#practice1">
+                                    <i class="material-icons me-2">security</i>
+                                    安全最佳实践
+                                </button>
+                            </h2>
+                            <div id="practice1" class="accordion-collapse collapse show" data-bs-parent="#bestPracticesAccordion">
+                                <div class="accordion-body">
+                                    <h5>1. 使用命名空间隔离</h5>
+                                    <pre><code># 创建专用命名空间
+kubectl create namespace production
+kubectl create namespace development
+
+# 设置默认命名空间
+kubectl config set-context --current --namespace=production</code></pre>
+                                    <h5 class="mt-4">2. 最小权限原则（RBAC）</h5>
+                                    <pre><code># 创建 ServiceAccount
+kubectl create serviceaccount myapp-sa
+
+# 创建 Role
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: default
+  name: pod-reader
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "watch", "list"]
+
+# 绑定 Role
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: read-pods
+  namespace: default
+subjects:
+- kind: ServiceAccount
+  name: myapp-sa
+  namespace: default
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io</code></pre>
+                                    <h5 class="mt-4">3. 使用 Secret 存储敏感信息</h5>
+                                    <pre><code># 避免在环境变量中直接传递密码
+# 使用 Secret 或外部密钥管理系统（如 Vault）</code></pre>
+                                    <h5 class="mt-4">4. 网络策略</h5>
+                                    <pre><code># 限制 Pod 间通信
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress</code></pre>
+                                    <h5 class="mt-4">5. 镜像安全</h5>
+                                    <ul>
+                                        <li>使用官方或可信的镜像</li>
+                                        <li>定期扫描镜像漏洞</li>
+                                        <li>使用最小化基础镜像（如 alpine）</li>
+                                        <li>避免使用 root 用户运行容器</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#practice2">
+                                    <i class="material-icons me-2">speed</i>
+                                    资源管理最佳实践
+                                </button>
+                            </h2>
+                            <div id="practice2" class="accordion-collapse collapse" data-bs-parent="#bestPracticesAccordion">
+                                <div class="accordion-body">
+                                    <h5>1. 始终设置资源请求和限制</h5>
+                                    <pre><code>resources:
+  requests:
+    memory: "256Mi"
+    cpu: "500m"
+  limits:
+    memory: "512Mi"
+    cpu: "1000m"</code></pre>
+                                    <h5 class="mt-4">2. 使用 Horizontal Pod Autoscaler（HPA）</h5>
+                                    <pre><code># 创建 HPA
+kubectl autoscale deployment myapp \
+  --cpu-percent=50 \
+  --min=2 \
+  --max=10
+
+# YAML 定义
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: myapp-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: myapp
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50</code></pre>
+                                    <h5 class="mt-4">3. 使用资源配额（Resource Quotas）</h5>
+                                    <pre><code>apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: compute-resources
+  namespace: development
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    limits.cpu: "8"
+    limits.memory: 16Gi</code></pre>
+                                    <h5 class="mt-4">4. 使用 LimitRange</h5>
+                                    <pre><code>apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-limits
+  namespace: default
+spec:
+  limits:
+  - default:
+      memory: 512Mi
+      cpu: "1"
+    defaultRequest:
+      memory: 256Mi
+      cpu: "500m"
+    type: Container</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#practice3">
+                                    <i class="material-icons me-2">health_and_safety</i>
+                                    健康检查最佳实践
+                                </button>
+                            </h2>
+                            <div id="practice3" class="accordion-collapse collapse" data-bs-parent="#bestPracticesAccordion">
+                                <div class="accordion-body">
+                                    <h5>1. 配置 Liveness Probe</h5>
+                                    <pre><code>livenessProbe:
+  httpGet:
+    path: /health
+    port: 8080
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3</code></pre>
+                                    <h5 class="mt-4">2. 配置 Readiness Probe</h5>
+                                    <pre><code>readinessProbe:
+  httpGet:
+    path: /ready
+    port: 8080
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3</code></pre>
+                                    <h5 class="mt-4">3. 使用 Startup Probe（慢启动应用）</h5>
+                                    <pre><code>startupProbe:
+  httpGet:
+    path: /startup
+    port: 8080
+  initialDelaySeconds: 0
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 30  # 最多等待 150 秒</code></pre>
+                                    <h5 class="mt-4">4. 探针配置建议</h5>
+                                    <ul>
+                                        <li><strong>initialDelaySeconds</strong>：给应用足够的启动时间</li>
+                                        <li><strong>periodSeconds</strong>：不要过于频繁，避免浪费资源</li>
+                                        <li><strong>timeoutSeconds</strong>：根据应用响应时间设置</li>
+                                        <li><strong>failureThreshold</strong>：避免因暂时性问题导致频繁重启</li>
+                                        <li>使用 TCP、HTTP、EXEC 三种探针类型</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#practice4">
+                                    <i class="material-icons me-2">update</i>
+                                    部署和更新最佳实践
+                                </button>
+                            </h2>
+                            <div id="practice4" class="accordion-collapse collapse" data-bs-parent="#bestPracticesAccordion">
+                                <div class="accordion-body">
+                                    <h5>1. 使用声明式配置</h5>
+                                    <pre><code># 使用 YAML 文件管理部署
+kubectl apply -f deployment.yaml
+
+# 使用 git 管理 YAML 文件
+git add deployment.yaml
+git commit -m "Update deployment"
+git push</code></pre>
+                                    <h5 class="mt-4">2. 配置滚动更新</h5>
+                                    <pre><code>strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 25%
+    maxUnavailable: 25%</code></pre>
+                                    <h5 class="mt-4">3. 使用多个副本</h5>
+                                    <pre><code># 生产环境至少 2-3 个副本
+replicas: 3</code></pre>
+                                    <h5 class="mt-4">4. 使用标签组织资源</h5>
+                                    <pre><code>metadata:
+  labels:
+    app: myapp
+    version: v1.0.0
+    environment: production
+    team: backend</code></pre>
+                                    <h5 class="mt-4">5. 配置反亲和性</h5>
+                                    <pre><code>affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        labelSelector:
+          matchExpressions:
+          - key: app
+            operator: In
+            values:
+            - myapp
+        topologyKey: kubernetes.io/hostname</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#practice5">
+                                    <i class="material-icons me-2">monitoring</i>
+                                    监控和日志最佳实践
+                                </button>
+                            </h2>
+                            <div id="practice5" class="accordion-collapse collapse" data-bs-parent="#bestPracticesAccordion">
+                                <div class="accordion-body">
+                                    <h5>1. 集中式日志收集</h5>
+                                    <ul>
+                                        <li>使用 ELK Stack（Elasticsearch、Logstash、Kibana）</li>
+                                        <li>使用 EFK Stack（Elasticsearch、Fluentd、Kibana）</li>
+                                        <li>使用 Loki + Grafana</li>
+                                    </ul>
+                                    <h5 class="mt-4">2. 监控指标</h5>
+                                    <ul>
+                                        <li>使用 Prometheus + Grafana</li>
+                                        <li>监控 Pod、Node、Cluster 指标</li>
+                                        <li>设置告警规则</li>
+                                    </ul>
+                                    <h5 class="mt-4">3. 使用标签和注释</h5>
+                                    <pre><code>metadata:
+  labels:
+    app: myapp
+    version: v1.0.0
+  annotations:
+    description: "My application"
+    owner: "team@example.com"</code></pre>
+                                    <h5 class="mt-4">4. 日志规范</h5>
+                                    <ul>
+                                        <li>使用结构化日志（JSON 格式）</li>
+                                        <li>包含时间戳、日志级别、请求 ID</li>
+                                        <li>避免记录敏感信息</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#practice6">
+                                    <i class="material-icons me-2">build</i>
+                                    配置管理最佳实践
+                                </button>
+                            </h2>
+                            <div id="practice6" class="accordion-collapse collapse" data-bs-parent="#bestPracticesAccordion">
+                                <div class="accordion-body">
+                                    <h5>1. 配置与代码分离</h5>
+                                    <ul>
+                                        <li>使用 ConfigMap 存储非敏感配置</li>
+                                        <li>使用 Secret 存储敏感信息</li>
+                                        <li>考虑使用外部配置中心（如 Consul）</li>
+                                    </ul>
+                                    <h5 class="mt-4">2. 使用不可变 ConfigMap</h5>
+                                    <pre><code>apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: immutable-config
+immutable: true</code></pre>
+                                    <h5 class="mt-4">3. 配置版本管理</h5>
+                                    <ul>
+                                        <li>使用 git 管理 YAML 配置文件</li>
+                                        <li>使用标签区分不同环境配置</li>
+                                        <li>使用 ConfigMap 版本控制</li>
+                                    </ul>
+                                    <h5 class="mt-4">4. 使用 Helm 管理复杂应用</h5>
+                                    <pre><code># 安装 Helm
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+# 使用 Helm 部署应用
+helm install myapp ./myapp-chart
+
+# 升级应用
+helm upgrade myapp ./myapp-chart
+
+# 回滚应用
+helm rollback myapp</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5" id="resources">
+        <div class="container">
+            <h2 class="text-center mb-5">学习资源</h2>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card resource-card">
+                        <div class="card-body">
+                            <h3 class="card-title"><i class="material-icons text-primary me-2">menu_book</i>官方文档</h3>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <a href="https://kubernetes.io/docs/" target="_blank" class="resource-link">
+                                        Kubernetes 官方文档
+                                        <i class="material-icons fs-6">open_in_new</i>
+                                    </a>
+                                </li>
+                                <li class="mb-2">
+                                    <a href="https://kubernetes.io/docs/tutorials/" target="_blank" class="resource-link">
+                                        官方教程
+                                        <i class="material-icons fs-6">open_in_new</i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="https://kubernetes.io/zh-cn/docs/" target="_blank" class="resource-link">
+                                        中文文档
+                                        <i class="material-icons fs-6">open_in_new</i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card resource-card">
+                        <div class="card-body">
+                            <h3 class="card-title"><i class="material-icons text-success me-2">school</i>在线课程</h3>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <a href="https://www.coursera.org/learn/google-kubernetes-engine" target="_blank" class="resource-link">
+                                        Google Kubernetes Engine 基础
+                                        <i class="material-icons fs-6">open_in_new</i>
+                                    </a>
+                                </li>
+                                <li class="mb-2">
+                                    <a href="https://www.edx.org/course/introduction-to-kubernetes" target="_blank" class="resource-link">
+                                        Kubernetes 入门课程
+                                        <i class="material-icons fs-6">open_in_new</i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="https://kubernetes.io/training/" target="_blank" class="resource-link">
+                                        Kubernetes 认证培训
+                                        <i class="material-icons fs-6">open_in_new</i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card resource-card">
+                        <div class="card-body">
+                            <h3 class="card-title"><i class="material-icons text-info me-2">code</i>实用工具</h3>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <a href="https://kubernetes.io/zh-cn/docs/tasks/tools/" target="_blank" class="resource-link">
+                                        kubectl 命令行工具
+                                        <i class="material-icons fs-6">open_in_new</i>
+                                    </a>
+                                </li>
+                                <li class="mb-2">
+                                    <a href="https://kubernetes.io/docs/tasks/access-application-cluster/port-forward/" target="_blank" class="resource-link">
+                                        Port Forwarding
+                                        <i class="material-icons fs-6">open_in_new</i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="https://kubernetes.io/zh-cn/docs/tasks/tools/install-minikube/" target="_blank" class="resource-link">
+                                        Minikube 本地环境
+                                        <i class="material-icons fs-6">open_in_new</i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card resource-card">
+                        <div class="card-body">
+                            <h3 class="card-title"><i class="material-icons text-warning me-2">video_library</i>视频教程</h3>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <a href="https://www.youtube.com/playlist?list=PL34sAs7_26wNBRWM6BDhnonoA5FMERax0" target="_blank" class="resource-link">
+                                        Just me and Opensource K8s 教程
+                                        <i class="material-icons fs-6">open_in_new</i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="https://www.youtube.com/results?search_query=kubernetes+tutorial+chinese" target="_blank" class="resource-link">
+                                        中文 Kubernetes 教程
+                                        <i class="material-icons fs-6">open_in_new</i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/script.js"></script>
+</body>
+</html>

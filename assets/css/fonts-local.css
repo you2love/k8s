@@ -1,0 +1,42 @@
+/* Local Fonts - Using System Fonts instead of Google Fonts */
+/* System font stack that provides good fallbacks */
+
+@font-face {
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 300;
+    src: local('Roboto Light'), local('Roboto-Light'),
+         local('-apple-system'), local('BlinkMacSystemFont'),
+         local('Segoe UI'), local('Helvetica Neue'), local('Arial');
+}
+
+@font-face {
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 400;
+    src: local('Roboto'), local('Roboto-Regular'),
+         local('-apple-system'), local('BlinkMacSystemFont'),
+         local('Segoe UI'), local('Helvetica Neue'), local('Arial');
+}
+
+@font-face {
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 500;
+    src: local('Roboto Medium'), local('Roboto-Medium'),
+         local('-apple-system'), local('BlinkMacSystemFont'),
+         local('Segoe UI'), local('Helvetica Neue'), local('Arial');
+}
+
+@font-face {
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 700;
+    src: local('Roboto Bold'), local('Roboto-Bold'),
+         local('-apple-system'), local('BlinkMacSystemFont'),
+         local('Segoe UI'), local('Helvetica Neue'), local('Arial');
+}
+
+.font-family-roboto {
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+}

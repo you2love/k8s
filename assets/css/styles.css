@@ -398,3 +398,57 @@ section#home {
     border-left-color: var(--primary-color);
     background-color: rgba(50, 108, 229, 0.05);
 }
+
+/* Sidebar Submenu Styles */
+.nav-item.has-submenu > .nav-link::after {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(-45deg);
+    margin-left: 0.5rem;
+    transition: transform 0.2s ease;
+}
+
+.nav-item.has-submenu.open > .nav-link::after {
+    transform: rotate(45deg);
+}
+
+.sidebar-submenu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 0;
+    overflow: hidden;
+    background-color: rgba(0, 0, 0, 0.1);
+    transition: max-height 0.3s ease;
+}
+
+.nav-item.has-submenu.open .sidebar-submenu {
+    max-height: 300px;
+}
+
+.sidebar-submenu li {
+    border-left: 2px solid transparent;
+}
+
+.sidebar-submenu li:hover {
+    border-left-color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-submenu a {
+    display: block;
+    padding: 0.5rem 1rem 0.5rem 2.5rem;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.sidebar-submenu a:hover {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.05);
+}

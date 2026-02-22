@@ -23,11 +23,19 @@
                         <span>架构图</span>
                     </a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item has-submenu">
                     <a class="nav-link" href="#concepts" data-target="concepts">
                         
                         <span>核心概念</span>
                     </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="#concept-pod">Pod</a></li>
+                        <li><a href="#concept-deployment">Deployment</a></li>
+                        <li><a href="#concept-service">Service</a></li>
+                        <li><a href="#concept-node">Node</a></li>
+                        <li><a href="#concept-configmap">ConfigMap</a></li>
+                        <li><a href="#concept-secret">Secret</a></li>
+                    </ul>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#installation" data-target="installation">
@@ -51,6 +59,12 @@
                     <a class="nav-link" href="#best-practices" data-target="best-practices">
                         
                         <span>最佳实践</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#rancher" data-target="rancher">
+                        
+                        <span>Rancher</span>
                     </a>
                 </li>
             </ul>
@@ -269,7 +283,7 @@ flowchart LR
         <div class="container">
             <h2 class="text-center mb-5">核心概念</h2>
             <div class="row g-4" id="concepts-container">
-                <div class="col-12">
+                <div class="col-12" id="concept-pod">
                     <div class="card concept-card h-100">
                         <div class="card-body text-center">
                             
@@ -280,7 +294,7 @@ flowchart LR
                         <div class="concept-detail-content d-none" id="pod-detail"></div>
                     </div>
                 </div>
-                <div class="col-12">
+                <div class="col-12" id="concept-deployment">
                     <div class="card concept-card h-100">
                         <div class="card-body text-center">
                             
@@ -291,7 +305,7 @@ flowchart LR
                         <div class="concept-detail-content d-none" id="deployment-detail"></div>
                     </div>
                 </div>
-                <div class="col-12">
+                <div class="col-12" id="concept-service">
                     <div class="card concept-card h-100">
                         <div class="card-body text-center">
                             
@@ -302,7 +316,7 @@ flowchart LR
                         <div class="concept-detail-content d-none" id="service-detail"></div>
                     </div>
                 </div>
-                <div class="col-12">
+                <div class="col-12" id="concept-node">
                     <div class="card concept-card h-100">
                         <div class="card-body text-center">
                             
@@ -313,7 +327,7 @@ flowchart LR
                         <div class="concept-detail-content d-none" id="node-detail"></div>
                     </div>
                 </div>
-                <div class="col-12">
+                <div class="col-12" id="concept-configmap">
                     <div class="card concept-card h-100">
                         <div class="card-body text-center">
                             
@@ -324,7 +338,7 @@ flowchart LR
                         <div class="concept-detail-content d-none" id="configmap-detail"></div>
                     </div>
                 </div>
-                <div class="col-12">
+                <div class="col-12" id="concept-secret">
                     <div class="card concept-card h-100">
                         <div class="card-body text-center">
                             
@@ -1145,6 +1159,248 @@ helm upgrade myapp ./myapp-chart
 
 # 回滚应用
 helm rollback myapp</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5" id="rancher">
+        <div class="container">
+            <h2 class="text-center mb-5">Rancher</h2>
+            
+            <!-- Rancher 简介 -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title">什么是 Rancher？</h4>
+                            <p class="card-text">Rancher 是一个开源的企业级 Kubernetes 管理平台，用于在生产环境中运行 Kubernetes。它提供了一个统一的操作界面，可以跨多个集群、云环境和基础设施提供商管理 Kubernetes。</p>
+                            <p class="card-text">Rancher 由 SUSE 公司开发和维护，是企业中最流行的 Kubernetes 管理工具之一。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 与 Kubernetes 的关系 -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h3 class="mb-4">Rancher 与 Kubernetes 的联系与区别</h3>
+                    <div class="architecture-diagram bg-light p-4 rounded mb-4">
+                        <pre class="mermaid">
+flowchart TB
+    subgraph Rancher[Rancher 管理平台]
+        UI[Web UI 界面]
+        Auth[认证授权]
+        Monitor[监控告警]
+        CI[CI/CD 集成]
+        Catalog[应用目录]
+    end
+
+    subgraph K8s1[Kubernetes 集群 1]
+        M1[Master]
+        W1[Worker Nodes]
+    end
+
+    subgraph K8s2[Kubernetes 集群 2]
+        M2[Master]
+        W2[Worker Nodes]
+    end
+
+    subgraph K8s3[Kubernetes 集群 3]
+        M3[Master]
+        W3[Worker Nodes]
+    end
+
+    Rancher -->|统一管理| K8s1
+    Rancher -->|统一管理| K8s2
+    Rancher -->|统一管理| K8s3
+
+    style Rancher fill:#0075a8,stroke:#005a80,color:#fff
+    style K8s1 fill:#326ce5,stroke:#1976d2,color:#fff
+    style K8s2 fill:#326ce5,stroke:#1976d2,color:#fff
+    style K8s3 fill:#326ce5,stroke:#1976d2,color:#fff
+                        </pre>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card h-100 border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">联系</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item">Rancher 基于 Kubernetes 构建，本身运行在 K8s 之上</li>
+                                        <li class="list-group-item">Rancher 完全兼容 Kubernetes API</li>
+                                        <li class="list-group-item">可以使用 kubectl 直接操作 Rancher 管理的集群</li>
+                                        <li class="list-group-item">共享相同的资源模型（Pod、Service、Deployment 等）</li>
+                                        <li class="list-group-item">Rancher 扩展了 Kubernetes 的能力，而非替代</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100 border-info">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0">区别</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><strong>定位</strong>：K8s 是容器编排引擎，Rancher 是多集群管理平台</li>
+                                        <li class="list-group-item"><strong>功能</strong>：Rancher 提供更丰富的 UI、认证、监控等企业功能</li>
+                                        <li class="list-group-item"><strong>多集群</strong>：Rancher 原生支持多集群统一管理</li>
+                                        <li class="list-group-item"><strong>用户管理</strong>：Rancher 提供完善的 RBAC 和多租户支持</li>
+                                        <li class="list-group-item"><strong>应用商店</strong>：Rancher 内置 Helm 应用目录，一键部署应用</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 安装指南 -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h3 class="mb-4">安装指南</h3>
+                    <div class="accordion" id="rancherInstallAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#rancherInstall1">
+                                    方式一：Docker 快速安装（测试环境）
+                                </button>
+                            </h2>
+                            <div id="rancherInstall1" class="accordion-collapse collapse show" data-bs-parent="#rancherInstallAccordion">
+                                <div class="accordion-body">
+                                    <pre><code># 拉取 Rancher 镜像并启动
+sudo docker run -d --restart=unless-stopped \
+  -p 80:80 -p 443:443 \
+  --privileged \
+  --name rancher \
+  rancher/rancher:latest
+
+# 访问 https://<服务器IP> 进入 Rancher UI
+# 首次登录需要设置管理员密码</code></pre>
+                                    <div class="alert alert-warning mt-3">
+                                        <strong>注意：</strong>Docker 方式仅适用于测试和学习环境，生产环境请使用 Helm 安装。
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#rancherInstall2">
+                                    方式二：Helm 安装（生产环境推荐）
+                                </button>
+                            </h2>
+                            <div id="rancherInstall2" class="accordion-collapse collapse" data-bs-parent="#rancherInstallAccordion">
+                                <div class="accordion-body">
+                                    <h5>前置条件</h5>
+                                    <pre><code># 1. 已有 Kubernetes 集群
+# 2. 安装 Helm
+# 3. 安装 cert-manager（用于 TLS 证书管理）</code></pre>
+                                    <h5 class="mt-3">安装 cert-manager</h5>
+                                    <pre><code>kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.1/cert-manager.yaml
+
+# 验证安装
+kubectl get pods -n cert-manager</code></pre>
+                                    <h5 class="mt-3">添加 Rancher Helm 仓库并安装</h5>
+                                    <pre><code># 添加 Helm 仓库
+helm repo add rancher-stable https://releases.rancher.com/server-charts/stable
+helm repo update
+
+# 创建命名空间
+kubectl create namespace cattle-system
+
+# 安装 Rancher（使用自签名证书）
+helm install rancher rancher-stable/rancher \
+  --namespace cattle-system \
+  --set hostname=rancher.my.org \
+  --set replicas=3
+
+# 验证安装
+kubectl -n cattle-system get deploy rancher</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 主要应用 -->
+            <div class="row">
+                <div class="col-12">
+                    <h3 class="mb-4">主要应用场景</h3>
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">多集群管理</h5>
+                                    <p class="card-text">通过单一控制台管理跨云、跨数据中心的多个 Kubernetes 集群，支持 AWS、Azure、Google Cloud、vSphere 等多种基础设施。</p>
+                                    <pre><code># Rancher 支持导入已有集群或创建新集群
+# 支持的集群类型：
+# - Amazon EKS
+# - Google GKE
+# - Azure AKS
+# - 自建 Kubernetes 集群
+# - Rancher RKE/RKE2 集群</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">应用商店与 Helm</h5>
+                                    <p class="card-text">内置丰富的应用目录，支持一键部署 Prometheus、Grafana、Jenkins 等常用应用。</p>
+                                    <pre><code># 通过 UI 或 CLI 部署 Helm 应用
+# Rancher 应用目录包含：
+# - 监控：Prometheus、Grafana
+# - 日志：ELK Stack、Fluentd
+# - CI/CD：Jenkins、GitLab
+# - 服务网格：Istio
+# - 数据库：MySQL、PostgreSQL、Redis</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">用户管理与安全</h5>
+                                    <p class="card-text">提供企业级的身份认证和权限管理，支持 AD、LDAP、SAML、OAuth 等多种认证方式。</p>
+                                    <pre><code># 支持的认证提供商：
+# - Active Directory / LDAP
+# - SAML (Okta, PingIdentity)
+# - OAuth (GitHub, Google, Azure AD)
+# - OpenID Connect
+
+# 细粒度权限控制
+# - 全局管理员
+# - 集群管理员
+# - 项目/命名空间级别权限</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">监控与告警</h5>
+                                    <p class="card-text">集成 Prometheus 和 Grafana，提供集群、节点、工作负载的监控能力，支持自定义告警规则。</p>
+                                    <pre><code># Rancher 监控功能：
+# - 集群健康状态
+# - 节点资源使用率
+# - Pod 资源监控
+# - 网络流量监控
+# - 存储使用情况
+
+# 告警通知渠道：
+# - Slack
+# - Email
+# - PagerDuty
+# - Webhook</code></pre>
                                 </div>
                             </div>
                         </div>

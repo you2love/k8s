@@ -915,4 +915,25 @@ document.addEventListener('click', function(e) {
         }
     }
 });
+
+// Sidebar submenu toggle
+document.querySelectorAll('.nav-item.has-submenu > .nav-link').forEach(link => {
+    link.addEventListener('click', function(e) {
+        if (this.getAttribute('href') === '#concepts') {
+            e.preventDefault();
+            const parent = this.parentElement;
+            parent.classList.toggle('open');
+        }
+    });
+});
+
+// Auto-expand submenu when clicking on concepts section
+document.querySelectorAll('.sidebar-submenu a').forEach(link => {
+    link.addEventListener('click', function() {
+        const parent = this.closest('.nav-item.has-submenu');
+        if (parent) {
+            parent.classList.add('open');
+        }
+    });
+});
 });

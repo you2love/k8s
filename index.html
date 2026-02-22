@@ -85,56 +85,37 @@
 flowchart TB
     subgraph Client[客户端]
         kubectl[kubectl]
-        API[API 调用]
     end
 
-    subgraph Master[Master 节点 - 控制平面]
-        API_Server[API Server<br/>集群入口]
-        etcd[etcd<br/>键值存储]
-        Scheduler[Scheduler<br/>调度器]
-        Controller[Controller Manager<br/>控制器管理器]
-        Cloud[Cloud Controller<br/>云控制器]
+    subgraph Master[Master节点]
+        API[API Server]
+        etcd[etcd]
+        Scheduler[Scheduler]
+        Controller[Controller]
     end
 
     subgraph Node1[Worker Node 1]
         kubelet1[kubelet]
-        kube_proxy1[kube-proxy]
         Pod1[Pod]
         Pod2[Pod]
     end
 
     subgraph Node2[Worker Node 2]
         kubelet2[kubelet]
-        kube_proxy2[kube-proxy]
         Pod3[Pod]
         Pod4[Pod]
     end
 
-    Client -->|REST API| API_Server
-    API_Server --> etcd
-    API_Server --> Scheduler
-    API_Server --> Controller
-    API_Server --> Cloud
-    Scheduler -->|调度决策| API_Server
-    Controller -->|控制循环| API_Server
-    
-    API_Server -->|指令| kubelet1
-    API_Server -->|指令| kubelet2
-    
+    Client --> API
+    API --> etcd
+    API --> Scheduler
+    API --> Controller
+    API --> kubelet1
+    API --> kubelet2
     kubelet1 --> Pod1
     kubelet1 --> Pod2
     kubelet2 --> Pod3
     kubelet2 --> Pod4
-    
-    kube_proxy1 --> Pod1
-    kube_proxy1 --> Pod2
-    kube_proxy2 --> Pod3
-    kube_proxy2 --> Pod4
-
-    style Master fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
-    style Node1 fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
-    style Node2 fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
-    style Client fill:#fff3e0,stroke:#f57c00,stroke-width:2px
                         </pre>
                     </div>
                 </div>
@@ -197,39 +178,25 @@ flowchart TB
                     <div class="architecture-diagram bg-light p-4 rounded">
                         <pre class="mermaid">
 sequenceDiagram
-    participant User as 用户
-    participant kubectl as kubectl
-    participant API as API Server
-    participant etcd as etcd
-    participant Scheduler as Scheduler
-    participant Controller as Controller
-    participant kubelet as kubelet
-    participant Runtime as 容器运行时
-    participant Pod as Pod
-
-    User->>kubectl: kubectl run nginx
-    kubectl->>API: POST /api/v1/pods
-    API->>etcd: 保存 Pod 定义
-    etcd-->>API: 确认保存
-    API-->>kubectl: 返回创建成功
-    kubectl-->>User: pod/nginx created
-    
-    Note over API,etcd: Pod 处于 Pending 状态
-    
-    API->>Scheduler: 监听未调度的 Pod
-    Scheduler->>Scheduler: 执行调度算法
-    Scheduler->>API: 绑定 Pod 到 Node
-    API->>etcd: 更新 Pod 状态
-    
-    Note over API,etcd: Pod 已分配节点
-    
-    API->>kubelet: Watch 到新 Pod
-    kubelet->>Runtime: 创建容器
-    Runtime->>Pod: 启动容器
-    kubelet->>API: 更新 Pod 状态为 Running
-    API->>etcd: 保存状态
-    
-    Note over API,etcd: Pod 处于 Running 状态
+    participant U as User
+    participant K as kubectl
+    participant A as API Server
+    participant E as etcd
+    participant S as Scheduler
+    participant N as kubelet
+    participant P as Pod
+    U->>K: kubectl run nginx
+    K->>A: POST /api/v1/pods
+    A->>E: save pod
+    E-->>A: saved
+    A-->>K: created
+    K-->>U: pod/nginx created
+    A->>S: watch pending pods
+    S->>S: schedule
+    S->>A: bind pod to node
+    A->>N: watch new pod
+    N->>P: create container
+    N->>A: update status Running
                         </pre>
                     </div>
                 </div>
@@ -242,36 +209,23 @@ sequenceDiagram
                     <div class="architecture-diagram bg-light p-4 rounded">
                         <pre class="mermaid">
 flowchart LR
-    subgraph External[外部流量]
-        User[用户请求]
+    subgraph Ext[External]
+        User[User Request]
     end
-
-    subgraph Cluster[Kubernetes 集群]
+    subgraph Cluster[K8s Cluster]
         subgraph NodeA[Node A]
-            Ingress[Ingress Controller]
-            Service1[Service<br/>ClusterIP]
-            PodA1[Pod:8080]
-            PodA2[Pod:8080]
+            Ingress[Ingress]
+            Service1[Service]
+            PodA1[Pod]
         end
-        
         subgraph NodeB[Node B]
-            Service2[Service<br/>NodePort]
-            PodB1[Pod:8080]
-            PodB2[Pod:8080]
+            PodB1[Pod]
         end
     end
-
-    User -->|HTTP/HTTPS| Ingress
-    Ingress -->|路由规则| Service1
-    Service1 -->|负载均衡| PodA1
-    Service1 -->|负载均衡| PodA2
-    Service1 -.->|跨节点访问| PodB1
-    Service1 -.->|跨节点访问| PodB2
-
-    style External fill:#fff3e0,stroke:#f57c00
-    style Cluster fill:#e3f2fd,stroke:#1976d2
-    style NodeA fill:#e8f5e9,stroke:#388e3c
-    style NodeB fill:#e8f5e9,stroke:#388e3c
+    User --> Ingress
+    Ingress --> Service1
+    Service1 --> PodA1
+    Service1 --> PodB1
                         </pre>
                     </div>
                 </div>
@@ -282,74 +236,254 @@ flowchart LR
     <section class="py-5" id="concepts">
         <div class="container">
             <h2 class="text-center mb-5">核心概念</h2>
-            <div class="row g-4" id="concepts-container">
-                <div class="col-12" id="concept-pod">
-                    <div class="card concept-card h-100">
-                        <div class="card-body text-center">
-                            
-                            <h3 class="card-title mt-3">Pod</h3>
-                            <p class="card-text">Kubernetes 最小的部署单元，包含一个或多个容器</p>
-                            <button class="btn btn-primary concept-btn" data-topic="pod">了解更多</button>
-                        </div>
-                        <div class="concept-detail-content d-none" id="pod-detail"></div>
-                    </div>
+            
+            <!-- Pod -->
+            <div class="card mb-4" id="concept-pod">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Pod</h3>
                 </div>
-                <div class="col-12" id="concept-deployment">
-                    <div class="card concept-card h-100">
-                        <div class="card-body text-center">
-                            
-                            <h3 class="card-title mt-3">Deployment</h3>
-                            <p class="card-text">管理 Pod 的副本数量和更新策略</p>
-                            <button class="btn btn-success concept-btn" data-topic="deployment">了解更多</button>
-                        </div>
-                        <div class="concept-detail-content d-none" id="deployment-detail"></div>
+                <div class="card-body">
+                    <p>Pod 是 Kubernetes 中最小的可部署计算单元，可以包含一个或多个容器。Pod 代表了集群中运行的一个进程组。</p>
+                    
+                    <h5 class="mt-4">Pod 内部架构</h5>
+                    <div class="architecture-diagram bg-light p-4 rounded">
+                        <pre class="mermaid">
+flowchart TB
+    subgraph P[Pod]
+        N[Network Namespace]
+        S[Storage Volumes]
+        C1[Container 1]
+        C2[Container 2]
+    end
+    N --> C1
+    N --> C2
+    S --> C1
+    S --> C2
+                        </pre>
                     </div>
-                </div>
-                <div class="col-12" id="concept-service">
-                    <div class="card concept-card h-100">
-                        <div class="card-body text-center">
-                            
-                            <h3 class="card-title mt-3">Service</h3>
-                            <p class="card-text">为 Pod 提供稳定的网络访问入口</p>
-                            <button class="btn btn-info concept-btn" data-topic="service">了解更多</button>
-                        </div>
-                        <div class="concept-detail-content d-none" id="service-detail"></div>
+                    
+                    <h5 class="mt-4">生命周期状态</h5>
+                    <div class="architecture-diagram bg-light p-4 rounded">
+                        <pre class="mermaid">
+stateDiagram-v2
+    [*] --> Pending
+    Pending --> Running
+    Pending --> Failed
+    Running --> Succeeded
+    Running --> Failed
+    Succeeded --> [*]
+    Failed --> [*]
+                        </pre>
                     </div>
-                </div>
-                <div class="col-12" id="concept-node">
-                    <div class="card concept-card h-100">
-                        <div class="card-body text-center">
-                            
-                            <h3 class="card-title mt-3">Node</h3>
-                            <p class="card-text">运行容器的物理或虚拟机器</p>
-                            <button class="btn btn-warning concept-btn" data-topic="node">了解更多</button>
-                        </div>
-                        <div class="concept-detail-content d-none" id="node-detail"></div>
-                    </div>
-                </div>
-                <div class="col-12" id="concept-configmap">
-                    <div class="card concept-card h-100">
-                        <div class="card-body text-center">
-                            
-                            <h3 class="card-title mt-3">ConfigMap</h3>
-                            <p class="card-text">存储配置数据，实现配置与代码分离</p>
-                            <button class="btn btn-danger concept-btn" data-topic="configmap">了解更多</button>
-                        </div>
-                        <div class="concept-detail-content d-none" id="configmap-detail"></div>
-                    </div>
-                </div>
-                <div class="col-12" id="concept-secret">
-                    <div class="card concept-card h-100">
-                        <div class="card-body text-center">
-                            
-                            <h3 class="card-title mt-3">Secret</h3>
-                            <p class="card-text">安全地存储敏感信息如密码和密钥</p>
-                            <button class="btn btn-dark concept-btn" data-topic="secret">了解更多</button>
-                        </div>
-                        <div class="concept-detail-content d-none" id="secret-detail"></div>
-                    </div>
+                    
+                    <h5 class="mt-4">资源配置对比</h5>
+                    <table class="table table-bordered">
+                        <thead class="table-primary">
+                            <tr><th>配置项</th><th>requests</th><th>limits</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>作用</td><td>调度时最小资源保证</td><td>运行时最大资源限制</td></tr>
+                            <tr><td>CPU</td><td>保证 CPU 时间</td><td>最大 CPU 使用量</td></tr>
+                            <tr><td>内存</td><td>保证内存</td><td>最大内存限制</td></tr>
+                        </tbody>
+                    </table>
+                    
+                    <h5 class="mt-4">常用命令</h5>
+                    <pre><code>kubectl run nginx --image=nginx
+kubectl describe pod nginx
+kubectl logs nginx
+kubectl exec -it nginx -- /bin/bash
+kubectl delete pod nginx</code></pre>
                 </div>
             </div>
+            
+            <!-- Deployment -->
+            <div class="card mb-4" id="concept-deployment">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">Deployment</h3>
+                </div>
+                <div class="card-body">
+                    <p>Deployment 管理无状态应用的部署和更新，提供声明式更新和回滚能力。</p>
+                    
+                    <h5 class="mt-4">架构关系</h5>
+                    <div class="architecture-diagram bg-light p-4 rounded">
+                        <pre class="mermaid">
+flowchart TB
+    D[Deployment] --> RS1[ReplicaSet v1]
+    D --> RS2[ReplicaSet v2]
+    RS1 --> P1[Pod v1]
+    RS2 --> P2[Pod v2]
+                        </pre>
+                    </div>
+                    
+                    <h5 class="mt-4">更新策略对比</h5>
+                    <table class="table table-bordered">
+                        <thead class="table-success">
+                            <tr><th>策略</th><th>RollingUpdate</th><th>Recreate</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>更新方式</td><td>逐步替换</td><td>全部替换</td></tr>
+                            <tr><td>停机时间</td><td>无</td><td>有</td></tr>
+                            <tr><td>适用场景</td><td>生产环境</td><td>开发测试</td></tr>
+                        </tbody>
+                    </table>
+                    
+                    <h5 class="mt-4">常用命令</h5>
+                    <pre><code>kubectl create deployment nginx --image=nginx:1.21
+kubectl scale deployment nginx --replicas=3
+kubectl set image deployment/nginx nginx=nginx:1.22
+kubectl rollout status deployment/nginx
+kubectl rollout undo deployment/nginx</code></pre>
+                </div>
+            </div>
+            
+            <!-- Service -->
+            <div class="card mb-4" id="concept-service">
+                <div class="card-header bg-info text-white">
+                    <h3 class="mb-0">Service</h3>
+                </div>
+                <div class="card-body">
+                    <p>Service 为一组 Pod 提供稳定的网络访问入口，实现服务发现和负载均衡。</p>
+                    
+                    <h5 class="mt-4">工作原理</h5>
+                    <div class="architecture-diagram bg-light p-4 rounded">
+                        <pre class="mermaid">
+flowchart LR
+    C[Client] --> S[Service]
+    S --> P1[Pod 1]
+    S --> P2[Pod 2]
+    S --> P3[Pod 3]
+                        </pre>
+                    </div>
+                    
+                    <h5 class="mt-4">Service 类型</h5>
+                    <table class="table table-bordered">
+                        <thead class="table-info">
+                            <tr><th>类型</th><th>访问范围</th><th>适用场景</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>ClusterIP</td><td>集群内部</td><td>内部服务</td></tr>
+                            <tr><td>NodePort</td><td>集群外部</td><td>开发测试</td></tr>
+                            <tr><td>LoadBalancer</td><td>公网访问</td><td>生产环境</td></tr>
+                        </tbody>
+                    </table>
+                    
+                    <h5 class="mt-4">常用命令</h5>
+                    <pre><code>kubectl expose deployment nginx --port=80 --target-port=80
+kubectl expose deployment nginx --port=80 --type=NodePort
+kubectl get services
+kubectl get endpoints nginx</code></pre>
+                </div>
+            </div>
+            
+            <!-- Node -->
+            <div class="card mb-4" id="concept-node">
+                <div class="card-header bg-warning text-dark">
+                    <h3 class="mb-0">Node</h3>
+                </div>
+                <div class="card-body">
+                    <p>Node 是 Kubernetes 集群中的工作节点，可以是物理机或虚拟机。</p>
+                    
+                    <h5 class="mt-4">组件架构</h5>
+                    <div class="architecture-diagram bg-light p-4 rounded">
+                        <pre class="mermaid">
+flowchart TB
+    M[Master] --> K[kubelet]
+    K --> R[Runtime]
+    R --> P[Pods]
+    K --> P
+                        </pre>
+                    </div>
+                    
+                    <h5 class="mt-4">Node 条件状态</h5>
+                    <table class="table table-bordered">
+                        <thead class="table-warning">
+                            <tr><th>条件</th><th>说明</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Ready</td><td>节点健康状态</td></tr>
+                            <tr><td>MemoryPressure</td><td>内存压力</td></tr>
+                            <tr><td>DiskPressure</td><td>磁盘压力</td></tr>
+                            <tr><td>PIDPressure</td><td>进程数压力</td></tr>
+                        </tbody>
+                    </table>
+                    
+                    <h5 class="mt-4">常用命令</h5>
+                    <pre><code>kubectl get nodes
+kubectl describe node node-1
+kubectl cordon node-1
+kubectl drain node-1 --ignore-daemonsets
+kubectl label node node-1 disktype=ssd</code></pre>
+                </div>
+            </div>
+            
+            <!-- ConfigMap -->
+            <div class="card mb-4" id="concept-configmap">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="mb-0">ConfigMap</h3>
+                </div>
+                <div class="card-body">
+                    <p>ConfigMap 用于存储非敏感的配置数据，实现配置与代码分离。</p>
+                    
+                    <h5 class="mt-4">使用方式</h5>
+                    <div class="architecture-diagram bg-light p-4 rounded">
+                        <pre class="mermaid">
+flowchart TB
+    CM[ConfigMap] --> E[Env Variables]
+    CM --> F[Files]
+    E --> P[Pod]
+    F --> P
+                        </pre>
+                    </div>
+                    
+                    <h5 class="mt-4">使用方式对比</h5>
+                    <table class="table table-bordered">
+                        <thead class="table-danger">
+                            <tr><th>方式</th><th>优点</th><th>缺点</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>环境变量</td><td>简单直接</td><td>更新需重启</td></tr>
+                            <tr><td>挂载文件</td><td>支持热更新</td><td>需应用监听</td></tr>
+                        </tbody>
+                    </table>
+                    
+                    <h5 class="mt-4">常用命令</h5>
+                    <pre><code>kubectl create configmap app-config --from-literal=key=value
+kubectl create configmap app-config --from-file=config.yaml
+kubectl get configmaps
+kubectl edit configmap app-config</code></pre>
+                </div>
+            </div>
+            
+            <!-- Secret -->
+            <div class="card mb-4" id="concept-secret">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="mb-0">Secret</h3>
+                </div>
+                <div class="card-body">
+                    <p>Secret 用于存储敏感信息如密码、密钥、证书等，数据以 Base64 编码存储。</p>
+                    
+                    <h5 class="mt-4">Secret vs ConfigMap</h5>
+                    <table class="table table-bordered">
+                        <thead class="table-dark">
+                            <tr><th>对比项</th><th>Secret</th><th>ConfigMap</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>用途</td><td>敏感信息</td><td>非敏感配置</td></tr>
+                            <tr><td>编码</td><td>Base64</td><td>纯文本</td></tr>
+                            <tr><td>存储</td><td>加密存储</td><td>明文存储</td></tr>
+                        </tbody>
+                    </table>
+                    
+                    <h5 class="mt-4">常用命令</h5>
+                    <pre><code>kubectl create secret generic db-secret --from-literal=password=secret123
+kubectl create secret docker-registry regcred --docker-server=registry.example.com --docker-username=user --docker-password=pass
+kubectl create secret tls tls-secret --cert=tls.crt --key=tls.key
+kubectl get secrets
+kubectl get secret db-secret -o jsonpath='{.data.password}' | base64 -d</code></pre>
+                </div>
+            </div>
+            
         </div>
     </section>
 
@@ -1192,37 +1326,19 @@ helm rollback myapp</code></pre>
                     <div class="architecture-diagram bg-light p-4 rounded mb-4">
                         <pre class="mermaid">
 flowchart TB
-    subgraph Rancher[Rancher 管理平台]
-        UI[Web UI 界面]
-        Auth[认证授权]
-        Monitor[监控告警]
-        CI[CI/CD 集成]
-        Catalog[应用目录]
+    subgraph R[Rancher Platform]
+        UI[Web UI]
+        Auth[Auth]
+        Monitor[Monitor]
     end
-
-    subgraph K8s1[Kubernetes 集群 1]
+    subgraph K1[K8s Cluster 1]
         M1[Master]
-        W1[Worker Nodes]
     end
-
-    subgraph K8s2[Kubernetes 集群 2]
+    subgraph K2[K8s Cluster 2]
         M2[Master]
-        W2[Worker Nodes]
     end
-
-    subgraph K8s3[Kubernetes 集群 3]
-        M3[Master]
-        W3[Worker Nodes]
-    end
-
-    Rancher -->|统一管理| K8s1
-    Rancher -->|统一管理| K8s2
-    Rancher -->|统一管理| K8s3
-
-    style Rancher fill:#0075a8,stroke:#005a80,color:#fff
-    style K8s1 fill:#326ce5,stroke:#1976d2,color:#fff
-    style K8s2 fill:#326ce5,stroke:#1976d2,color:#fff
-    style K8s3 fill:#326ce5,stroke:#1976d2,color:#fff
+    R --> K1
+    R --> K2
                         </pre>
                     </div>
                     
@@ -1412,9 +1528,6 @@ kubectl -n cattle-system get deploy rancher</code></pre>
 
 
     <script src="assets/js/mermaid.min.js"></script>
-    <script>
-        mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
-    </script>
     <script src="assets/js/bootstrap.min.js"></script>
     <script src="assets/js/script.js"></script>
 </body>

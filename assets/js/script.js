@@ -1,3 +1,11 @@
+// Initialize Mermaid
+if (typeof mermaid !== 'undefined') {
+    mermaid.initialize({ 
+        startOnLoad: true,
+        theme: 'default'
+    });
+}
+
 // Concept detail data
 const conceptDetails = {
     pod: {
@@ -9,34 +17,16 @@ const conceptDetails = {
             <div class="mermaid-diagram">
                 <pre class="mermaid">
 flowchart TB
-    subgraph Pod[Pod]
-        subgraph Network[共享网络命名空间]
-            IP[单一 IP 地址]
-            Port[共享端口空间]
-        end
-        subgraph Storage[共享存储卷]
-            Vol1[EmptyDir]
-            Vol2[HostPath]
-        end
-        subgraph Containers[容器组]
-            C1[主容器<br/>业务逻辑]
-            C2[Sidecar 容器<br/>辅助功能]
-        end
-        subgraph IPC[共享 IPC]
-            Msg[消息队列]
-            Shm[共享内存]
-        end
+    subgraph P[Pod]
+        N[Network Namespace]
+        S[Storage Volumes]
+        C1[Container 1]
+        C2[Container 2]
     end
-    
-    Network --> Containers
-    Storage --> Containers
-    IPC --> Containers
-    
-    style Pod fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
-    style Network fill:#fff3e0,stroke:#f57c00
-    style Storage fill:#e8f5e9,stroke:#388e3c
-    style Containers fill:#fce4ec,stroke:#c2185b
-    style IPC fill:#f3e5f5,stroke:#7b1fa2
+    N --> C1
+    N --> C2
+    S --> C1
+    S --> C2
                 </pre>
             </div>
             
@@ -44,24 +34,13 @@ flowchart TB
             <div class="mermaid-diagram">
                 <pre class="mermaid">
 stateDiagram-v2
-    [*] --> Pending: 创建请求
-    Pending --> Running: 调度成功<br/>容器启动
-    Pending --> Failed: 调度失败
-    Running --> Succeeded: 任务完成
-    Running --> Failed: 容器崩溃
-    Running --> Running: 重启策略
+    [*] --> Pending
+    Pending --> Running
+    Pending --> Failed
+    Running --> Succeeded
+    Running --> Failed
     Succeeded --> [*]
     Failed --> [*]
-    
-    note right of Pending
-        等待调度
-        拉取镜像
-    end note
-    
-    note right of Running
-        容器运行中
-        就绪探针检查
-    end note
                 </pre>
             </div>
             
@@ -69,24 +48,15 @@ stateDiagram-v2
             <div class="mermaid-diagram">
                 <pre class="mermaid">
 flowchart LR
-    subgraph Sidecar[Sidecar 模式]
-        App1[应用容器] --> Log[日志收集]
-        App1 --> Monitor[监控代理]
+    subgraph Sidecar
+        A1[App] --> L[Log Agent]
     end
-    
-    subgraph Ambassador[Ambassador 模式]
-        App2[应用容器] --> Proxy[代理容器]
-        Proxy --> External[外部服务]
+    subgraph Ambassador
+        A2[App] --> P[Proxy]
     end
-    
-    subgraph Adapter[Adapter 模式]
-        App3[应用容器] --> Adapter1[适配器]
-        Adapter1 --> StdOut[标准化输出]
+    subgraph Adapter
+        A3[App] --> Ad[Adapter]
     end
-    
-    style Sidecar fill:#e3f2fd,stroke:#1976d2
-    style Ambassador fill:#e8f5e9,stroke:#388e3c
-    style Adapter fill:#fff3e0,stroke:#f57c00
                 </pre>
             </div>
             
@@ -94,29 +64,12 @@ flowchart LR
             <div class="mermaid-diagram">
                 <pre class="mermaid">
 sequenceDiagram
-    participant Kubelet
-    participant Container
-    participant Service
-    
-    Note over Kubelet,Container: Liveness Probe - 存活检查
-    Kubelet->>Container: HTTP/TCP/Exec 检查
-    alt 检查成功
-        Container-->>Kubelet: 成功响应
-        Kubelet->>Kubelet: 继续运行
-    else 检查失败
-        Container-->>Kubelet: 失败/超时
-        Kubelet->>Container: 重启容器
-    end
-    
-    Note over Kubelet,Service: Readiness Probe - 就绪检查
-    Kubelet->>Container: HTTP/TCP 检查
-    alt 就绪成功
-        Container-->>Kubelet: 成功响应
-        Kubelet->>Service: 添加到后端
-    else 就绪失败
-        Container-->>Kubelet: 失败响应
-        Kubelet->>Service: 从后端移除
-    end
+    participant K as Kubelet
+    participant C as Container
+    K->>C: Liveness Check
+    C-->>K: Response
+    K->>C: Readiness Check
+    C-->>K: Response
                 </pre>
             </div>
             
@@ -138,17 +91,12 @@ sequenceDiagram
                     <tr>
                         <td><strong>CPU</strong></td>
                         <td>保证分配的 CPU 时间</td>
-                        <td>最大 CPU 使用量（可被限流）</td>
+                        <td>最大 CPU 使用量</td>
                     </tr>
                     <tr>
                         <td><strong>内存</strong></td>
                         <td>保证可用的内存</td>
-                        <td>最大内存（超出会被 OOM Kill）</td>
-                    </tr>
-                    <tr>
-                        <td><strong>示例</strong></td>
-                        <td>cpu: 250m, memory: 64Mi</td>
-                        <td>cpu: 500m, memory: 128Mi</td>
+                        <td>最大内存限制</td>
                     </tr>
                 </tbody>
             </table>
@@ -179,36 +127,10 @@ kubectl delete pod nginx</code></pre>
             <div class="mermaid-diagram">
                 <pre class="mermaid">
 flowchart TB
-    subgraph Deployment[Deployment]
-        Spec[期望状态: 3 副本]
-    end
-    
-    subgraph RS1[ReplicaSet v1]
-        RS1_Spec[副本: 0]
-        P1[Pod v1-1]
-        P2[Pod v1-2]
-        P3[Pod v1-3]
-    end
-    
-    subgraph RS2[ReplicaSet v2 当前]
-        RS2_Spec[副本: 3]
-        P4[Pod v2-1]
-        P5[Pod v2-2]
-        P6[Pod v2-3]
-    end
-    
-    Deployment --> RS1
-    Deployment --> RS2
-    RS1_Spec --> P1
-    RS1_Spec --> P2
-    RS1_Spec --> P3
-    RS2_Spec --> P4
-    RS2_Spec --> P5
-    RS2_Spec --> P6
-    
-    style Deployment fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
-    style RS1 fill:#ffcdd2,stroke:#c62828,stroke-dasharray: 5 5
-    style RS2 fill:#c8e6c9,stroke:#388e3c
+    D[Deployment] --> RS1[ReplicaSet v1]
+    D --> RS2[ReplicaSet v2]
+    RS1 --> P1[Pod v1]
+    RS2 --> P2[Pod v2]
                 </pre>
             </div>
             
@@ -216,23 +138,13 @@ flowchart TB
             <div class="mermaid-diagram">
                 <pre class="mermaid">
 sequenceDiagram
-    participant User as 用户
-    participant Deploy as Deployment
-    participant RS1 as ReplicaSet v1
-    participant RS2 as ReplicaSet v2
-    participant Pod as Pods
-    
-    User->>Deploy: kubectl set image
-    Deploy->>Deploy: 创建 RS2 (新版本)
-    
-    loop 滚动更新
-        Deploy->>RS2: 创建新 Pod
-        RS2->>Pod: 启动 v2 Pod
-        Deploy->>RS1: 删除旧 Pod
-        RS1->>Pod: 终止 v1 Pod
-    end
-    
-    Note over Deploy,Pod: maxSurge: 最多超出期望副本数<br/>maxUnavailable: 最多不可用副本数
+    participant U as User
+    participant D as Deployment
+    participant R as ReplicaSet
+    participant P as Pod
+    U->>D: kubectl set image
+    D->>R: create new RS
+    R->>P: create new Pod
                 </pre>
             </div>
             
@@ -257,19 +169,9 @@ sequenceDiagram
                         <td>有（短暂中断）</td>
                     </tr>
                     <tr>
-                        <td><strong>资源占用</strong></td>
-                        <td>较高（新旧 Pod 共存）</td>
-                        <td>较低</td>
-                    </tr>
-                    <tr>
-                        <td><strong>回滚能力</strong></td>
-                        <td>支持</td>
-                        <td>支持</td>
-                    </tr>
-                    <tr>
                         <td><strong>适用场景</strong></td>
-                        <td>生产环境，需持续服务</td>
-                        <td>开发测试，可接受中断</td>
+                        <td>生产环境</td>
+                        <td>开发测试</td>
                     </tr>
                 </tbody>
             </table>
@@ -287,53 +189,23 @@ kubectl set image deployment/nginx nginx=nginx:1.22
 # 查看更新状态
 kubectl rollout status deployment/nginx
 
-# 查看更新历史
-kubectl rollout history deployment/nginx
-
-# 回滚到上一版本
-kubectl rollout undo deployment/nginx
-
-# 回滚到指定版本
-kubectl rollout undo deployment/nginx --to-revision=2</code></pre>
+# 回滚
+kubectl rollout undo deployment/nginx</code></pre>
         `
     },
     service: {
         title: 'Service 深度解析',
         content: `
-            <p>Service 为一组 Pod 提供稳定的网络访问入口，实现服务发现和负载均衡。由于 Pod 的 IP 是动态变化的，Service 提供了一个稳定的访问点。</p>
+            <p>Service 为一组 Pod 提供稳定的网络访问入口，实现服务发现和负载均衡。</p>
             
             <h5>Service 工作原理</h5>
             <div class="mermaid-diagram">
                 <pre class="mermaid">
 flowchart LR
-    subgraph Client[客户端]
-        C1[请求]
-    end
-    
-    subgraph Service[Service]
-        VIP[ClusterIP: 10.0.0.1]
-        Selector[app=nginx]
-    end
-    
-    subgraph Nodes[Worker Nodes]
-        subgraph Node1[Node 1]
-            P1[Pod 1<br/>10.244.1.1]
-            P2[Pod 2<br/>10.244.1.2]
-        end
-        subgraph Node2[Node 2]
-            P3[Pod 3<br/>10.244.2.1]
-        end
-    end
-    
-    C1 -->|负载均衡| VIP
-    VIP --> Selector
-    Selector --> P1
-    Selector --> P2
-    Selector --> P3
-    
-    style Service fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
-    style Client fill:#fff3e0,stroke:#f57c00
-    style Nodes fill:#e8f5e9,stroke:#388e3c
+    C[Client] --> S[Service]
+    S --> P1[Pod 1]
+    S --> P2[Pod 2]
+    S --> P3[Pod 3]
                 </pre>
             </div>
             
@@ -343,7 +215,6 @@ flowchart LR
                     <tr>
                         <th>类型</th>
                         <th>访问范围</th>
-                        <th>端口范围</th>
                         <th>适用场景</th>
                     </tr>
                 </thead>
@@ -351,26 +222,17 @@ flowchart LR
                     <tr>
                         <td><strong>ClusterIP</strong></td>
                         <td>集群内部</td>
-                        <td>内部端口</td>
                         <td>内部服务通信</td>
                     </tr>
                     <tr>
                         <td><strong>NodePort</strong></td>
                         <td>集群外部</td>
-                        <td>30000-32767</td>
-                        <td>开发测试环境</td>
+                        <td>开发测试</td>
                     </tr>
                     <tr>
                         <td><strong>LoadBalancer</strong></td>
                         <td>公网访问</td>
-                        <td>云厂商分配</td>
                         <td>生产环境</td>
-                    </tr>
-                    <tr>
-                        <td><strong>ExternalName</strong></td>
-                        <td>外部服务</td>
-                        <td>DNS 映射</td>
-                        <td>外部服务集成</td>
                     </tr>
                 </tbody>
             </table>
@@ -379,17 +241,15 @@ flowchart LR
             <div class="mermaid-diagram">
                 <pre class="mermaid">
 sequenceDiagram
-    participant App as 应用 Pod
-    participant DNS as CoreDNS
-    participant SVC as Service
-    participant Backend as 后端 Pod
-    
-    App->>DNS: 解析 nginx.default.svc
-    DNS-->>App: 返回 ClusterIP
-    App->>SVC: 请求 ClusterIP:80
-    SVC->>Backend: 负载均衡转发
-    Backend-->>SVC: 响应
-    SVC-->>App: 返回响应
+    participant A as App Pod
+    participant D as DNS
+    participant S as Service
+    participant B as Backend Pod
+    A->>D: resolve service name
+    D-->>A: return ClusterIP
+    A->>S: request
+    S->>B: forward
+    B-->>A: response
                 </pre>
             </div>
             
@@ -397,62 +257,29 @@ sequenceDiagram
             <pre><code># 创建 Service
 kubectl expose deployment nginx --port=80 --target-port=80
 
-# 创建 NodePort 服务
+# 创建 NodePort
 kubectl expose deployment nginx --port=80 --type=NodePort
 
 # 查看 Service
 kubectl get services
 
 # 查看 endpoints
-kubectl get endpoints nginx
-
-# 端口转发
-kubectl port-forward service/nginx 8080:80</code></pre>
+kubectl get endpoints nginx</code></pre>
         `
     },
     node: {
         title: 'Node 深度解析',
         content: `
-            <p>Node 是 Kubernetes 集群中的工作节点，可以是物理机或虚拟机。Node 运行容器化应用，由 Master 节点管理和调度。</p>
+            <p>Node 是 Kubernetes 集群中的工作节点，可以是物理机或虚拟机。</p>
             
             <h5>Node 组件架构</h5>
             <div class="mermaid-diagram">
                 <pre class="mermaid">
 flowchart TB
-    subgraph Master[Master 节点]
-        API[API Server]
-    end
-    
-    subgraph Worker[Worker Node]
-        subgraph Components[核心组件]
-            Kubelet[kubelet<br/>节点代理]
-            Proxy[kube-proxy<br/>网络代理]
-            Runtime[Container Runtime<br/>容器运行时]
-        end
-        
-        subgraph Pods[运行中的 Pod]
-            Pod1[Pod 1]
-            Pod2[Pod 2]
-            Pod3[Pod 3]
-        end
-        
-        subgraph Resources[节点资源]
-            CPU[CPU]
-            Mem[内存]
-            Disk[磁盘]
-        end
-    end
-    
-    Master -->|指令| Kubelet
-    Kubelet --> Runtime
-    Runtime --> Pods
-    Kubelet --> Pods
-    Proxy --> Pods
-    Resources --> Pods
-    
-    style Master fill:#e3f2fd,stroke:#1976d2
-    style Worker fill:#e8f5e9,stroke:#388e3c
-    style Components fill:#fff3e0,stroke:#f57c00
+    M[Master] --> K[kubelet]
+    K --> R[Runtime]
+    R --> P[Pods]
+    K --> P
                 </pre>
             </div>
             
@@ -460,22 +287,11 @@ flowchart TB
             <div class="mermaid-diagram">
                 <pre class="mermaid">
 stateDiagram-v2
-    [*] --> Ready: 节点启动成功
-    Ready --> NotReady: 资源不足/网络故障
-    NotReady --> Ready: 问题恢复
-    Ready --> Unknown: 通信中断
-    Unknown --> Ready: 通信恢复
-    NotReady --> Unknown: 通信中断
-    
-    note right of Ready
-        节点健康
-        可调度 Pod
-    end note
-    
-    note right of NotReady
-        节点异常
-        暂停调度
-    end note
+    [*] --> Ready
+    Ready --> NotReady
+    NotReady --> Ready
+    Ready --> Unknown
+    Unknown --> Ready
                 </pre>
             </div>
             
@@ -485,61 +301,27 @@ stateDiagram-v2
                     <tr>
                         <th>条件</th>
                         <th>说明</th>
-                        <th>影响</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td><strong>Ready</strong></td>
                         <td>节点健康状态</td>
-                        <td>False 时暂停调度</td>
                     </tr>
                     <tr>
                         <td><strong>MemoryPressure</strong></td>
                         <td>内存压力</td>
-                        <td>触发 Pod 驱逐</td>
                     </tr>
                     <tr>
                         <td><strong>DiskPressure</strong></td>
                         <td>磁盘压力</td>
-                        <td>触发清理/驱逐</td>
                     </tr>
                     <tr>
                         <td><strong>PIDPressure</strong></td>
                         <td>进程数压力</td>
-                        <td>限制新进程</td>
-                    </tr>
-                    <tr>
-                        <td><strong>NetworkUnavailable</strong></td>
-                        <td>网络不可用</td>
-                        <td>影响网络通信</td>
                     </tr>
                 </tbody>
             </table>
-            
-            <h5>污点与容忍度</h5>
-            <div class="mermaid-diagram">
-                <pre class="mermaid">
-flowchart LR
-    subgraph Node[节点]
-        Taint[污点<br/>key=value:NoSchedule]
-    end
-    
-    subgraph Pods[Pods]
-        P1[Pod A<br/>无容忍]
-        P2[Pod B<br/>有容忍]
-    end
-    
-    Taint -->|阻止| P1
-    Taint -->|允许| P2
-    P1 -.->|无法调度| Node
-    P2 -->|可调度| Node
-    
-    style Node fill:#ffcdd2,stroke:#c62828
-    style P1 fill:#fff3e0,stroke:#f57c00
-    style P2 fill:#c8e6c9,stroke:#388e3c
-                </pre>
-            </div>
             
             <h5>常用命令</h5>
             <pre><code># 查看节点
@@ -555,73 +337,24 @@ kubectl cordon node-1
 kubectl drain node-1 --ignore-daemonsets
 
 # 添加标签
-kubectl label node node-1 disktype=ssd
-
-# 添加污点
-kubectl taint node node-1 key=value:NoSchedule</code></pre>
+kubectl label node node-1 disktype=ssd</code></pre>
         `
     },
     configmap: {
         title: 'ConfigMap 深度解析',
         content: `
-            <p>ConfigMap 用于存储非敏感的配置数据，实现配置与代码分离。ConfigMap 让你可以在不重新构建镜像的情况下更新应用配置。</p>
+            <p>ConfigMap 用于存储非敏感的配置数据，实现配置与代码分离。</p>
             
             <h5>ConfigMap 使用方式</h5>
             <div class="mermaid-diagram">
                 <pre class="mermaid">
 flowchart TB
-    subgraph CM[ConfigMap]
-        Data[配置数据<br/>database_host: localhost<br/>database_port: 5432]
-    end
-    
-    subgraph Methods[使用方式]
-        subgraph Env[环境变量]
-            E1[注入单个键]
-            E2[注入所有键]
-        end
-        subgraph File[配置文件]
-            F1[挂载为文件]
-            F2[挂载为目录]
-        end
-        subgraph Cmd[命令行]
-            C1[启动参数引用]
-        end
-    end
-    
-    subgraph Pod[Pod]
-        Container[容器]
-    end
-    
-    CM --> Env
-    CM --> File
-    CM --> Cmd
-    Env --> Container
-    File --> Container
-    Cmd --> Container
-    
-    style CM fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
-    style Methods fill:#fff3e0,stroke:#f57c00
-    style Pod fill:#e8f5e9,stroke:#388e3c
-                </pre>
-            </div>
-            
-            <h5>配置更新流程</h5>
-            <div class="mermaid-diagram">
-                <pre class="mermaid">
-sequenceDiagram
-    participant User as 用户
-    participant API as API Server
-    participant CM as ConfigMap
-    participant Kubelet as kubelet
-    participant Pod as Pod
-    
-    User->>API: 更新 ConfigMap
-    API->>CM: 保存更新
-    CM-->>Kubelet: Watch 通知
-    Kubelet->>Pod: 更新挂载文件
-    
-    Note over Kubelet,Pod: 挂载方式: 自动更新(有延迟)
-    Note over User,Pod: 环境变量: 需重启 Pod
+    CM[ConfigMap] --> E[Env Variables]
+    CM --> F[Files]
+    CM --> C[Command Args]
+    E --> P[Pod]
+    F --> P
+    C --> P
                 </pre>
             </div>
             
@@ -632,7 +365,6 @@ sequenceDiagram
                         <th>方式</th>
                         <th>优点</th>
                         <th>缺点</th>
-                        <th>场景</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -640,19 +372,11 @@ sequenceDiagram
                         <td><strong>环境变量</strong></td>
                         <td>简单直接</td>
                         <td>更新需重启</td>
-                        <td>少量配置</td>
-                    </tr>
-                    <tr>
-                        <td><strong>命令行参数</strong></td>
-                        <td>灵活覆盖</td>
-                        <td>复杂配置不便</td>
-                        <td>启动参数</td>
                     </tr>
                     <tr>
                         <td><strong>挂载文件</strong></td>
                         <td>支持热更新</td>
                         <td>需应用监听</td>
-                        <td>复杂配置</td>
                     </tr>
                 </tbody>
             </table>
@@ -666,7 +390,6 @@ kubectl create configmap app-config --from-file=config.yaml
 
 # 查看 ConfigMap
 kubectl get configmaps
-kubectl describe configmap app-config
 
 # 编辑 ConfigMap
 kubectl edit configmap app-config</code></pre>
@@ -675,55 +398,15 @@ kubectl edit configmap app-config</code></pre>
     secret: {
         title: 'Secret 深度解析',
         content: `
-            <p>Secret 用于存储敏感信息如密码、密钥、证书等。Secret 数据以 Base64 编码存储，在 etcd 中加密保存。</p>
+            <p>Secret 用于存储敏感信息如密码、密钥、证书等。</p>
             
             <h5>Secret 类型与用途</h5>
             <div class="mermaid-diagram">
                 <pre class="mermaid">
-flowchart TB
-    subgraph Secrets[Secret 类型]
-        Opaque[Opaque<br/>通用敏感数据]
-        Docker[dockerconfigjson<br/>镜像仓库凭证]
-        TLS[tls<br/>TLS 证书]
-        SA[service-account-token<br/>服务账户令牌]
-    end
-    
-    subgraph Usage[使用场景]
-        U1[数据库密码]
-        U2[私有镜像仓库]
-        U3[HTTPS 证书]
-        U4[集群认证]
-    end
-    
-    Opaque --> U1
-    Docker --> U2
-    TLS --> U3
-    SA --> U4
-    
-    style Secrets fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
-    style Usage fill:#fff3e0,stroke:#f57c00
-                </pre>
-            </div>
-            
-            <h5>Secret 使用流程</h5>
-            <div class="mermaid-diagram">
-                <pre class="mermaid">
-sequenceDiagram
-    participant Admin as 管理员
-    participant API as API Server
-    participant Secret as Secret
-    participant Pod as Pod
-    
-    Admin->>API: 创建 Secret (Base64)
-    API->>Secret: 加密存储到 etcd
-    
-    Admin->>API: 创建 Pod 引用 Secret
-    API->>Pod: 调度 Pod
-    Pod->>Secret: 挂载/注入
-    Secret-->>Pod: 解码后数据
-    
-    Note over API,Secret: etcd 中加密存储
-    Note over Secret,Pod: 传输时 Base64 解码
+flowchart LR
+    O[Opaque] --> D[Database Password]
+    D[dockerconfigjson] --> R[Registry Credential]
+    T[tls] --> C[TLS Certificate]
                 </pre>
             </div>
             
@@ -752,34 +435,18 @@ sequenceDiagram
                         <td>加密存储</td>
                         <td>明文存储</td>
                     </tr>
-                    <tr>
-                        <td><strong>大小限制</strong></td>
-                        <td>1MB</td>
-                        <td>1MB</td>
-                    </tr>
-                    <tr>
-                        <td><strong>访问控制</strong></td>
-                        <td>更严格</td>
-                        <td>常规 RBAC</td>
-                    </tr>
                 </tbody>
             </table>
             
             <h5>常用命令</h5>
             <pre><code># 创建 Secret
-kubectl create secret generic db-secret \\
-  --from-literal=username=admin \\
-  --from-literal=password=secret123
+kubectl create secret generic db-secret --from-literal=password=secret123
 
-# 创建 Docker 仓库凭证
-kubectl create secret docker-registry regcred \\
-  --docker-server=registry.example.com \\
-  --docker-username=user \\
-  --docker-password=pass
+# 创建 Docker 凭证
+kubectl create secret docker-registry regcred --docker-server=registry.example.com --docker-username=user --docker-password=pass
 
 # 创建 TLS Secret
-kubectl create secret tls tls-secret \\
-  --cert=tls.crt --key=tls.key
+kubectl create secret tls tls-secret --cert=tls.crt --key=tls.key
 
 # 查看 Secret
 kubectl get secrets
@@ -821,9 +488,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Render mermaid diagrams in the expanded content
                     if (typeof mermaid !== 'undefined') {
-                        detailContainer.querySelectorAll('pre.mermaid').forEach(pre => {
-                            mermaid.run({ nodes: [pre] });
-                        });
+                        var mermaidElements = detailContainer.querySelectorAll('pre.mermaid');
+                        if (mermaidElements.length > 0) {
+                            // Reset and re-render all mermaid elements
+                            mermaidElements.forEach(function(el) {
+                                el.removeAttribute('data-processed');
+                            });
+                            // Use mermaid.run() for v10
+                            try {
+                                mermaid.run({ nodes: mermaidElements });
+                            } catch(e) {
+                                console.log('Mermaid render error:', e);
+                            }
+                        }
                     }
                 } else {
                     this.textContent = '了解更多';

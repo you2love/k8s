@@ -357,3 +357,44 @@ section#home {
 .concept-card:nth-child(4) { animation-delay: 0.4s; }
 .concept-card:nth-child(5) { animation-delay: 0.5s; }
 .concept-card:nth-child(6) { animation-delay: 0.6s; }
+
+/* Architecture Diagram Styles */
+.architecture-diagram {
+    overflow-x: auto;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.architecture-diagram .mermaid {
+    display: flex;
+    justify-content: center;
+    min-height: 300px;
+}
+
+.architecture-diagram svg {
+    max-width: 100%;
+    height: auto;
+}
+
+#architecture h3 {
+    color: var(--primary-color);
+    font-weight: 600;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 0.5rem;
+    display: inline-block;
+}
+
+#architecture .card-header h4 {
+    font-size: 1.1rem;
+}
+
+#architecture .list-group-item {
+    padding: 0.75rem 1rem;
+    border-left: 3px solid transparent;
+    transition: all 0.2s ease;
+}
+
+#architecture .list-group-item:hover {
+    border-left-color: var(--primary-color);
+    background-color: rgba(50, 108, 229, 0.05);
+}

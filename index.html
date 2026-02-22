@@ -24,6 +24,12 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="#architecture" data-target="architecture">
+                        
+                        <span>架构图</span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="#concepts" data-target="concepts">
                         
                         <span>核心概念</span>
@@ -53,12 +59,6 @@
                         <span>最佳实践</span>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#resources" data-target="resources">
-                        
-                        <span>学习资源</span>
-                    </a>
-                </li>
             </ul>
         </nav>
 
@@ -71,6 +71,213 @@
             <a href="#concepts" class="btn btn-lg btn-raised btn-light shadow-lg">开始学习</a>
         </div>
     </header>
+
+    <section class="py-5" id="architecture">
+        <div class="container">
+            <h2 class="text-center mb-5">Kubernetes 架构图</h2>
+            
+            <!-- Master-Node 架构图 -->
+            <div class="row mb-5">
+                <div class="col-12">
+                    <h3 class="text-center mb-4">Master-Node 架构</h3>
+                    <div class="architecture-diagram bg-light p-4 rounded">
+                        <pre class="mermaid">
+flowchart TB
+    subgraph Client[客户端]
+        kubectl[kubectl]
+        API[API 调用]
+    end
+
+    subgraph Master[Master 节点 - 控制平面]
+        API_Server[API Server<br/>集群入口]
+        etcd[etcd<br/>键值存储]
+        Scheduler[Scheduler<br/>调度器]
+        Controller[Controller Manager<br/>控制器管理器]
+        Cloud[Cloud Controller<br/>云控制器]
+    end
+
+    subgraph Node1[Worker Node 1]
+        kubelet1[kubelet]
+        kube_proxy1[kube-proxy]
+        Pod1[Pod]
+        Pod2[Pod]
+    end
+
+    subgraph Node2[Worker Node 2]
+        kubelet2[kubelet]
+        kube_proxy2[kube-proxy]
+        Pod3[Pod]
+        Pod4[Pod]
+    end
+
+    Client -->|REST API| API_Server
+    API_Server --> etcd
+    API_Server --> Scheduler
+    API_Server --> Controller
+    API_Server --> Cloud
+    Scheduler -->|调度决策| API_Server
+    Controller -->|控制循环| API_Server
+    
+    API_Server -->|指令| kubelet1
+    API_Server -->|指令| kubelet2
+    
+    kubelet1 --> Pod1
+    kubelet1 --> Pod2
+    kubelet2 --> Pod3
+    kubelet2 --> Pod4
+    
+    kube_proxy1 --> Pod1
+    kube_proxy1 --> Pod2
+    kube_proxy2 --> Pod3
+    kube_proxy2 --> Pod4
+
+    style Master fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    style Node1 fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
+    style Node2 fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
+    style Client fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+                        </pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 组件说明 -->
+            <div class="row mb-5">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="mb-0">Master 节点组件</h4>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">
+                                    <strong>API Server</strong> - 集群统一入口，处理 REST 请求
+                                </li>
+                                <li class="list-group-item">
+                                    <strong>etcd</strong> - 高可用键值存储，保存集群状态
+                                </li>
+                                <li class="list-group-item">
+                                    <strong>Scheduler</strong> - 负责 Pod 调度到合适的节点
+                                </li>
+                                <li class="list-group-item">
+                                    <strong>Controller Manager</strong> - 运行控制器，维护集群状态
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header bg-success text-white">
+                            <h4 class="mb-0">Worker 节点组件</h4>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">
+                                    <strong>kubelet</strong> - 与 Master 通信，管理容器生命周期
+                                </li>
+                                <li class="list-group-item">
+                                    <strong>kube-proxy</strong> - 维护网络规则，实现 Service
+                                </li>
+                                <li class="list-group-item">
+                                    <strong>Container Runtime</strong> - 运行容器（Docker/containerd）
+                                </li>
+                                <li class="list-group-item">
+                                    <strong>Pod</strong> - 最小部署单元，包含一个或多个容器
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pod 创建流程图 -->
+            <div class="row mb-5">
+                <div class="col-12">
+                    <h3 class="text-center mb-4">Pod 创建运行流程</h3>
+                    <div class="architecture-diagram bg-light p-4 rounded">
+                        <pre class="mermaid">
+sequenceDiagram
+    participant User as 用户
+    participant kubectl as kubectl
+    participant API as API Server
+    participant etcd as etcd
+    participant Scheduler as Scheduler
+    participant Controller as Controller
+    participant kubelet as kubelet
+    participant Runtime as 容器运行时
+    participant Pod as Pod
+
+    User->>kubectl: kubectl run nginx
+    kubectl->>API: POST /api/v1/pods
+    API->>etcd: 保存 Pod 定义
+    etcd-->>API: 确认保存
+    API-->>kubectl: 返回创建成功
+    kubectl-->>User: pod/nginx created
+    
+    Note over API,etcd: Pod 处于 Pending 状态
+    
+    API->>Scheduler: 监听未调度的 Pod
+    Scheduler->>Scheduler: 执行调度算法
+    Scheduler->>API: 绑定 Pod 到 Node
+    API->>etcd: 更新 Pod 状态
+    
+    Note over API,etcd: Pod 已分配节点
+    
+    API->>kubelet: Watch 到新 Pod
+    kubelet->>Runtime: 创建容器
+    Runtime->>Pod: 启动容器
+    kubelet->>API: 更新 Pod 状态为 Running
+    API->>etcd: 保存状态
+    
+    Note over API,etcd: Pod 处于 Running 状态
+                        </pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Service 网络模型 -->
+            <div class="row">
+                <div class="col-12">
+                    <h3 class="text-center mb-4">Service 网络模型</h3>
+                    <div class="architecture-diagram bg-light p-4 rounded">
+                        <pre class="mermaid">
+flowchart LR
+    subgraph External[外部流量]
+        User[用户请求]
+    end
+
+    subgraph Cluster[Kubernetes 集群]
+        subgraph NodeA[Node A]
+            Ingress[Ingress Controller]
+            Service1[Service<br/>ClusterIP]
+            PodA1[Pod:8080]
+            PodA2[Pod:8080]
+        end
+        
+        subgraph NodeB[Node B]
+            Service2[Service<br/>NodePort]
+            PodB1[Pod:8080]
+            PodB2[Pod:8080]
+        end
+    end
+
+    User -->|HTTP/HTTPS| Ingress
+    Ingress -->|路由规则| Service1
+    Service1 -->|负载均衡| PodA1
+    Service1 -->|负载均衡| PodA2
+    Service1 -.->|跨节点访问| PodB1
+    Service1 -.->|跨节点访问| PodB2
+
+    style External fill:#fff3e0,stroke:#f57c00
+    style Cluster fill:#e3f2fd,stroke:#1976d2
+    style NodeA fill:#e8f5e9,stroke:#388e3c
+    style NodeB fill:#e8f5e9,stroke:#388e3c
+                        </pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <section class="py-5" id="concepts">
         <div class="container">
@@ -961,101 +1168,11 @@ helm rollback myapp</code></pre>
         </div>
     </section>
 
-    <section class="py-5" id="resources">
-        <div class="container">
-            <h2 class="text-center mb-5">学习资源</h2>
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <div class="card resource-card">
-                        <div class="card-body">
-                            <ul class="list-unstyled">
-                                <li class="mb-2">
-                                    <a href="https://kubernetes.io/docs/" target="_blank" class="resource-link">
-                                        Kubernetes 官方文档
-                                    </a>
-                                </li>
-                                <li class="mb-2">
-                                    <a href="https://kubernetes.io/docs/tutorials/" target="_blank" class="resource-link">
-                                        官方教程
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="https://kubernetes.io/zh-cn/docs/" target="_blank" class="resource-link">
-                                        中文文档
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card resource-card">
-                        <div class="card-body">
-                            <ul class="list-unstyled">
-                                <li class="mb-2">
-                                    <a href="https://www.coursera.org/learn/google-kubernetes-engine" target="_blank" class="resource-link">
-                                        Google Kubernetes Engine 基础
-                                    </a>
-                                </li>
-                                <li class="mb-2">
-                                    <a href="https://www.edx.org/course/introduction-to-kubernetes" target="_blank" class="resource-link">
-                                        Kubernetes 入门课程
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="https://kubernetes.io/training/" target="_blank" class="resource-link">
-                                        Kubernetes 认证培训
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card resource-card">
-                        <div class="card-body">
-                            <ul class="list-unstyled">
-                                <li class="mb-2">
-                                    <a href="https://kubernetes.io/zh-cn/docs/tasks/tools/" target="_blank" class="resource-link">
-                                        kubectl 命令行工具
-                                    </a>
-                                </li>
-                                <li class="mb-2">
-                                    <a href="https://kubernetes.io/docs/tasks/access-application-cluster/port-forward/" target="_blank" class="resource-link">
-                                        Port Forwarding
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="https://kubernetes.io/zh-cn/docs/tasks/tools/install-minikube/" target="_blank" class="resource-link">
-                                        Minikube 本地环境
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card resource-card">
-                        <div class="card-body">
-                            <ul class="list-unstyled">
-                                <li class="mb-2">
-                                    <a href="https://www.youtube.com/playlist?list=PL34sAs7_26wNBRWM6BDhnonoA5FMERax0" target="_blank" class="resource-link">
-                                        Just me and Opensource K8s 教程
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="https://www.youtube.com/results?search_query=kubernetes+tutorial+chinese" target="_blank" class="resource-link">
-                                        中文 Kubernetes 教程
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
+    <script src="assets/js/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+    </script>
     <script src="assets/js/bootstrap.min.js"></script>
     <script src="assets/js/script.js"></script>
 </body>

@@ -595,10 +595,21 @@ flowchart LR
                     
                     <h5 class="mt-4">其他部署类型</h5>
                     
-                    <h6 class="mt-3">5. CronJob (定时任务)</h6>
-                    <p>CronJob 用于创建定时任务，按照预定的时间表运行 Job，适用于周期性执行的任务（如备份、清理、报表生成等）。</p>
-                    <div class="architecture-diagram bg-light p-4 rounded">
-                        <pre class="mermaid">
+                    <div class="row mt-4">
+                        <div class="col-12 mb-4">
+                            <div class="card deployment-card">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-start">
+                                        <div class="deployment-icon me-3">
+                                            <i class="material-icons text-warning">schedule</i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="card-title deployment-title">5. CronJob (定时任务)</h6>
+                                            <p class="card-text deployment-description">CronJob 用于创建定时任务，按照预定的时间表运行 Job，适用于周期性执行的任务（如备份、清理、报表生成等）。</p>
+                                        </div>
+                                    </div>
+                                    <div class="architecture-diagram bg-light p-3 rounded my-3">
+                                        <pre class="mermaid mb-0">
 flowchart TD
     S[Schedule] --> CJ[CronJob]
     CJ --> J[Job]
@@ -606,48 +617,47 @@ flowchart TD
     P --> R[Run Task]
     R --> |Success| D[Done]
     R --> |Failed| R[Retry/Failed]
-                        </pre>
-                    </div>
-                    <div class="card-body">
-                        <h6>特点对比：</h6>
-                        <table class="table table-bordered">
-                            <thead class="table-warning">
-                                <tr><th>特性</th><th>Deployment</th><th>CronJob</th></tr>
-                            </thead>
-                            <tbody>
-                                <tr><td>用途</td><td>持续运行应用</td><td>定时执行任务</td></tr>
-                                <tr><td>运行模式</td><td>持续运行</td><td>周期性运行</td></tr>
-                                <tr><td>调度方式</td><td>自动扩缩容</td><td>Cron 表达式</td></tr>
-                                <tr><td>适用场景</td><td>Web 应用、API</td><td>备份、清理、报表</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <pre><code># 创建定时任务（每分钟执行一次）
-apiVersion: batch/v1
-kind: CronJob
-metadata:
-  name: my-cronjob
-spec:
-  schedule: "* * * * *"  # Cron 表达式
-  jobTemplate:
-    spec:
-      template:
-        spec:
-          containers:
-          - name: cronjob
-            image: busybox:1.28
-            args:
-            - /bin/sh
-            - -c
-            - date; echo "Running a scheduled task"
-          restartPolicy: OnFailure
-  successfulJobsHistoryLimit: 3
-  failedJobsHistoryLimit: 1</code></pre>
-                    
-                    <h6 class="mt-4">6. StatefulSet (有状态应用)</h6>
-                    <p>StatefulSet 管理有状态应用的部署和扩展，为每个 Pod 提供稳定的标识符（如持久化存储、网络标识等），适用于数据库、分布式系统等需要稳定网络标识和持久化存储的应用。</p>
-                    <div class="architecture-diagram bg-light p-4 rounded">
-                        <pre class="mermaid">
+                                        </pre>
+                                    </div>
+                                    <div class="table-responsive my-3">
+                                        <table class="table table-bordered">
+                                            <thead class="table-warning">
+                                                <tr><th>特性</th><th>Deployment</th><th>CronJob</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr><td>用途</td><td>持续运行应用</td><td>定时执行任务</td></tr>
+                                                <tr><td>运行模式</td><td>持续运行</td><td>周期性运行</td></tr>
+                                                <tr><td>调度方式</td><td>自动扩缩容</td><td>Cron 表达式</td></tr>
+                                                <tr><td>适用场景</td><td>Web 应用、API</td><td>备份、清理、报表</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="command-block deployment-config">
+                                        <div class="command-item">
+                                            <span class="command-prompt"># 创建定时任务（每分钟执行一次）</span>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">apiVersion: batch/v1<br>kind: CronJob<br>metadata:<br>&nbsp;&nbsp;name: my-cronjob<br>spec:<br>&nbsp;&nbsp;schedule: "* * * * *"&nbsp;&nbsp;# Cron 表达式<br>&nbsp;&nbsp;jobTemplate:<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;template:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: cronjob<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;image: busybox:1.28<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;args:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- /bin/sh<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- -c<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- date; echo "Running a scheduled task"<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;restartPolicy: OnFailure<br>&nbsp;&nbsp;successfulJobsHistoryLimit: 3<br>&nbsp;&nbsp;failedJobsHistoryLimit: 1</code>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 mb-4">
+                            <div class="card deployment-card">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-start">
+                                        <div class="deployment-icon me-3">
+                                            <i class="material-icons text-info">storage</i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="card-title deployment-title">6. StatefulSet (有状态应用)</h6>
+                                            <p class="card-text deployment-description">StatefulSet 管理有状态应用的部署和扩展，为每个 Pod 提供稳定的标识符（如持久化存储、网络标识等），适用于数据库、分布式系统等需要稳定网络标识和持久化存储的应用。</p>
+                                        </div>
+                                    </div>
+                                    <div class="architecture-diagram bg-light p-3 rounded my-3">
+                                        <pre class="mermaid mb-0">
 flowchart TD
     SS[StatefulSet] --> RS[ReplicaSet]
     RS --> P1[Pod-0<br/>Persistent Volume<br/>Stable Identity]
@@ -656,103 +666,80 @@ flowchart TD
     P1 --> S1[Service]
     P2 --> S1
     P3 --> S1
-                        </pre>
-                    </div>
-                    <div class="card-body">
-                        <h6>特点对比：</h6>
-                        <table class="table table-bordered">
-                            <thead class="table-info">
-                                <tr><th>特性</th><th>Deployment</th><th>StatefulSet</th></tr>
-                            </thead>
-                            <tbody>
-                                <tr><td>Pod 标识</td><td>临时、无序</td><td>稳定、有序</td></tr>
-                                <tr><td>网络标识</td><td>动态分配</td><td>稳定 DNS</td></tr>
-                                <tr><td>存储</td><td>共享存储卷</td><td>独立持久卷</td></tr>
-                                <tr><td>部署顺序</td><td>并行</td><td>顺序</td></tr>
-                                <tr><td>适用场景</td><td>无状态应用</td><td>数据库、集群</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <pre><code># 创建有状态应用
-apiVersion: apps/v1
-kind: StatefulSet
-metadata:
-  name: my-statefulset
-spec:
-  serviceName: my-service
-  replicas: 3
-  selector:
-    matchLabels:
-      app: my-app
-  template:
-    metadata:
-      labels:
-        app: my-app
-    spec:
-      containers:
-      - name: app
-        image: nginx:1.21
-        volumeMounts:
-        - name: storage
-          mountPath: /usr/share/nginx/html
-  volumeClaimTemplates:
-  - metadata:
-      name: storage
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          storage: 1Gi</code></pre>
-                    
-                    <h6 class="mt-4">7. DaemonSet (守护进程集)</h6>
-                    <p>DaemonSet 确保所有（或部分）节点上都运行一个 Pod 副本，适用于需要在每个节点上运行的系统级应用，如日志收集、监控、网络代理等。</p>
-                    <div class="architecture-diagram bg-light p-4 rounded">
-                        <pre class="mermaid">
+                                        </pre>
+                                    </div>
+                                    <div class="table-responsive my-3">
+                                        <table class="table table-bordered">
+                                            <thead class="table-info">
+                                                <tr><th>特性</th><th>Deployment</th><th>StatefulSet</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr><td>Pod 标识</td><td>临时、无序</td><td>稳定、有序</td></tr>
+                                                <tr><td>网络标识</td><td>动态分配</td><td>稳定 DNS</td></tr>
+                                                <tr><td>存储</td><td>共享存储卷</td><td>独立持久卷</td></tr>
+                                                <tr><td>部署顺序</td><td>并行</td><td>顺序</td></tr>
+                                                <tr><td>适用场景</td><td>无状态应用</td><td>数据库、集群</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="command-block deployment-config">
+                                        <div class="command-item">
+                                            <span class="command-prompt"># 创建有状态应用</span>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">apiVersion: apps/v1<br>kind: StatefulSet<br>metadata:<br>&nbsp;&nbsp;name: my-statefulset<br>spec:<br>&nbsp;&nbsp;serviceName: my-service<br>&nbsp;&nbsp;replicas: 3<br>&nbsp;&nbsp;selector:<br>&nbsp;&nbsp;&nbsp;&nbsp;matchLabels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: my-app<br>&nbsp;&nbsp;template:<br>&nbsp;&nbsp;&nbsp;&nbsp;metadata:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;labels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: my-app<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: app<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;image: nginx:1.21<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;volumeMounts:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: storage<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mountPath: /usr/share/nginx/html<br>&nbsp;&nbsp;volumeClaimTemplates:<br>&nbsp;&nbsp;- metadata:<br>&nbsp;&nbsp;&nbsp;&nbsp;name: storage<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accessModes: [ "ReadWriteOnce" ]<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resources:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;requests:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;storage: 1Gi</code>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 mb-4">
+                            <div class="card deployment-card">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-start">
+                                        <div class="deployment-icon me-3">
+                                            <i class="material-icons text-success">apps</i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="card-title deployment-title">7. DaemonSet (守护进程集)</h6>
+                                            <p class="card-text deployment-description">DaemonSet 确保所有（或部分）节点上都运行一个 Pod 副本，适用于需要在每个节点上运行的系统级应用，如日志收集、监控、网络代理等。</p>
+                                        </div>
+                                    </div>
+                                    <div class="architecture-diagram bg-light p-3 rounded my-3">
+                                        <pre class="mermaid mb-0">
 flowchart LR
     DS[DaemonSet] --> N1[Node 1<br/>Pod]
     DS --> N2[Node 2<br/>Pod]
     DS --> N3[Node 3<br/>Pod]
     DS --> N4[Node N<br/>Pod]
-                        </pre>
+                                        </pre>
+                                    </div>
+                                    <div class="table-responsive my-3">
+                                        <table class="table table-bordered">
+                                            <thead class="table-success">
+                                                <tr><th>特性</th><th>Deployment</th><th>DaemonSet</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr><td>Pod 分布</td><td>集中部署</td><td>节点部署</td></tr>
+                                                <tr><td>节点关联</td><td>无特定节点</td><td>每个节点一个</td></tr>
+                                                <tr><td>扩展方式</td><td>按副本数</td><td>按节点数</td></tr>
+                                                <tr><td>适用场景</td><td>应用服务</td><td>系统级服务</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="command-block deployment-config">
+                                        <div class="command-item">
+                                            <span class="command-prompt"># 创建守护进程集</span>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">apiVersion: apps/v1<br>kind: DaemonSet<br>metadata:<br>&nbsp;&nbsp;name: my-daemonset<br>spec:<br>&nbsp;&nbsp;selector:<br>&nbsp;&nbsp;&nbsp;&nbsp;matchLabels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: my-daemon<br>&nbsp;&nbsp;template:<br>&nbsp;&nbsp;&nbsp;&nbsp;metadata:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;labels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: my-daemon<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: daemon<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;image: fluent/fluent-bit:1.8<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;volumeMounts:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: varlog<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mountPath: /var/log<br>&nbsp;&nbsp;&nbsp;&nbsp;volumes:<br>&nbsp;&nbsp;&nbsp;&nbsp;- name: varlog<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hostPath:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;path: /var/log</code>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <h6>特点对比：</h6>
-                        <table class="table table-bordered">
-                            <thead class="table-success">
-                                <tr><th>特性</th><th>Deployment</th><th>DaemonSet</th></tr>
-                            </thead>
-                            <tbody>
-                                <tr><td>Pod 分布</td><td>集中部署</td><td>节点部署</td></tr>
-                                <tr><td>节点关联</td><td>无特定节点</td><td>每个节点一个</td></tr>
-                                <tr><td>扩展方式</td><td>按副本数</td><td>按节点数</td></tr>
-                                <tr><td>适用场景</td><td>应用服务</td><td>系统级服务</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <pre><code># 创建守护进程集
-apiVersion: apps/v1
-kind: DaemonSet
-metadata:
-  name: my-daemonset
-spec:
-  selector:
-    matchLabels:
-      app: my-daemon
-  template:
-    metadata:
-      labels:
-        app: my-daemon
-    spec:
-      containers:
-      - name: daemon
-        image: fluent/fluent-bit:1.8
-        volumeMounts:
-        - name: varlog
-          mountPath: /var/log
-      volumes:
-      - name: varlog
-        hostPath:
-          path: /var/log</code></pre>
                     
                 </div>
             </div>

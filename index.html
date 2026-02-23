@@ -180,44 +180,48 @@ flowchart TB
                             <h4 class="mb-0">Worker 节点组件</h4>
                         </div>
                         <div class="card-body">
-                            <ul class="list-group list-group-flush">
-                                <li class="list-group-item d-flex align-items-start mb-4">
-                                    <div class="flex-shrink-0 me-4">
-                                        <i class="material-icons text-success">settings_applications</i>
-                                    </div>
-                                    <div>
-                                        <h5 class="mb-2"><strong>kubelet</strong></h5>
-                                        <p class="mb-0">与 Master 通信，管理容器生命周期</p>
-                                    </div>
-                                </li>
-                                <li class="list-group-item d-flex align-items-start mb-4">
-                                    <div class="flex-shrink-0 me-4">
-                                        <i class="material-icons text-warning">swap_horiz</i>
-                                    </div>
-                                    <div>
-                                        <h5 class="mb-2"><strong>kube-proxy</strong></h5>
-                                        <p class="mb-0">维护网络规则，实现 Service</p>
-                                    </div>
-                                </li>
-                                <li class="list-group-item d-flex align-items-start mb-4">
-                                    <div class="flex-shrink-0 me-4">
-                                        <i class="material-icons text-info">extension</i>
-                                    </div>
-                                    <div>
-                                        <h5 class="mb-2"><strong>Container Runtime</strong></h5>
-                                        <p class="mb-0">运行容器（Docker/containerd）</p>
-                                    </div>
-                                </li>
-                                <li class="list-group-item d-flex align-items-start mb-4">
-                                    <div class="flex-shrink-0 me-4">
-                                        <i class="material-icons text-light">layers</i>
-                                    </div>
-                                    <div>
-                                        <h5 class="mb-2"><strong>Pod</strong></h5>
-                                        <p class="mb-0">最小部署单元，包含一个或多个容器</p>
-                                    </div>
-                                </li>
-                            </ul>
+                            <div class="table-responsive">
+                                <table class="table table-borderless mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-center align-middle" style="width: 60px;">
+                                                <i class="material-icons text-success">settings_applications</i>
+                                            </td>
+                                            <td>
+                                                <h5 class="mb-1"><strong>kubelet</strong></h5>
+                                                <p class="mb-0 text-muted">与 Master 通信，管理容器生命周期</p>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-center align-middle" style="width: 60px;">
+                                                <i class="material-icons text-warning">swap_horiz</i>
+                                            </td>
+                                            <td>
+                                                <h5 class="mb-1"><strong>kube-proxy</strong></h5>
+                                                <p class="mb-0 text-muted">维护网络规则，实现 Service</p>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-center align-middle" style="width: 60px;">
+                                                <i class="material-icons text-info">extension</i>
+                                            </td>
+                                            <td>
+                                                <h5 class="mb-1"><strong>Container Runtime</strong></h5>
+                                                <p class="mb-0 text-muted">运行容器（Docker/containerd）</p>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-center align-middle" style="width: 60px;">
+                                                <i class="material-icons text-light">layers</i>
+                                            </td>
+                                            <td>
+                                                <h5 class="mb-1"><strong>Pod</strong></h5>
+                                                <p class="mb-0 text-muted">最小部署单元，包含一个或多个容器</p>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>

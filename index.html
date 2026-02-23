@@ -1875,13 +1875,29 @@ kubectl -n cattle-system get deploy rancher</code></pre>
                                 <div class="card-body">
                                     <h5 class="card-title">多集群管理</h5>
                                     <p class="card-text">通过单一控制台管理跨云、跨数据中心的多个 Kubernetes 集群，支持 AWS、Azure、Google Cloud、vSphere 等多种基础设施。</p>
-                                    <pre><code># Rancher 支持导入已有集群或创建新集群
-# 支持的集群类型：
-# - Amazon EKS
-# - Google GKE
-# - Azure AKS
-# - 自建 Kubernetes 集群
-# - Rancher RKE/RKE2 集群</code></pre>
+                                    <div class="command-block">
+                                        <div class="command-item">
+                                            <span class="command-prompt"># Rancher 支持导入已有集群或创建新集群</span>
+                                        </div>
+                                        <div class="command-item">
+                                            <span class="command-prompt"># 支持的集群类型：</span>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">- Amazon EKS</code>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">- Google GKE</code>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">- Azure AKS</code>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">- 自建 Kubernetes 集群</code>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">- Rancher RKE/RKE2 集群</code>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1890,13 +1906,29 @@ kubectl -n cattle-system get deploy rancher</code></pre>
                                 <div class="card-body">
                                     <h5 class="card-title">应用商店与 Helm</h5>
                                     <p class="card-text">内置丰富的应用目录，支持一键部署 Prometheus、Grafana、Jenkins 等常用应用。</p>
-                                    <pre><code># 通过 UI 或 CLI 部署 Helm 应用
-# Rancher 应用目录包含：
-# - 监控：Prometheus、Grafana
-# - 日志：ELK Stack、Fluentd
-# - CI/CD：Jenkins、GitLab
-# - 服务网格：Istio
-# - 数据库：MySQL、PostgreSQL、Redis</code></pre>
+                                    <div class="command-block">
+                                        <div class="command-item">
+                                            <span class="command-prompt"># 通过 UI 或 CLI 部署 Helm 应用</span>
+                                        </div>
+                                        <div class="command-item">
+                                            <span class="command-prompt"># Rancher 应用目录包含：</span>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">- 监控：Prometheus、Grafana</code>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">- 日志：ELK Stack、Fluentd</code>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">- CI/CD：Jenkins、GitLab</code>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">- 服务网格：Istio</code>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">- 数据库：MySQL、PostgreSQL、Redis</code>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1905,16 +1937,35 @@ kubectl -n cattle-system get deploy rancher</code></pre>
                                 <div class="card-body">
                                     <h5 class="card-title">用户管理与安全</h5>
                                     <p class="card-text">提供企业级的身份认证和权限管理，支持 AD、LDAP、SAML、OAuth 等多种认证方式。</p>
-                                    <pre><code># 支持的认证提供商：
-# - Active Directory / LDAP
-# - SAML (Okta, PingIdentity)
-# - OAuth (GitHub, Google, Azure AD)
-# - OpenID Connect
-
-# 细粒度权限控制
-# - 全局管理员
-# - 集群管理员
-# - 项目/命名空间级别权限</code></pre>
+                                    <div class="command-block">
+                                        <div class="command-item">
+                                            <span class="command-prompt"># 支持的认证提供商：</span>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">- Active Directory / LDAP</code>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">- SAML (Okta, PingIdentity)</code>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">- OAuth (GitHub, Google, Azure AD)</code>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">- OpenID Connect</code>
+                                        </div>
+                                        <div class="command-item">
+                                            <span class="command-prompt"># 细粒度权限控制</span>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">- 全局管理员</code>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">- 集群管理员</code>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">- 项目/命名空间级别权限</code>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1923,18 +1974,41 @@ kubectl -n cattle-system get deploy rancher</code></pre>
                                 <div class="card-body">
                                     <h5 class="card-title">监控与告警</h5>
                                     <p class="card-text">集成 Prometheus 和 Grafana，提供集群、节点、工作负载的监控能力，支持自定义告警规则。</p>
-                                    <pre><code># Rancher 监控功能：
-# - 集群健康状态
-# - 节点资源使用率
-# - Pod 资源监控
-# - 网络流量监控
-# - 存储使用情况
-
-# 告警通知渠道：
-# - Slack
-# - Email
-# - PagerDuty
-# - Webhook</code></pre>
+                                    <div class="command-block">
+                                        <div class="command-item">
+                                            <span class="command-prompt"># Rancher 监控功能：</span>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">- 集群健康状态</code>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">- 节点资源使用率</code>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">- Pod 资源监控</code>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">- 网络流量监控</code>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">- 存储使用情况</code>
+                                        </div>
+                                        <div class="command-item">
+                                            <span class="command-prompt"># 告警通知渠道：</span>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">- Slack</code>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">- Email</code>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">- PagerDuty</code>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">- Webhook</code>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

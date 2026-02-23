@@ -404,15 +404,19 @@ flowchart TB
                     <h5 class="mt-4">不同部署形式</h5>
                     
                     <div class="row mt-4">
-                        <div class="col-md-6 mb-4">
-                            <div class="card h-100 deployment-card">
+                        <div class="col-12 mb-4">
+                            <div class="card deployment-card">
                                 <div class="card-body">
-                                    <div class="deployment-icon mb-3">
-                                        <i class="material-icons text-primary">sync</i>
+                                    <div class="d-flex align-items-start">
+                                        <div class="deployment-icon me-3">
+                                            <i class="material-icons text-primary">sync</i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="card-title deployment-title">1. 滚动更新 (Rolling Update)</h6>
+                                            <p class="card-text deployment-description">逐步替换旧版本 Pod，确保服务始终可用。</p>
+                                        </div>
                                     </div>
-                                    <h6 class="card-title deployment-title">1. 滚动更新 (Rolling Update)</h6>
-                                    <p class="card-text deployment-description">逐步替换旧版本 Pod，确保服务始终可用。</p>
-                                    <div class="architecture-diagram bg-light p-3 rounded mb-3">
+                                    <div class="architecture-diagram bg-light p-3 rounded my-3">
                                         <pre class="mermaid mb-0">
 flowchart LR
     subgraph Old[旧版本]
@@ -444,15 +448,19 @@ flowchart LR
                             </div>
                         </div>
                         
-                        <div class="col-md-6 mb-4">
-                            <div class="card h-100 deployment-card">
+                        <div class="col-12 mb-4">
+                            <div class="card deployment-card">
                                 <div class="card-body">
-                                    <div class="deployment-icon mb-3">
-                                        <i class="material-icons text-success">swap_horiz</i>
+                                    <div class="d-flex align-items-start">
+                                        <div class="deployment-icon me-3">
+                                            <i class="material-icons text-success">swap_horiz</i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="card-title deployment-title">2. 蓝绿部署 (Blue-Green Deployment)</h6>
+                                            <p class="card-text deployment-description">同时运行两个完全相同的环境（蓝和绿），通过切换流量实现零停机部署。</p>
+                                        </div>
                                     </div>
-                                    <h6 class="card-title deployment-title">2. 蓝绿部署 (Blue-Green Deployment)</h6>
-                                    <p class="card-text deployment-description">同时运行两个完全相同的环境（蓝和绿），通过切换流量实现零停机部署。</p>
-                                    <div class="architecture-diagram bg-light p-3 rounded mb-3">
+                                    <div class="architecture-diagram bg-light p-3 rounded my-3">
                                         <pre class="mermaid mb-0">
 flowchart LR
     LB[负载均衡器]
@@ -483,15 +491,19 @@ kubectl patch service myapp -p '{"spec":{"selector":{"version":"2.0"}}}'</code>
                             </div>
                         </div>
                         
-                        <div class="col-md-6 mb-4">
-                            <div class="card h-100 deployment-card">
+                        <div class="col-12 mb-4">
+                            <div class="card deployment-card">
                                 <div class="card-body">
-                                    <div class="deployment-icon mb-3">
-                                        <i class="material-icons text-warning">flag</i>
+                                    <div class="d-flex align-items-start">
+                                        <div class="deployment-icon me-3">
+                                            <i class="material-icons text-warning">flag</i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="card-title deployment-title">3. 金丝雀部署 (Canary Deployment)</h6>
+                                            <p class="card-text deployment-description">先向少量用户发布新版本，验证无误后逐步扩大范围。</p>
+                                        </div>
                                     </div>
-                                    <h6 class="card-title deployment-title">3. 金丝雀部署 (Canary Deployment)</h6>
-                                    <p class="card-text deployment-description">先向少量用户发布新版本，验证无误后逐步扩大范围。</p>
-                                    <div class="architecture-diagram bg-light p-3 rounded mb-3">
+                                    <div class="architecture-diagram bg-light p-3 rounded my-3">
                                         <pre class="mermaid mb-0">
 flowchart LR
     subgraph Traffic[流量分配]
@@ -525,15 +537,19 @@ kubectl scale deployment myapp-canary --replicas=3</code>
                             </div>
                         </div>
                         
-                        <div class="col-md-6 mb-4">
-                            <div class="card h-100 deployment-card">
+                        <div class="col-12 mb-4">
+                            <div class="card deployment-card">
                                 <div class="card-body">
-                                    <div class="deployment-icon mb-3">
-                                        <i class="material-icons text-info">analytics</i>
+                                    <div class="d-flex align-items-start">
+                                        <div class="deployment-icon me-3">
+                                            <i class="material-icons text-info">analytics</i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="card-title deployment-title">4. A/B 测试部署</h6>
+                                            <p class="card-text deployment-description">同时运行两个不同版本，根据用户特征分配流量进行测试。</p>
+                                        </div>
                                     </div>
-                                    <h6 class="card-title deployment-title">4. A/B 测试部署</h6>
-                                    <p class="card-text deployment-description">同时运行两个不同版本，根据用户特征分配流量进行测试。</p>
-                                    <div class="architecture-diagram bg-light p-3 rounded mb-3">
+                                    <div class="architecture-diagram bg-light p-3 rounded my-3">
                                         <pre class="mermaid mb-0">
 flowchart LR
     subgraph Users[用户流量]

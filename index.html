@@ -48,6 +48,10 @@
                         <li><a href="#concept-storage">存储</a></li>
                         <li><a href="#concept-namespace">命名空间</a></li>
                         <li><a href="#concept-labels">标签与选择器</a></li>
+                        <li><a href="#concept-certificates">证书管理</a></li>
+                        <li><a href="#concept-scaling">节点扩缩容</a></li>
+                        <li><a href="#concept-upgrades">集群版本升级</a></li>
+                        <li><a href="#concept-helm-charts">Helm Chart 编写</a></li>
                     </ul>
                 </li>
                 <li class="nav-item">
@@ -1770,6 +1774,543 @@ graph TD
                         <div class="command-item">
                             <span class="command-prompt"># 检查网络策略</span><br>
                             <code class="command-code">kubectl get networkpolicy</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 证书管理 -->
+            <div class="card mb-4" id="concept-certificates">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="mb-0">证书管理</h3>
+                </div>
+                <div class="card-body">
+                    <p>证书管理是 Kubernetes 集群安全的重要组成部分，用于确保集群内部组件和用户之间的通信安全。Kubernetes 使用 PKI（Public Key Infrastructure）系统来管理证书和密钥。</p>
+                    
+                    <h5 class="mt-4">Kubernetes 证书架构</h5>
+                    <div class="architecture-diagram bg-light p-4 rounded">
+                        <pre class="mermaid">
+graph TB
+    subgraph "CA (证书颁发机构)"
+        ROOT[根 CA<br/>kubernetes-ca]
+    end
+    
+    subgraph "集群组件证书"
+        API[API Server<br/>apiserver.crt]
+        ETCD[etcd<br/>etcd-server.crt]
+        KUBELET[kubelet<br/>kubelet.crt]
+        PROXY[kube-proxy<br/>kube-proxy.crt]
+    end
+    
+    subgraph "客户端证书"
+        ADMIN[管理员<br/>admin.crt]
+        KUBE[系统组件<br/>system:node:kubelet]
+        SERVICE[Service Account<br/>sa.key/sa.pub]
+    end
+    
+    ROOT --> API
+    ROOT --> ETCD
+    ROOT --> KUBELET
+    ROOT --> PROXY
+    ROOT --> ADMIN
+    ROOT --> KUBE
+    ROOT --> SERVICE
+                        </pre>
+                    </div>
+                    
+                    <h5 class="mt-4">主要证书类型</h5>
+                    <div class="row mt-4">
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title text-primary">集群组件证书</h5>
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><strong>CA 证书:</strong> kubernetes-ca.crt/key - 根证书颁发机构</li>
+                                        <li class="list-group-item"><strong>API Server:</strong> apiserver.crt/key - API 服务器身份验证</li>
+                                        <li class="list-group-item"><strong>etcd:</strong> etcd-server.crt/key - etcd 数据库通信</li>
+                                        <li class="list-group-item"><strong>Kubelet:</strong> kubelet.crt/key - 节点代理通信</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title text-success">客户端证书</h5>
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><strong>Admin 证书:</strong> admin.crt/key - 管理员身份</li>
+                                        <li class="list-group-item"><strong>Kubelet 证书:</strong> system:node:* - 节点身份</li>
+                                        <li class="list-group-item"><strong>Front Proxy:</strong> front-proxy.crt/key - 聚合 API</li>
+                                        <li class="list-group-item"><strong>Service Account:</strong> sa.key/sa.pub - 服务账户密钥</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mt-4">证书签发流程</h5>
+                    <div class="architecture-diagram bg-light p-4 rounded">
+                        <pre class="mermaid">
+sequenceDiagram
+    participant Admin as 管理员
+    participant CSR as CertificateSigningRequest
+    participant Controller as CSR Controller
+    participant CA as 证书颁发机构
+    
+    Admin->>CSR: 创建 CSR 对象
+    CSR->>Controller: 等待批准
+    Controller->>CA: 验证并签名
+    CA->>CSR: 返回签发的证书
+    CSR-->>Admin: 证书签发完成
+                        </pre>
+                    </div>
+                    
+                    <h5 class="mt-4">证书管理最佳实践</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-dark">
+                                <tr><th>实践</th><th>说明</th><th>重要性</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>定期轮换</td><td>定期更新证书，避免过期</td><td>高</td></tr>
+                                <tr><td>安全存储</td><td>私钥文件存储在安全位置，权限限制</td><td>高</td></tr>
+                                <tr><td>最小权限</td><td>证书只包含必要的权限和范围</td><td>高</td></tr>
+                                <tr><td>监控告警</td><td>监控证书有效期，设置过期告警</td><td>中</td></tr>
+                                <tr><td>备份策略</td><td>定期备份 CA 证书和私钥</td><td>高</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <h5 class="mt-4">证书操作命令</h5>
+                    <div class="command-block">
+                        <div class="command-item">
+                            <span class="command-prompt"># 查看集群证书文件</span><br>
+                            <code class="command-code">ls -la /etc/kubernetes/pki/</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 检查证书有效期</span><br>
+                            <code class="command-code">openssl x509 -in /etc/kubernetes/pki/apiserver.crt -noout -text</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 使用 kubeadm 检查证书有效期</span><br>
+                            <code class="command-code">kubeadm certs check-expiration</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 为用户创建证书签名请求</span><br>
+                            <code class="command-code">cat &lt;&lt;EOF | kubectl apply -f -<br>apiVersion: certificates.k8s.io/v1<br>kind: CertificateSigningRequest<br>metadata:<br>&nbsp;&nbsp;name: user-csr<br>spec:<br>&nbsp;&nbsp;request: $(echo -n '{"CN":"username","O":["system:masters"]}' | base64 | tr -d '\n')<br>&nbsp;&nbsp;signerName: kubernetes.io/kube-apiserver-client<br>&nbsp;&nbsp;usages:<br>&nbsp;&nbsp;- client auth<br>EOF</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 批准证书签名请求</span><br>
+                            <code class="command-code">kubectl certificate approve user-csr</code>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mt-4">Service Account 证书管理</h5>
+                    <p>Service Account 是 Kubernetes 中用于 Pod 身份验证的机制，每个命名空间都有默认的 Service Account。</p>
+                    <div class="command-block">
+                        <div class="command-item">
+                            <span class="command-prompt"># 查看 Service Account</span><br>
+                            <code class="command-code">kubectl get serviceaccount -A</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 查看 Service Account 详细信息</span><br>
+                            <code class="command-code">kubectl describe serviceaccount default -n default</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 创建自定义 Service Account</span><br>
+                            <code class="command-code">kubectl create serviceaccount my-sa -n my-namespace</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 节点扩缩容 -->
+            <div class="card mb-4" id="concept-scaling">
+                <div class="card-header bg-info text-white">
+                    <h3 class="mb-0">节点扩缩容</h3>
+                </div>
+                <div class="card-body">
+                    <p>节点扩缩容是 Kubernetes 集群管理的重要功能，允许根据工作负载需求动态调整集群节点数量。这包括节点的手动扩缩容和自动扩缩容两种方式。</p>
+                    
+                    <h5 class="mt-4">节点扩缩容架构</h5>
+                    <div class="architecture-diagram bg-light p-4 rounded">
+                        <pre class="mermaid">
+graph TB
+    subgraph "K8s 集群"
+        subgraph "Master 节点"
+            API[API Server]
+            SCHED[Scheduler]
+            CM[Controller Manager]
+        end
+        
+        subgraph "Worker 节点组"
+            NODE1[Worker Node 1]
+            NODE2[Worker Node 2]
+            NODE3[Worker Node 3]
+            NODEn[Worker Node N]
+        end
+        
+        subgraph "扩缩容控制器"
+            HPA[Horizontal Pod Autoscaler]
+            VPA[Vertical Pod Autoscaler]
+            CA[Cluster Autoscaler]
+        end
+        
+        API --> SCHED
+        API --> CM
+        API --> NODE1
+        API --> NODE2
+        API --> NODE3
+        API --> NODEn
+        HPA --> NODE1
+        CA --> NODE1
+        CA --> NODE2
+        CA --> NODE3
+        CA --> NODEn
+                        </pre>
+                    </div>
+                    
+                    <h5 class="mt-4">扩缩容类型</h5>
+                    <div class="row mt-4">
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="material-icons text-primary" style="font-size: 2.5rem;">add_circle</i>
+                                    <h5 class="card-title mt-3">手动扩缩容</h5>
+                                    <p class="card-text">通过 kubectl 命令或云平台控制台手动调整节点数量</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="material-icons text-success" style="font-size: 2.5rem;">auto_mode</i>
+                                    <h5 class="card-title mt-3">自动扩缩容</h5>
+                                    <p class="card-text">通过 Cluster Autoscaler 自动调整节点数量</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mt-4">手动节点扩缩容</h5>
+                    <p>手动扩缩容适用于可预测的工作负载变化或计划性扩容。</p>
+                    <div class="command-block">
+                        <div class="command-item">
+                            <span class="command-prompt"># 查看当前节点</span><br>
+                            <code class="command-code">kubectl get nodes</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 标记节点不可调度（缩容前）</span><br>
+                            <code class="command-code">kubectl cordon &lt;node-name&gt;</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 驱逐节点上的 Pod</span><br>
+                            <code class="command-code">kubectl drain &lt;node-name&gt; --ignore-daemonsets --delete-emptydir-data</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 删除节点</span><br>
+                            <code class="command-code">kubectl delete node &lt;node-name&gt;</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 添加新节点（使用 kubeadm）</span><br>
+                            <code class="command-code">kubeadm join &lt;control-plane-host&gt;:6443 --token &lt;token&gt; --discovery-token-ca-cert-hash sha256:&lt;hash&gt;</code>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mt-4">自动节点扩缩容 (Cluster Autoscaler)</h5>
+                    <p>Cluster Autoscaler 根据 Pod 调度需求自动调整集群节点数量。</p>
+                    <div class="command-block">
+                        <div class="command-item">
+                            <span class="command-prompt"># Cluster Autoscaler 部署示例</span>
+                        </div>
+                        <div class="command-item">
+                            <code class="command-code">apiVersion: apps/v1<br>kind: Deployment<br>metadata:<br>&nbsp;&nbsp;name: cluster-autoscaler<br>&nbsp;&nbsp;namespace: kube-system<br>spec:<br>&nbsp;&nbsp;replicas: 1<br>&nbsp;&nbsp;selector:<br>&nbsp;&nbsp;&nbsp;&nbsp;matchLabels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: cluster-autoscaler<br>&nbsp;&nbsp;template:<br>&nbsp;&nbsp;&nbsp;&nbsp;metadata:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;labels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: cluster-autoscaler<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: cluster-autoscaler<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;image: k8s.gcr.io/autoscaling/cluster-autoscaler:v1.21.0<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;command:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- ./cluster-autoscaler<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- --v=4<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- --stderrthreshold=info<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- --cloud-provider=aws<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- --skip-nodes-with-local-storage=false<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- --expander=least-waste<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- --node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/&lt;CLUSTER-NAME&gt;</code>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mt-4">扩缩容策略对比</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-info">
+                                <tr><th>策略</th><th>适用场景</th><th>优势</th><th>挑战</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>手动扩缩容</td><td>计划性扩容、维护操作</td><td>精确控制、可预测</td><td>需要人工干预、响应慢</td></tr>
+                                <tr><td>自动扩缩容</td><td>动态工作负载、突发流量</td><td>自动响应、节省成本</td><td>配置复杂、可能过度扩容</td></tr>
+                                <tr><td>定时扩缩容</td><td>规律性变化的工作负载</td><td>成本效益高</td><td>需要准确预测工作负载模式</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <h5 class="mt-4">节点扩缩容最佳实践</h5>
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h6>扩容前准备</h6>
+                            <ul>
+                                <li>检查集群资源使用情况</li>
+                                <li>确认新节点类型和配置</li>
+                                <li>验证节点就绪时间</li>
+                                <li>规划 Pod 调度策略</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>缩容注意事项</h6>
+                            <ul>
+                                <li>确保 Pod 可以安全迁移</li>
+                                <li>检查节点污点和容忍</li>
+                                <li>验证 Pod 亲和性设置</li>
+                                <li>监控应用健康状况</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 集群版本升级 -->
+            <div class="card mb-4" id="concept-upgrades">
+                <div class="card-header bg-warning text-dark">
+                    <h3 class="mb-0">集群版本升级</h3>
+                </div>
+                <div class="card-body">
+                    <p>集群版本升级是 Kubernetes 生命周期管理的重要环节，涉及 Master 节点和 Worker 节点的升级。升级过程需要谨慎规划，以确保集群的稳定性和应用的连续性。</p>
+                    
+                    <h5 class="mt-4">升级架构流程</h5>
+                    <div class="architecture-diagram bg-light p-4 rounded">
+                        <pre class="mermaid">
+graph TD
+    subgraph "升级前"
+        API1[API Server v1.24]
+        KUBE1[kubelet v1.24]
+        PROXY1[kube-proxy v1.24]
+    end
+    
+    subgraph "升级过程"
+        CHECK[检查兼容性]
+        BACKUP[备份集群]
+        MASTERS[升级 Master 节点]
+        WORKERS[升级 Worker 节点]
+    end
+    
+    subgraph "升级后"
+        API2[API Server v1.25]
+        KUBE2[kubelet v1.25]
+        PROXY2[kube-proxy v1.25]
+    end
+    
+    API1 --> CHECK
+    KUBE1 --> CHECK
+    CHECK --> BACKUP
+    BACKUP --> MASTERS
+    MASTERS --> WORKERS
+    MASTERS --> API2
+    WORKERS --> KUBE2
+    WORKERS --> PROXY2
+                        </pre>
+                    </div>
+                    
+                    <h5 class="mt-4">升级策略</h5>
+                    <div class="row mt-4">
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="material-icons text-warning" style="font-size: 2.5rem;">sync_alt</i>
+                                    <h5 class="card-title mt-3">蓝绿升级</h5>
+                                    <p class="card-text">创建全新集群，将流量切换到新集群</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="material-icons text-success" style="font-size: 2.5rem;">linear_scale</i>
+                                    <h5 class="card-title mt-3">滚动升级</h5>
+                                    <p class="card-text">逐个节点升级，保持服务连续性</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mt-4">使用 kubeadm 进行升级</h5>
+                    <div class="command-block">
+                        <div class="command-item">
+                            <span class="command-prompt"># 检查可升级版本</span><br>
+                            <code class="command-code">sudo kubeadm upgrade plan</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 升级 Master 节点</span><br>
+                            <code class="command-code">sudo kubeadm upgrade apply v1.25.0</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 升级 kubectl 和 kubelet</span><br>
+                            <code class="command-code">sudo apt-mark unhold kubectl kubelet kubeadm<br>sudo apt-get update<br>sudo apt-get install -y kubectl=1.25.0-00 kubelet=1.25.0-00 kubeadm=1.25.0-00<br>sudo apt-mark hold kubectl kubelet kubeadm</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 重启 kubelet 服务</span><br>
+                            <code class="command-code">sudo systemctl daemon-reload<br>sudo systemctl restart kubelet</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 升级 Worker 节点 (在每个 Worker 节点执行)</span><br>
+                            <code class="command-code">sudo kubeadm upgrade node</code>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mt-4">云提供商升级</h5>
+                    <p>在云平台上升级集群通常更简单，但需要遵循特定流程：</p>
+                    <div class="command-block">
+                        <div class="command-item">
+                            <span class="command-prompt"># AWS EKS 升级</span><br>
+                            <code class="command-code">aws eks update-cluster-version --name my-cluster --kubernetes-version 1.25</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># GCP GKE 升级</span><br>
+                            <code class="command-code">gcloud container clusters upgrade my-cluster --master --zone=us-central1-a</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># Azure AKS 升级</span><br>
+                            <code class="command-code">az aks upgrade --resource-group myResourceGroup --name myAKSCluster --kubernetes-version 1.25.0</code>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mt-4">升级注意事项</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-warning">
+                                <tr><th>事项</th><th>说明</th><th>建议</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>版本兼容性</td><td>确保应用与新版本兼容</td><td>在测试环境验证</td></tr>
+                                <tr><td>备份策略</td><td>升级前备份集群状态</td><td>使用 Velero 或其他备份工具</td></tr>
+                                <tr><td>API 废弃</td><td>检查使用的 API 版本是否被废弃</td><td>使用 kubectl convert 迁移资源</td></tr>
+                                <tr><td>节点维护</td><td>避免同时升级所有节点</td><td>使用节点池分批升级</td></tr>
+                                <tr><td>时间窗口</td><td>选择业务低峰期进行升级</td><td>计划维护窗口</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <h5 class="mt-4">升级后验证</h5>
+                    <p>升级完成后需要验证集群功能是否正常：</p>
+                    <ul>
+                        <li>检查所有节点状态：kubectl get nodes</li>
+                        <li>验证核心组件运行状态</li>
+                        <li>确认应用正常运行</li>
+                        <li>测试集群功能（如调度、网络、存储）</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Helm Chart 编写 -->
+            <div class="card mb-4" id="concept-helm-charts">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Helm Chart 编写</h3>
+                </div>
+                <div class="card-body">
+                    <p>Helm Chart 是 Kubernetes 应用的打包格式，包含描述应用所需资源的模板文件。编写高质量的 Helm Chart 是实现应用标准化部署的关键。</p>
+                    
+                    <h5 class="mt-4">Chart 项目结构</h5>
+                    <div class="architecture-diagram bg-light p-4 rounded">
+                        <pre class="mermaid">
+graph TD
+    A[Helm Chart]
+    A --> B[Chart.yaml]
+    A --> C[values.yaml]
+    A --> D[templates/]
+    A --> E[charts/]
+    A --> F[README.md]
+    
+    D --> G[deployment.yaml]
+    D --> H[service.yaml]
+    D --> I[_helpers.tpl]
+    D --> J[ingress.yaml]
+    D --> K[NOTES.txt]
+    
+    E --> L[依赖 Chart]
+    
+    B --> M[元数据]
+    C --> N[默认值]
+    G --> O[应用部署]
+    H --> P[服务暴露]
+                        </pre>
+                    </div>
+                    
+                    <h5 class="mt-4">创建 Chart 示例</h5>
+                    <div class="command-block">
+                        <div class="command-item">
+                            <span class="command-prompt"># 创建新的 Chart</span><br>
+                            <code class="command-code">helm create my-app</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># Chart.yaml 示例</span>
+                        </div>
+                        <div class="command-item">
+                            <code class="command-code">apiVersion: v2<br>name: my-app<br>description: A Helm chart for my application<br>type: application<br>version: 0.1.0<br>appVersion: "1.0.0"<br>home: https://example.com<br>sources:<br>&nbsp;&nbsp;- https://github.com/my-org/my-app<br>maintainers:<br>&nbsp;&nbsp;- name: maintainer<br>&nbsp;&nbsp;&nbsp;&nbsp;email: maintainer@example.com<br>dependencies:<br>&nbsp;&nbsp;- name: redis<br>&nbsp;&nbsp;&nbsp;&nbsp;version: "15.x"<br>&nbsp;&nbsp;&nbsp;&nbsp;repository: "https://charts.bitnami.com/bitnami"<br>&nbsp;&nbsp;&nbsp;&nbsp;condition: redis.enabled</code>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mt-4">模板语法与函数</h5>
+                    <p>Helm 使用 Go 模板语言和 Sprig 库函数来动态生成 Kubernetes 资源清单。</p>
+                    <div class="command-block">
+                        <div class="command-item">
+                            <span class="command-prompt"># 模板函数示例</span>
+                        </div>
+                        <div class="command-item">
+                            <code class="command-code"># deployment.yaml<br>apiVersion: apps/v1<br>kind: Deployment<br>metadata:<br>&nbsp;&nbsp;name: {{ include "my-app.fullname" . }}<br>&nbsp;&nbsp;labels:<br>&nbsp;&nbsp;&nbsp;&nbsp;{{- include "my-app.labels" . | nindent 4 }}<br>spec:<br>&nbsp;&nbsp;replicas: {{ .Values.replicaCount }}<br>&nbsp;&nbsp;selector:<br>&nbsp;&nbsp;&nbsp;&nbsp;matchLabels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{- include "my-app.selectorLabels" . | nindent 6 }}<br>&nbsp;&nbsp;template:<br>&nbsp;&nbsp;&nbsp;&nbsp;metadata:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;labels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{- include "my-app.selectorLabels" . | nindent 8 }}<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: {{ .Chart.Name }}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;imagePullPolicy: {{ .Values.image.pullPolicy }}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ports:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: http<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containerPort: {{ .Values.service.port }}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;protocol: TCP</code>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mt-4">_helpers.tpl 命名模板</h5>
+                    <p>使用命名模板来定义可重用的模板片段，提高代码复用性。</p>
+                    <div class="command-block">
+                        <div class="command-item">
+                            <span class="command-prompt"># _helpers.tpl 示例</span>
+                        </div>
+                        <div class="command-item">
+                            <code class="command-code">{{/*<br>Expand the name of the chart.<br>*/}}<br>{{- define "my-app.name" -}}<br>{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}<br>{{- end }}<br><br>{{/*<br>Create a default fully qualified app name.<br>We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).<br>If release name contains chart name it will be used as a full name.<br>*/}}<br>{{- define "my-app.fullname" -}}<br>{{- if .Values.fullnameOverride }}<br>{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}<br>{{- else }}<br>{{- $name := default .Chart.Name .Values.nameOverride }}<br>{{- if contains $name .Release.Name }}<br>{{- .Release.Name | trunc 63 | trimSuffix "-" }}<br>{{- else }}<br>{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}<br>{{- end }}<br>{{- end }}<br>{{- end }}<br><br>{{/*<br>Common labels<br>*/}}<br>{{- define "my-app.labels" -}}<br>helm.sh/chart: {{ include "my-app.chart" . }}<br>{{ include "my-app.selectorLabels" . }}<br>{{- if .Chart.AppVersion }}<br>app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}<br>{{- end }}<br>app.kubernetes.io/managed-by: {{ .Release.Service }}<br>{{- end }}</code>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mt-4">Chart 最佳实践</h5>
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h6>结构与组织</h6>
+                            <ul>
+                                <li>使用语义化版本控制</li>
+                                <li>提供清晰的 README.md</li>
+                                <li>合理组织模板文件</li>
+                                <li>使用命名模板提高复用性</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>配置与测试</h6>
+                            <ul>
+                                <li>提供合理的默认值</li>
+                                <li>支持条件部署</li>
+                                <li>包含测试模板</li>
+                                <li>验证 Chart 质量</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mt-4">常用 Chart 开发命令</h5>
+                    <div class="command-block">
+                        <div class="command-item">
+                            <span class="command-prompt"># 验证 Chart</span><br>
+                            <code class="command-code">helm lint</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 查看渲染后的模板</span><br>
+                            <code class="command-code">helm template .</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 安装开发版本</span><br>
+                            <code class="command-code">helm install my-test . --dry-run</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 打包 Chart</span><br>
+                            <code class="command-code">helm package .</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 测试 Chart</span><br>
+                            <code class="command-code">helm test &lt;release-name&gt;</code>
                         </div>
                     </div>
                 </div>

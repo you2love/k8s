@@ -38,6 +38,8 @@
                         <li><a href="#concept-helm">Helm</a></li>
                         <li><a href="#concept-networking">网络原理</a></li>
                         <li><a href="#concept-storage">存储</a></li>
+                        <li><a href="#concept-namespace">命名空间</a></li>
+                        <li><a href="#concept-labels">标签与选择器</a></li>
                     </ul>
                 </li>
                 <li class="nav-item">
@@ -1760,6 +1762,253 @@ graph TD
                         <div class="command-item">
                             <span class="command-prompt"># 检查网络策略</span><br>
                             <code class="command-code">kubectl get networkpolicy</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 命名空间 -->
+            <div class="card mb-4" id="concept-namespace">
+                <div class="card-header bg-warning text-dark">
+                    <h3 class="mb-0">命名空间 (Namespace)</h3>
+                </div>
+                <div class="card-body">
+                    <p>命名空间 (Namespace) 是 Kubernetes 中用于组织和隔离资源的一种机制。它允许在物理集群上创建多个虚拟集群，提供了一种将集群资源划分为多个虚拟子组的方式。</p>
+                    
+                    <h5 class="mt-4">命名空间的作用</h5>
+                    <div class="row mt-4">
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="material-icons text-warning" style="font-size: 2.5rem;">layers</i>
+                                    <h5 class="card-title mt-3">资源隔离</h5>
+                                    <p class="card-text">将集群资源划分给不同的用户、团队或项目使用</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="material-icons text-success" style="font-size: 2.5rem;">group</i>
+                                    <h5 class="card-title mt-3">环境分离</h5>
+                                    <p class="card-text">创建独立的 dev、staging、prod 环境</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="material-icons text-info" style="font-size: 2.5rem;">security</i>
+                                    <h5 class="card-title mt-3">安全边界</h5>
+                                    <p class="card-text">通过 RBAC 实现命名空间级别的访问控制</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="material-icons text-primary" style="font-size: 2.5rem;">settings</i>
+                                    <h5 class="card-title mt-3">配置管理</h5>
+                                    <p class="card-text">为不同命名空间设置不同的资源配额和策略</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mt-4">命名空间架构图</h5>
+                    <div class="architecture-diagram bg-light p-4 rounded">
+                        <pre class="mermaid">
+graph TB
+    subgraph "K8s 集群"
+        subgraph "default 命名空间"
+            D1[Deployment A]
+            D2[Service A]
+        end
+        
+        subgraph "development 命名空间"
+            DEV1[Deployment DEV]
+            DEV2[Service DEV]
+            DEV3[Pod DEV]
+        end
+        
+        subgraph "production 命名空间"
+            PROD1[Deployment PROD]
+            PROD2[Service PROD]
+            PROD3[Pod PROD]
+        end
+        
+        subgraph "kube-system 命名空间"
+            KS1[kube-dns]
+            KS2[kube-proxy]
+        end
+    end
+                        </pre>
+                    </div>
+                    
+                    <h5 class="mt-4">常用命名空间</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-warning">
+                                <tr><th>命名空间</th><th>说明</th><th>用途</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>default</td><td>默认命名空间</td><td>未指定命名空间的资源将创建在这里</td></tr>
+                                <tr><td>kube-system</td><td>系统命名空间</td><td>存放 Kubernetes 系统组件</td></tr>
+                                <tr><td>kube-public</td><td>公共命名空间</td><td>存放公共配置，所有用户可读</td></tr>
+                                <tr><td>kube-node-lease</td><td>节点租约命名空间</td><td>存放节点心跳信息</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <h5 class="mt-4">创建和管理命名空间</h5>
+                    <div class="command-block">
+                        <div class="command-item">
+                            <span class="command-prompt"># 创建命名空间</span><br>
+                            <code class="command-code">apiVersion: v1<br>kind: Namespace<br>metadata:<br>&nbsp;&nbsp;name: development</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 使用 kubectl 创建命名空间</span><br>
+                            <code class="command-code">kubectl create namespace development</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 查看所有命名空间</span><br>
+                            <code class="command-code">kubectl get namespaces</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 在指定命名空间中创建资源</span><br>
+                            <code class="command-code">kubectl create deployment nginx --image=nginx -n development</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 切换默认命名空间</span><br>
+                            <code class="command-code">kubectl config set-context --current --namespace=development</code>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mt-4">命名空间资源配额</h5>
+                    <div class="command-block">
+                        <div class="command-item">
+                            <span class="command-prompt"># 设置命名空间资源配额</span>
+                        </div>
+                        <div class="command-item">
+                            <code class="command-code">apiVersion: v1<br>kind: ResourceQuota<br>metadata:<br>&nbsp;&nbsp;name: quota-dev<br>&nbsp;&nbsp;namespace: development<br>spec:<br>&nbsp;&nbsp;hard:<br>&nbsp;&nbsp;&nbsp;&nbsp;pods: "10"<br>&nbsp;&nbsp;&nbsp;&nbsp;requests.cpu: "4"<br>&nbsp;&nbsp;&nbsp;&nbsp;requests.memory: 8Gi<br>&nbsp;&nbsp;&nbsp;&nbsp;limits.cpu: "8"<br>&nbsp;&nbsp;&nbsp;&nbsp;limits.memory: 16Gi</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 标签与选择器 -->
+            <div class="card mb-4" id="concept-labels">
+                <div class="card-header bg-info text-white">
+                    <h3 class="mb-0">标签与选择器 (Labels & Selectors)</h3>
+                </div>
+                <div class="card-body">
+                    <p>标签 (Labels) 是附加到 Kubernetes 对象（如 Pod、Service）上的键值对，用于标识和组织资源。选择器 (Selectors) 是根据标签来查询和筛选资源的机制。</p>
+                    
+                    <h5 class="mt-4">标签与选择器工作原理</h5>
+                    <div class="architecture-diagram bg-light p-4 rounded">
+                        <pre class="mermaid">
+graph LR
+    subgraph "集群资源"
+        P1[Pod 1<br/>app=frontend<br/>version=v1.0]
+        P2[Pod 2<br/>app=frontend<br/>version=v1.0]
+        P3[Pod 3<br/>app=backend<br/>version=v2.0]
+        P4[Pod 4<br/>app=backend<br/>version=v2.0]
+        P5[Pod 5<br/>app=database<br/>version=v1.0]
+    end
+    
+    S[Service<br/>选择器: app=frontend]
+    DS[Deployment<br/>选择器: app=backend<br/>version=v2.0]
+    
+    S --> P1
+    S --> P2
+    DS --> P3
+    DS --> P4
+                        </pre>
+                    </div>
+                    
+                    <h5 class="mt-4">标签最佳实践</h5>
+                    <div class="row mt-4">
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title text-primary">推荐标签</h5>
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><code>app.kubernetes.io/name</code> - 应用名称</li>
+                                        <li class="list-group-item"><code>app.kubernetes.io/version</code> - 应用版本</li>
+                                        <li class="list-group-item"><code>app.kubernetes.io/component</code> - 组件名称</li>
+                                        <li class="list-group-item"><code>app.kubernetes.io/part-of</code> - 所属应用</li>
+                                        <li class="list-group-item"><code>app.kubernetes.io/managed-by</code> - 管理工具</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title text-success">自定义标签</h5>
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><code>env</code> - 环境 (dev/staging/prod)</li>
+                                        <li class="list-group-item"><code>team</code> - 负责团队</li>
+                                        <li class="list-group-item"><code>tier</code> - 层级 (frontend/backend)</li>
+                                        <li class="list-group-item"><code>release</code> - 发布渠道</li>
+                                        <li class="list-group-item"><code>track</code> - 发布轨道</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mt-4">选择器类型</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-info">
+                                <tr><th>选择器类型</th><th>语法</th><th>示例</th><th>说明</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>等值匹配</td><td><code>=</code>, <code>==</code></td><td><code>environment = production</code></td><td>精确匹配指定值</td></tr>
+                                <tr><td>不等值匹配</td><td><code>!=</code></td><td><code>version != v1.0</code></td><td>匹配不等于指定值的资源</td></tr>
+                                <tr><td>集合匹配</td><td><code>in</code>, <code>notin</code></td><td><code>tier in (frontend, backend)</code></td><td>匹配值在/不在指定集合中</td></tr>
+                                <tr><td>存在匹配</td><td><code>exists</code></td><td><code>environment</code></td><td>匹配存在指定键的资源</td></tr>
+                                <tr><td>不存在匹配</td><td><code>!key</code></td><td><code>!deprecated</code></td><td>匹配不存在指定键的资源</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <h5 class="mt-4">标签和选择器应用示例</h5>
+                    <div class="command-block">
+                        <div class="command-item">
+                            <span class="command-prompt"># 为资源添加标签</span>
+                        </div>
+                        <div class="command-item">
+                            <code class="command-code">apiVersion: apps/v1<br>kind: Deployment<br>metadata:<br>&nbsp;&nbsp;name: frontend<br>&nbsp;&nbsp;labels:<br>&nbsp;&nbsp;&nbsp;&nbsp;app: frontend<br>&nbsp;&nbsp;&nbsp;&nbsp;version: v1.0<br>&nbsp;&nbsp;&nbsp;&nbsp;environment: production<br>spec:<br>&nbsp;&nbsp;replicas: 3<br>&nbsp;&nbsp;selector:<br>&nbsp;&nbsp;&nbsp;&nbsp;matchLabels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: frontend<br>&nbsp;&nbsp;template:<br>&nbsp;&nbsp;&nbsp;&nbsp;metadata:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;labels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: frontend<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;version: v1.0<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: frontend<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;image: nginx:1.21</code>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mt-4">常用标签操作命令</h5>
+                    <div class="command-block">
+                        <div class="command-item">
+                            <span class="command-prompt"># 通过标签查找资源</span><br>
+                            <code class="command-code">kubectl get pods -l environment=production</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 多个标签条件查找</span><br>
+                            <code class="command-code">kubectl get pods -l environment=production,tier=frontend</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 添加标签到现有资源</span><br>
+                            <code class="command-code">kubectl label pods my-pod version=v2.0</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 更新标签</span><br>
+                            <code class="command-code">kubectl label pods my-pod version=v3.0 --overwrite</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 删除标签</span><br>
+                            <code class="command-code">kubectl label pods my-pod version-</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 查看标签</span><br>
+                            <code class="command-code">kubectl get pods --show-labels</code>
                         </div>
                     </div>
                 </div>

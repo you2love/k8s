@@ -437,11 +437,7 @@ flowchart LR
                                             <span class="command-prompt"># 滚动更新配置</span>
                                         </div>
                                         <div class="command-item">
-                                            <code class="command-code">strategy:
-  type: RollingUpdate
-  rollingUpdate:
-    maxSurge: 25%
-    maxUnavailable: 25%</code>
+                                            <code class="command-code">strategy:<br>&nbsp;&nbsp;type: RollingUpdate<br>&nbsp;&nbsp;rollingUpdate:<br>&nbsp;&nbsp;&nbsp;&nbsp;maxSurge: 25%<br>&nbsp;&nbsp;&nbsp;&nbsp;maxUnavailable: 25%</code>
                                         </div>
                                     </div>
                                 </div>
@@ -481,10 +477,7 @@ flowchart LR
                                             <span class="command-prompt"># 蓝绿部署示例</span>
                                         </div>
                                         <div class="command-item">
-                                            <code class="command-code"># 创建新版本 Deployment
-kubectl create deployment myapp-v2 --image=myapp:2.0
-# 通过 Service 切换流量
-kubectl patch service myapp -p '{"spec":{"selector":{"version":"2.0"}}}'</code>
+                                            <code class="command-code"># 创建新版本 Deployment<br>kubectl create deployment myapp-v2 --image=myapp:2.0<br># 通过 Service 切换流量<br>kubectl patch service myapp -p '{"spec":{"selector":{"version":"2.0"}}}'</code>
                                         </div>
                                     </div>
                                 </div>
@@ -525,12 +518,7 @@ flowchart LR
                                             <span class="command-prompt"># 金丝雀部署示例</span>
                                         </div>
                                         <div class="command-item">
-                                            <code class="command-code"># 创建金丝雀版本（少量副本）
-kubectl create deployment myapp-canary --image=myapp:2.0 --replicas=1
-# 监控金丝雀版本
-kubectl get pods -l app=myapp
-# 逐步扩大金丝雀版本
-kubectl scale deployment myapp-canary --replicas=3</code>
+                                            <code class="command-code"># 创建金丝雀版本（少量副本）<br>kubectl create deployment myapp-canary --image=myapp:2.0 --replicas=1<br># 监控金丝雀版本<br>kubectl get pods -l app=myapp<br># 逐步扩大金丝雀版本<br>kubectl scale deployment myapp-canary --replicas=3</code>
                                         </div>
                                     </div>
                                 </div>
@@ -573,21 +561,7 @@ flowchart LR
                                             <span class="command-prompt"># A/B 测试示例</span>
                                         </div>
                                         <div class="command-item">
-                                            <code class="command-code"># 通常结合 Ingress 或 Service Mesh 实现
-# 使用 Istio 进行流量分割
-apiVersion: networking.istio.io/v1beta1
-kind: VirtualService
-spec:
-  http:
-  - route:
-    - destination:
-        host: myapp
-        subset: v1
-      weight: 50
-    - destination:
-        host: myapp
-        subset: v2
-      weight: 50</code>
+                                            <code class="command-code"># 通常结合 Ingress 或 Service Mesh 实现<br># 使用 Istio 进行流量分割<br>apiVersion: networking.istio.io/v1beta1<br>kind: VirtualService<br>spec:<br>&nbsp;&nbsp;http:<br>&nbsp;&nbsp;- route:<br>&nbsp;&nbsp;&nbsp;&nbsp;- destination:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;host: myapp<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;subset: v1<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;weight: 50<br>&nbsp;&nbsp;&nbsp;&nbsp;- destination:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;host: myapp<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;subset: v2<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;weight: 50</code>
                                         </div>
                                     </div>
                                 </div>

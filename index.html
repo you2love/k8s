@@ -129,44 +129,48 @@ flowchart TB
                             <h4 class="mb-0">Master 节点组件</h4>
                         </div>
                         <div class="card-body">
-                            <ul class="list-group list-group-flush">
-                                <li class="list-group-item d-flex align-items-start">
-                                    <div class="flex-shrink-0 me-3">
-                                        <i class="material-icons text-primary">api</i>
-                                    </div>
-                                    <div>
-                                        <h5 class="mb-2"><strong>API Server</strong></h5>
-                                        <p class="mb-0">集群统一入口，处理 REST 请求</p>
-                                    </div>
-                                </li>
-                                <li class="list-group-item d-flex align-items-start">
-                                    <div class="flex-shrink-0 me-3">
-                                        <i class="material-icons text-secondary">storage</i>
-                                    </div>
-                                    <div>
-                                        <h5 class="mb-2"><strong>etcd</strong></h5>
-                                        <p class="mb-0">高可用键值存储，保存集群状态</p>
-                                    </div>
-                                </li>
-                                <li class="list-group-item d-flex align-items-start">
-                                    <div class="flex-shrink-0 me-3">
-                                        <i class="material-icons text-info">schedule</i>
-                                    </div>
-                                    <div>
-                                        <h5 class="mb-2"><strong>Scheduler</strong></h5>
-                                        <p class="mb-0">负责 Pod 调度到合适的节点</p>
-                                    </div>
-                                </li>
-                                <li class="list-group-item d-flex align-items-start">
-                                    <div class="flex-shrink-0 me-3">
-                                        <i class="material-icons text-dark">build</i>
-                                    </div>
-                                    <div>
-                                        <h5 class="mb-2"><strong>Controller Manager</strong></h5>
-                                        <p class="mb-0">运行控制器，维护集群状态</p>
-                                    </div>
-                                </li>
-                            </ul>
+                            <div class="table-responsive">
+                                <table class="table table-borderless mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-center align-middle" style="width: 60px;">
+                                                <i class="material-icons text-primary">api</i>
+                                            </td>
+                                            <td>
+                                                <h5 class="mb-1"><strong>API Server</strong></h5>
+                                                <p class="mb-0 text-muted">集群统一入口，处理 REST 请求</p>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-center align-middle" style="width: 60px;">
+                                                <i class="material-icons text-secondary">storage</i>
+                                            </td>
+                                            <td>
+                                                <h5 class="mb-1"><strong>etcd</strong></h5>
+                                                <p class="mb-0 text-muted">高可用键值存储，保存集群状态</p>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-center align-middle" style="width: 60px;">
+                                                <i class="material-icons text-info">schedule</i>
+                                            </td>
+                                            <td>
+                                                <h5 class="mb-1"><strong>Scheduler</strong></h5>
+                                                <p class="mb-0 text-muted">负责 Pod 调度到合适的节点</p>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-center align-middle" style="width: 60px;">
+                                                <i class="material-icons text-dark">build</i>
+                                            </td>
+                                            <td>
+                                                <h5 class="mb-1"><strong>Controller Manager</strong></h5>
+                                                <p class="mb-0 text-muted">运行控制器，维护集群状态</p>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -177,8 +181,8 @@ flowchart TB
                         </div>
                         <div class="card-body">
                             <ul class="list-group list-group-flush">
-                                <li class="list-group-item d-flex align-items-start">
-                                    <div class="flex-shrink-0 me-3">
+                                <li class="list-group-item d-flex align-items-start mb-4">
+                                    <div class="flex-shrink-0 me-4">
                                         <i class="material-icons text-success">settings_applications</i>
                                     </div>
                                     <div>
@@ -186,8 +190,8 @@ flowchart TB
                                         <p class="mb-0">与 Master 通信，管理容器生命周期</p>
                                     </div>
                                 </li>
-                                <li class="list-group-item d-flex align-items-start">
-                                    <div class="flex-shrink-0 me-3">
+                                <li class="list-group-item d-flex align-items-start mb-4">
+                                    <div class="flex-shrink-0 me-4">
                                         <i class="material-icons text-warning">swap_horiz</i>
                                     </div>
                                     <div>
@@ -195,8 +199,8 @@ flowchart TB
                                         <p class="mb-0">维护网络规则，实现 Service</p>
                                     </div>
                                 </li>
-                                <li class="list-group-item d-flex align-items-start">
-                                    <div class="flex-shrink-0 me-3">
+                                <li class="list-group-item d-flex align-items-start mb-4">
+                                    <div class="flex-shrink-0 me-4">
                                         <i class="material-icons text-info">extension</i>
                                     </div>
                                     <div>
@@ -204,8 +208,8 @@ flowchart TB
                                         <p class="mb-0">运行容器（Docker/containerd）</p>
                                     </div>
                                 </li>
-                                <li class="list-group-item d-flex align-items-start">
-                                    <div class="flex-shrink-0 me-3">
+                                <li class="list-group-item d-flex align-items-start mb-4">
+                                    <div class="flex-shrink-0 me-4">
                                         <i class="material-icons text-light">layers</i>
                                     </div>
                                     <div>

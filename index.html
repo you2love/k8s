@@ -1082,44 +1082,42 @@ graph TD
                     </div>
                     
                     <h5 class="mt-4">Helm 最佳实践</h5>
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item d-flex align-items-start">
-                            <div class="flex-shrink-0 me-3">
-                                <i class="material-icons text-primary">check_circle</i>
-                            </div>
-                            <div>
-                                <h6 class="mb-1"><strong>使用命名模板</strong></h6>
-                                <p class="mb-0">在 _helpers.tpl 中定义可重用的模板片段</p>
-                            </div>
-                        </li>
-                        <li class="list-group-item d-flex align-items-start">
-                            <div class="flex-shrink-0 me-3">
-                                <i class="material-icons text-success">check_circle</i>
-                            </div>
-                            <div>
-                                <h6 class="mb-1"><strong>合理使用依赖</strong></h6>
-                                <p class="mb-0">通过 requirements.yaml 管理 Chart 依赖关系</p>
-                            </div>
-                        </li>
-                        <li class="list-group-item d-flex align-items-start">
-                            <div class="flex-shrink-0 me-3">
-                                <i class="material-icons text-info">check_circle</i>
-                            </div>
-                            <div>
-                                <h6 class="mb-1"><strong>版本控制</strong></h6>
-                                <p class="mb-0">使用语义化版本控制管理 Chart 版本</p>
-                            </div>
-                        </li>
-                        <li class="list-group-item d-flex align-items-start">
-                            <div class="flex-shrink-0 me-3">
-                                <i class="material-icons text-warning">check_circle</i>
-                            </div>
-                            <div>
-                                <h6 class="mb-1"><strong>测试 Chart</strong></h6>
-                                <p class="mb-0">使用 helm test 命令验证 Chart 功能</p>
-                            </div>
-                        </li>
-                    </ul>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-warning">
+                                <tr>
+                                    <th width="20%">实践</th>
+                                    <th width="80%">说明</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>使用命名模板</strong></td>
+                                    <td>在 _helpers.tpl 中定义可重用的模板片段，提高代码复用性</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>合理使用依赖</strong></td>
+                                    <td>通过 Chart.yaml 管理 Chart 依赖关系，简化复杂应用部署</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>版本控制</strong></td>
+                                    <td>使用语义化版本控制管理 Chart 版本，便于追踪变更</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>测试 Chart</strong></td>
+                                    <td>使用 helm test 命令验证 Chart 功能，确保部署质量</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>参数化配置</strong></td>
+                                    <td>通过 values.yaml 文件管理配置参数，实现环境差异化部署</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>文档完善</strong></td>
+                                    <td>编写清晰的 README.md 和注释，便于他人理解和使用</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             

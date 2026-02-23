@@ -35,6 +35,7 @@
                         <li><a href="#concept-node">Node</a></li>
                         <li><a href="#concept-configmap">ConfigMap</a></li>
                         <li><a href="#concept-secret">Secret</a></li>
+                        <li><a href="#concept-helm">Helm</a></li>
                     </ul>
                 </li>
                 <li class="nav-item">
@@ -950,6 +951,175 @@ flowchart TB
                             <code class="command-code">kubectl get secret db-secret -o jsonpath='{.data.password}' | base64 -d</code>
                         </div>
                     </div>
+                </div>
+            </div>
+            
+            <!-- Helm -->
+            <div class="card mb-4" id="concept-helm">
+                <div class="card-header bg-warning text-dark">
+                    <h3 class="mb-0">Helm</h3>
+                </div>
+                <div class="card-body">
+                    <p>Helm 是 Kubernetes 的包管理器，被称为 "Kubernetes 的包管理器"。它允许用户定义、安装和更新复杂的 Kubernetes 应用程序，简化了应用程序部署和管理的过程。</p>
+                    
+                    <h5 class="mt-4">Helm 核心概念</h5>
+                    <div class="row mt-4">
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="material-icons text-warning" style="font-size: 2.5rem;">inventory</i>
+                                    <h5 class="card-title mt-3">Chart</h5>
+                                    <p class="card-text">Helm 包，包含描述相关 Kubernetes 资源的文件集合</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="material-icons text-info" style="font-size: 2.5rem;">receipt</i>
+                                    <h5 class="card-title mt-3">Release</h5>
+                                    <p class="card-text">Helm Chart 在 Kubernetes 集群中的运行实例</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="material-icons text-primary" style="font-size: 2.5rem;">storage</i>
+                                    <h5 class="card-title mt-3">Repository</h5>
+                                    <p class="card-text">存储和共享 Helm Chart 的仓库</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="material-icons text-success" style="font-size: 2.5rem;">build</i>
+                                    <h5 class="card-title mt-3">Tiller (v2)</h5>
+                                    <p class="card-text">Helm v2 中的服务器端组件（v3 中已移除）</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mt-4">Helm 与 Kubernetes 资源对比</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-warning">
+                                <tr><th>特性</th><th>Kubernetes 原生资源</th><th>Helm</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>部署复杂度</td><td>需要多个 YAML 文件</td><td>单个 Chart 管理</td></tr>
+                                <tr><td>版本管理</td><td>手动管理</td><td>内置版本控制</td></tr>
+                                <tr><td>参数化</td><td>需要手动修改</td><td>通过 values.yaml 配置</td></tr>
+                                <tr><td>依赖管理</td><td>无内置支持</td><td>支持 Chart 依赖</td></tr>
+                                <tr><td>更新回滚</td><td>复杂的手动操作</td><td>一键更新回滚</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <h5 class="mt-4">Helm Chart 结构</h5>
+                    <div class="architecture-diagram bg-light p-4 rounded">
+                        <pre class="mermaid">
+graph TD
+    A[Helm Chart] --> B[Chart.yaml]
+    A --> C[values.yaml]
+    A --> D[templates/]
+    A --> E[README.md]
+    A --> F[charts/]
+    D --> G[deployment.yaml]
+    D --> H[service.yaml]
+    D --> I[_helpers.tpl]
+    D --> J[ingress.yaml]
+    B --> J1[元数据]
+    C --> J2[默认值]
+    F --> J3[依赖 Chart]
+                        </pre>
+                    </div>
+                    
+                    <h5 class="mt-4">常用命令</h5>
+                    <div class="command-block">
+                        <div class="command-item">
+                            <span class="command-prompt"># 搜索 Charts</span><br>
+                            <code class="command-code">helm search repo</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 添加仓库</span><br>
+                            <code class="command-code">helm repo add stable https://charts.helm.sh/stable</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 更新仓库</span><br>
+                            <code class="command-code">helm repo update</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 安装 Chart</span><br>
+                            <code class="command-code">helm install my-release stable/nginx</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 查看发布</span><br>
+                            <code class="command-code">helm list</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 升级发布</span><br>
+                            <code class="command-code">helm upgrade my-release stable/nginx --set image.tag=1.19</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 回滚发布</span><br>
+                            <code class="command-code">helm rollback my-release 1</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 卸载发布</span><br>
+                            <code class="command-code">helm uninstall my-release</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 创建新 Chart</span><br>
+                            <code class="command-code">helm create my-chart</code>
+                        </div>
+                        <div class="command-item">
+                            <span class="command-prompt"># 打包 Chart</span><br>
+                            <code class="command-code">helm package my-chart</code>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mt-4">Helm 最佳实践</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex align-items-start">
+                            <div class="flex-shrink-0 me-3">
+                                <i class="material-icons text-primary">check_circle</i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1"><strong>使用命名模板</strong></h6>
+                                <p class="mb-0">在 _helpers.tpl 中定义可重用的模板片段</p>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex align-items-start">
+                            <div class="flex-shrink-0 me-3">
+                                <i class="material-icons text-success">check_circle</i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1"><strong>合理使用依赖</strong></h6>
+                                <p class="mb-0">通过 requirements.yaml 管理 Chart 依赖关系</p>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex align-items-start">
+                            <div class="flex-shrink-0 me-3">
+                                <i class="material-icons text-info">check_circle</i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1"><strong>版本控制</strong></h6>
+                                <p class="mb-0">使用语义化版本控制管理 Chart 版本</p>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex align-items-start">
+                            <div class="flex-shrink-0 me-3">
+                                <i class="material-icons text-warning">check_circle</i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1"><strong>测试 Chart</strong></h6>
+                                <p class="mb-0">使用 helm test 命令验证 Chart 功能</p>
+                            </div>
+                        </li>
+                    </ul>
                 </div>
             </div>
             

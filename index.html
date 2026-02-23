@@ -403,10 +403,17 @@ flowchart TB
                     
                     <h5 class="mt-4">不同部署形式</h5>
                     
-                    <h6 class="mt-3">1. 滚动更新 (Rolling Update)</h6>
-                    <p>逐步替换旧版本 Pod，确保服务始终可用。</p>
-                    <div class="architecture-diagram bg-light p-4 rounded">
-                        <pre class="mermaid">
+                    <div class="row mt-4">
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 deployment-card">
+                                <div class="card-body">
+                                    <div class="deployment-icon mb-3">
+                                        <i class="material-icons text-primary">sync</i>
+                                    </div>
+                                    <h6 class="card-title deployment-title">1. 滚动更新 (Rolling Update)</h6>
+                                    <p class="card-text deployment-description">逐步替换旧版本 Pod，确保服务始终可用。</p>
+                                    <div class="architecture-diagram bg-light p-3 rounded mb-3">
+                                        <pre class="mermaid mb-0">
 flowchart LR
     subgraph Old[旧版本]
         O1[Pod v1]
@@ -419,18 +426,34 @@ flowchart LR
         N3[Pod v2]
     end
     Old -- 逐步替换 --> New
-                        </pre>
-                    </div>
-                    <pre><code>strategy:
+                                        </pre>
+                                    </div>
+                                    <div class="command-block deployment-config">
+                                        <div class="command-item">
+                                            <span class="command-prompt"># 滚动更新配置</span>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">strategy:
   type: RollingUpdate
   rollingUpdate:
     maxSurge: 25%
-    maxUnavailable: 25%</code></pre>
-                    
-                    <h6 class="mt-4">2. 蓝绿部署 (Blue-Green Deployment)</h6>
-                    <p>同时运行两个完全相同的环境（蓝和绿），通过切换流量实现零停机部署。</p>
-                    <div class="architecture-diagram bg-light p-4 rounded">
-                        <pre class="mermaid">
+    maxUnavailable: 25%</code>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 deployment-card">
+                                <div class="card-body">
+                                    <div class="deployment-icon mb-3">
+                                        <i class="material-icons text-success">swap_horiz</i>
+                                    </div>
+                                    <h6 class="card-title deployment-title">2. 蓝绿部署 (Blue-Green Deployment)</h6>
+                                    <p class="card-text deployment-description">同时运行两个完全相同的环境（蓝和绿），通过切换流量实现零停机部署。</p>
+                                    <div class="architecture-diagram bg-light p-3 rounded mb-3">
+                                        <pre class="mermaid mb-0">
 flowchart LR
     LB[负载均衡器]
     subgraph Blue[蓝环境 v1]
@@ -443,17 +466,33 @@ flowchart LR
     end
     LB --> Blue
     LB -.-> Green
-                        </pre>
-                    </div>
-                    <pre><code># 创建新版本 Deployment
+                                        </pre>
+                                    </div>
+                                    <div class="command-block deployment-config">
+                                        <div class="command-item">
+                                            <span class="command-prompt"># 蓝绿部署示例</span>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code"># 创建新版本 Deployment
 kubectl create deployment myapp-v2 --image=myapp:2.0
 # 通过 Service 切换流量
-kubectl patch service myapp -p '{"spec":{"selector":{"version":"2.0"}}}'</code></pre>
-                    
-                    <h6 class="mt-4">3. 金丝雀部署 (Canary Deployment)</h6>
-                    <p>先向少量用户发布新版本，验证无误后逐步扩大范围。</p>
-                    <div class="architecture-diagram bg-light p-4 rounded">
-                        <pre class="mermaid">
+kubectl patch service myapp -p '{"spec":{"selector":{"version":"2.0"}}}'</code>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 deployment-card">
+                                <div class="card-body">
+                                    <div class="deployment-icon mb-3">
+                                        <i class="material-icons text-warning">flag</i>
+                                    </div>
+                                    <h6 class="card-title deployment-title">3. 金丝雀部署 (Canary Deployment)</h6>
+                                    <p class="card-text deployment-description">先向少量用户发布新版本，验证无误后逐步扩大范围。</p>
+                                    <div class="architecture-diagram bg-light p-3 rounded mb-3">
+                                        <pre class="mermaid mb-0">
 flowchart LR
     subgraph Traffic[流量分配]
         T[100% 流量]
@@ -467,19 +506,35 @@ flowchart LR
     end
     T --> V1
     T --> V2
-                        </pre>
-                    </div>
-                    <pre><code># 创建金丝雀版本（少量副本）
+                                        </pre>
+                                    </div>
+                                    <div class="command-block deployment-config">
+                                        <div class="command-item">
+                                            <span class="command-prompt"># 金丝雀部署示例</span>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code"># 创建金丝雀版本（少量副本）
 kubectl create deployment myapp-canary --image=myapp:2.0 --replicas=1
 # 监控金丝雀版本
 kubectl get pods -l app=myapp
 # 逐步扩大金丝雀版本
-kubectl scale deployment myapp-canary --replicas=3</code></pre>
-                    
-                    <h6 class="mt-4">4. A/B 测试部署</h6>
-                    <p>同时运行两个不同版本，根据用户特征分配流量进行测试。</p>
-                    <div class="architecture-diagram bg-light p-4 rounded">
-                        <pre class="mermaid">
+kubectl scale deployment myapp-canary --replicas=3</code>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 deployment-card">
+                                <div class="card-body">
+                                    <div class="deployment-icon mb-3">
+                                        <i class="material-icons text-info">analytics</i>
+                                    </div>
+                                    <h6 class="card-title deployment-title">4. A/B 测试部署</h6>
+                                    <p class="card-text deployment-description">同时运行两个不同版本，根据用户特征分配流量进行测试。</p>
+                                    <div class="architecture-diagram bg-light p-3 rounded mb-3">
+                                        <pre class="mermaid mb-0">
 flowchart LR
     subgraph Users[用户流量]
         U1[用户组A]
@@ -495,9 +550,14 @@ flowchart LR
     end
     U1 --> VersionA
     U2 --> VersionB
-                        </pre>
-                    </div>
-                    <pre><code># 通常结合 Ingress 或 Service Mesh 实现
+                                        </pre>
+                                    </div>
+                                    <div class="command-block deployment-config">
+                                        <div class="command-item">
+                                            <span class="command-prompt"># A/B 测试示例</span>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code"># 通常结合 Ingress 或 Service Mesh 实现
 # 使用 Istio 进行流量分割
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
@@ -511,7 +571,13 @@ spec:
     - destination:
         host: myapp
         subset: v2
-      weight: 50</code></pre>
+      weight: 50</code>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     
                     <h5 class="mt-4">常用命令</h5>
                     <div class="command-block">

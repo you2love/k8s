@@ -187,7 +187,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Sidebar submenu toggle
     document.querySelectorAll('.nav-item.has-submenu > .nav-link').forEach(link => {
         link.addEventListener('click', function(e) {
-            if (this.getAttribute('href') === '#concepts') {
+            if (this.getAttribute('href') === '#concepts' || this.getAttribute('href') === '#advanced-concepts') {
                 e.preventDefault();
                 const parent = this.parentElement;
                 parent.classList.toggle('open');

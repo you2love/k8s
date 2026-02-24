@@ -105,32 +105,32 @@ graph TB
         
         subgraph "数据库/中间件"
             subgraph "MySQL 集群"
-                MYSQL1[MySQL-0<br/>固定网络标识]
-                MYSQL2[MySQL-1<br/>固定网络标识]
-                MYSQL3[MySQL-2<br/>固定网络标识]
+                MYSQL1["MySQL-0|固定网络标识"]
+                MYSQL2["MySQL-1|固定网络标识"]
+                MYSQL3["MySQL-2|固定网络标识"]
             end
             
             subgraph "PostgreSQL 集群"
-                PG1[PostgreSQL-0<br/>持久化存储]
-                PG2[PostgreSQL-1<br/>持久化存储]
+                PG1["PostgreSQL-0|持久化存储"]
+                PG2["PostgreSQL-1|持久化存储"]
             end
             
             subgraph "Redis 集群"
-                REDIS1[Redis-0<br/>主节点]
-                REDIS2[Redis-1<br/>从节点]
-                REDIS3[Redis-2<br/>从节点]
+                REDIS1["Redis-0|主节点"]
+                REDIS2["Redis-1|从节点"]
+                REDIS3["Redis-2|从节点"]
             end
             
             subgraph "Kafka 集群"
-                KAFKA1[Kafka-0<br/>Broker ID: 0]
-                KAFKA2[Kafka-1<br/>Broker ID: 1]
-                KAFKA3[Kafka-2<br/>Broker ID: 2]
+                KAFKA1["Kafka-0|Broker ID: 0"]
+                KAFKA2["Kafka-1|Broker ID: 1"]
+                KAFKA3["Kafka-2|Broker ID: 2"]
             end
             
             subgraph "RabbitMQ 集群"
-                RMQ1[RabbitMQ-0<br/>节点名称固定]
-                RMQ2[RabbitMQ-1<br/>镜像队列]
-                RMQ3[RabbitMQ-2<br/>镜像队列]
+                RMQ1["RabbitMQ-0|节点名称固定"]
+                RMQ2["RabbitMQ-1|镜像队列"]
+                RMQ3["RabbitMQ-2|镜像队列"]
             end
         end
         

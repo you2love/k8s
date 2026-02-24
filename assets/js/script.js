@@ -146,43 +146,58 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 100);
     }
     
-    // Smooth scroll for navigation
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    // Handle navigation for both internal anchors and external links
+    document.querySelectorAll('.sidebar-nav a').forEach(anchor => {
         anchor.addEventListener('click', function(e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
+            const href = this.getAttribute('href');
+            
+            // Check if it's an internal anchor link (starts with #)
+            if (href && href.startsWith('#')) {
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+                
+                // Update active state for current page
+                document.querySelectorAll('.sidebar-nav .nav-link').forEach(link => {
+                    link.classList.remove('active');
                 });
+                this.classList.add('active');
             }
+            // For external links (to other HTML pages), let them navigate normally
+            // but we'll let the destination page handle the active state
         });
     });
     
     // Update active nav link on scroll for index page
-    const sections = document.querySelectorAll('section[id], header[id]');
-    const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
-    
-    window.addEventListener('scroll', function() {
-        let current = '';
+    if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/') {
+        const sections = document.querySelectorAll('section[id], header[id]');
+        const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
         
-        sections.forEach(section => {
-            const sectionTop = section.offsetTop;
-            const sectionHeight = section.clientHeight;
+        window.addEventListener('scroll', function() {
+            let current = '';
             
-            if (scrollY >= sectionTop - 100) {
-                current = section.getAttribute('id');
-            }
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                
+                if (scrollY >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
         });
-        
-        navLinks.forEach(link => {
-            link.classList.remove('active');
-            if (link.getAttribute('href') === '#' + current) {
-                link.classList.add('active');
-            }
-        });
-    });
+    }
     
     // Sidebar submenu toggle - use data-target instead of href for submenu toggling
     document.querySelectorAll('.nav-item.has-submenu > .nav-link').forEach(link => {
@@ -190,7 +205,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // Check if this link has a data-target attribute for submenu
             const target = this.getAttribute('data-target');
             if (target) {
-                e.preventDefault();
+                // Only prevent default for anchor links (not .html links)
+                if (this.getAttribute('href') && !this.getAttribute('href').includes('.html')) {
+                    e.preventDefault();
+                }
                 const parent = this.parentElement;
                 parent.classList.toggle('open');
             }
@@ -230,17 +248,60 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         // For other pages, find the matching link
         document.querySelectorAll('.sidebar-submenu a').forEach(link => {
-            if (link.getAttribute('href') && 
-                (link.getAttribute('href').includes(currentPage) || 
-                 (currentPage.includes('pod.html') && link.textContent.trim() === 'Pod') ||
-                 (currentPage.includes('deployment.html') && link.textContent.trim() === 'Deployment') ||
-                 (currentPage.includes('service.html') && link.textContent.trim() === 'Service') ||
-                 (currentPage.includes('node.html') && link.textContent.trim() === 'Node') ||
-                 (currentPage.includes('configmap.html') && link.textContent.trim() === 'ConfigMap') ||
-                 (currentPage.includes('secret.html') && link.textContent.trim() === 'Secret'))) {
+            if (link.textContent.trim() === 'Pod' && currentPage.includes('pod.html')) {
                 link.classList.add('active');
                 
                 // Also highlight parent menu
+                const parentItem = link.closest('.nav-item.has-submenu');
+                if (parentItem) {
+                    const parentLink = parentItem.querySelector('.nav-link');
+                    if (parentLink) {
+                        parentLink.classList.add('active');
+                    }
+                }
+            } else if (link.textContent.trim() === 'Deployment' && currentPage.includes('deployment.html')) {
+                link.classList.add('active');
+                
+                const parentItem = link.closest('.nav-item.has-submenu');
+                if (parentItem) {
+                    const parentLink = parentItem.querySelector('.nav-link');
+                    if (parentLink) {
+                        parentLink.classList.add('active');
+                    }
+                }
+            } else if (link.textContent.trim() === 'Service' && currentPage.includes('service.html')) {
+                link.classList.add('active');
+                
+                const parentItem = link.closest('.nav-item.has-submenu');
+                if (parentItem) {
+                    const parentLink = parentItem.querySelector('.nav-link');
+                    if (parentLink) {
+                        parentLink.classList.add('active');
+                    }
+                }
+            } else if (link.textContent.trim() === 'Node' && currentPage.includes('node.html')) {
+                link.classList.add('active');
+                
+                const parentItem = link.closest('.nav-item.has-submenu');
+                if (parentItem) {
+                    const parentLink = parentItem.querySelector('.nav-link');
+                    if (parentLink) {
+                        parentLink.classList.add('active');
+                    }
+                }
+            } else if (link.textContent.trim() === 'ConfigMap' && currentPage.includes('configmap.html')) {
+                link.classList.add('active');
+                
+                const parentItem = link.closest('.nav-item.has-submenu');
+                if (parentItem) {
+                    const parentLink = parentItem.querySelector('.nav-link');
+                    if (parentLink) {
+                        parentLink.classList.add('active');
+                    }
+                }
+            } else if (link.textContent.trim() === 'Secret' && currentPage.includes('secret.html')) {
+                link.classList.add('active');
+                
                 const parentItem = link.closest('.nav-item.has-submenu');
                 if (parentItem) {
                     const parentLink = parentItem.querySelector('.nav-link');

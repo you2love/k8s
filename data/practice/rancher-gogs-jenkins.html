@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实践案例：Rancher+K8s+Gogs+Jenkins 自动部署 - Kubernetes 学习教程</title>
+    <link href="../../assets/css/bootstrap-local.css" rel="stylesheet">
+    <link href="../../assets/css/fonts-local.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Left Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <span>K8s 教程</span>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#architecture" data-target="architecture">
+                        <span>架构图</span>
+                    </a>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="../../index.html#concepts" data-target="concepts">
+                        <span>核心概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../concepts/pod.html">Pod</a></li>
+                        <li><a href="../concepts/deployment.html">Deployment</a></li>
+                        <li><a href="../concepts/service.html">Service</a></li>
+                        <li><a href="../concepts/node.html">Node</a></li>
+                        <li><a href="../concepts/configmap.html">ConfigMap</a></li>
+                        <li><a href="../concepts/secret.html">Secret</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="../../index.html#advanced-concepts" data-target="advanced-concepts">
+                        <span>高级概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../concepts/helm.html">Helm</a></li>
+                        <li><a href="../concepts/networking.html">网络原理</a></li>
+                        <li><a href="../concepts/storage.html">存储</a></li>
+                        <li><a href="../concepts/namespace.html">命名空间</a></li>
+                        <li><a href="../concepts/labels.html">标签与选择器</a></li>
+                        <li><a href="../concepts/certificates.html">证书管理</a></li>
+                        <li><a href="../concepts/scaling.html">节点扩缩容</a></li>
+                        <li><a href="../concepts/upgrades.html">集群版本升级</a></li>
+                        <li><a href="../concepts/helm-charts.html">Helm Chart 编写</a></li>
+                        <li><a href="../concepts/coredns.html">CoreDNS</a></li>
+                        <li><a href="../concepts/stateful-apps.html">数据库/中间件部署</a></li>
+                        <li><a href="../concepts/ingress.html">Ingress 高级配置</a></li>
+                        <li><a href="../concepts/ci-integration.html">CI 集成</a></li>
+                        <li><a href="../concepts/gitops-argocd.html">GitOps 与 Argo CD</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../data/installation.html" data-target="installation">
+                        <span>安装指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../data/practice.html" data-target="practice">
+                        <span>实践指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../data/troubleshooting.html" data-target="troubleshooting">
+                        <span>常见问题</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../data/best-practices.html" data-target="best-practices">
+                        <span>最佳实践</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../data/rancher.html" data-target="rancher">
+                        <span>Rancher</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <section class="py-5" id="rancher-gogs-jenkins">
+                <div class="container">
+                    <h2 class="text-center mb-5">实践案例：Rancher+K8s+Gogs+Jenkins 自动部署</h2>
+                    
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <p>本实践案例展示如何构建一个完整的CI/CD流水线，实现从代码提交到自动部署的完整流程。该方案使用Gogs作为代码仓库，Jenkins作为CI/CD工具，Kubernetes作为容器编排平台，Rancher作为K8s集群管理工具。</p>
+                            
+                            <h5 class="mt-4">整体架构</h5>
+                            <div class="architecture-diagram bg-light p-4 rounded">
+                                <pre class="mermaid">
+graph TB
+    subgraph "开发环境"
+        DEV[开发者]
+        GOGS[Gogs 代码仓库]
+    end
+    
+    subgraph "CI/CD 环境"
+        JENKINS[Jenkins CI服务器]
+        DOCKER[容器化构建]
+        DOCKER_REGISTRY[镜像仓库]
+    end
+    
+    subgraph "Kubernetes 环境"
+        RANCHER[Rancher 管理界面]
+        K8S[K8s 集群]
+        APP[应用程序 Pod]
+    end
+    
+    DEV --> GOGS
+    GOGS --> JENKINS
+    JENKINS --> DOCKER
+    DOCKER --> DOCKER_REGISTRY
+    DOCKER_REGISTRY --> K8S
+    RANCHER --> K8S
+    K8S --> APP
+    JENKINS --> K8S
+                                </pre>
+                            </div>
+                            
+                            <h5 class="mt-4">部署前准备</h5>
+                            <p>在开始部署前，需要准备以下环境和工具：</p>
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <h6>基础设施要求</h6>
+                                    <ul>
+                                        <li>至少3台服务器（推荐4核8G配置）</li>
+                                        <li>Docker 已安装（版本 19.03+）</li>
+                                        <li>服务器间网络互通</li>
+                                        <li>防火墙开放必要端口</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>软件版本要求</h6>
+                                    <ul>
+                                        <li>Kubernetes 1.20+</li>
+                                        <li>Rancher 2.6+</li>
+                                        <li>Jenkins 2.300+</li>
+                                        <li>Gogs 最新版</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">第一步：部署 Rancher 管理平台</h5>
+                            <p>首先部署 Rancher 来管理 Kubernetes 集群。</p>
+                            
+                            <h6>1. 单动 Docker 容器部署 Rancher</h6>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 拉取并运行 Rancher 容器</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code"># 创建 Rancher 数据持久化目录<br>sudo mkdir -p /opt/rancher<br><br># 运行 Rancher 容器<br>sudo docker run -d \<br>&nbsp;&nbsp;--name rancher \<br>&nbsp;&nbsp;--restart=unless-stopped \<br>&nbsp;&nbsp;-p 80:80 -p 443:443 \<br>&nbsp;&nbsp;-v /opt/rancher:/var/lib/rancher \<br>&nbsp;&nbsp;rancher/rancher:latest</code>
+                                </div>
+                            </div>
+                            
+                            <h6>2. 初始化 Rancher</h6>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 访问 Rancher 管理界面并设置初始密码</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code"># 访问 https://your-server-ip<br># 设置管理员密码<br># 配置 Rancher Server URL</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">第二步：部署 Gogs 代码仓库</h5>
+                            <p>使用 Kubernetes 部署 Gogs 作为 Git 代码仓库服务。</p>
+                            
+                            <h6>1. 创建 Gogs 部署配置</h6>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># gogs-deployment.yaml</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: apps/v1<br>kind: Deployment<br>metadata:<br>&nbsp;&nbsp;name: gogs-deployment<br>&nbsp;&nbsp;namespace: gogs<br>spec:<br>&nbsp;&nbsp;replicas: 1<br>&nbsp;&nbsp;selector:<br>&nbsp;&nbsp;&nbsp;&nbsp;matchLabels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: gogs<br>&nbsp;&nbsp;template:<br>&nbsp;&nbsp;&nbsp;&nbsp;metadata:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;labels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: gogs<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: gogs<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;image: gogs/gogs:latest<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ports:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- containerPort: 3000<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- containerPort: 22<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;env:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: RUN_MODE<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;value: "prod"<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: SSH_PORT_OFFSET<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;value: "0"<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;volumeMounts:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: gogs-data<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mountPath: /data<br>&nbsp;&nbsp;&nbsp;&nbsp;volumes:<br>&nbsp;&nbsp;&nbsp;&nbsp;- name: gogs-data<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;persistentVolumeClaim:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;claimName: gogs-pvc<br>---<br>apiVersion: v1<br>kind: Service<br>metadata:<br>&nbsp;&nbsp;name: gogs-service<br>&nbsp;&nbsp;namespace: gogs<br>spec:<br>&nbsp;&nbsp;type: NodePort<br>&nbsp;&nbsp;selector:<br>&nbsp;&nbsp;&nbsp;&nbsp;app: gogs<br>&nbsp;&nbsp;ports:<br>&nbsp;&nbsp;- name: http<br>&nbsp;&nbsp;&nbsp;&nbsp;port: 3000<br>&nbsp;&nbsp;&nbsp;&nbsp;targetPort: 3000<br>&nbsp;&nbsp;&nbsp;&nbsp;nodePort: 30080<br>&nbsp;&nbsp;- name: ssh<br>&nbsp;&nbsp;&nbsp;&nbsp;port: 22<br>&nbsp;&nbsp;&nbsp;&nbsp;targetPort: 22<br>&nbsp;&nbsp;&nbsp;&nbsp;nodePort: 30022<br>---<br>apiVersion: v1<br>kind: PersistentVolumeClaim<br>metadata:<br>&nbsp;&nbsp;name: gogs-pvc<br>&nbsp;&nbsp;namespace: gogs<br>spec:<br>&nbsp;&nbsp;accessModes:<br>&nbsp;&nbsp;&nbsp;&nbsp;- ReadWriteOnce<br>&nbsp;&nbsp;resources:<br>&nbsp;&nbsp;&nbsp;&nbsp;requests:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;storage: 10Gi</code>
+                                </div>
+                            </div>
+                            
+                            <h6>2. 部署 Gogs</h6>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 创建命名空间并部署 Gogs</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code"># 创建命名空间<br>kubectl create namespace gogs<br><br># 应用部署配置<br>kubectl apply -f gogs-deployment.yaml<br><br># 检查部署状态<br>kubectl get pods -n gogs<br>kubectl get services -n gogs</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">第三步：部署 Jenkins CI/CD 服务器</h5>
+                            <p>部署 Jenkins 作为 CI/CD 流水线的核心服务。</p>
+                            
+                            <h6>1. 创建 Jenkins 部署配置</h6>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># jenkins-deployment.yaml</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: apps/v1<br>kind: Deployment<br>metadata:<br>&nbsp;&nbsp;name: jenkins-deployment<br>&nbsp;&nbsp;namespace: jenkins<br>spec:<br>&nbsp;&nbsp;replicas: 1<br>&nbsp;&nbsp;selector:<br>&nbsp;&nbsp;&nbsp;&nbsp;matchLabels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: jenkins<br>&nbsp;&nbsp;template:<br>&nbsp;&nbsp;&nbsp;&nbsp;metadata:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;labels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: jenkins<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;serviceAccountName: jenkins<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: jenkins<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;image: jenkins/jenkins:lts<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ports:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- containerPort: 8080<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- containerPort: 50000<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;volumeMounts:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: jenkins-home<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mountPath: /var/jenkins_home<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: docker-sock<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mountPath: /var/run/docker.sock<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;env:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: JAVA_OPTS<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;value: "-Djenkins.install.runSetupWizard=false"<br>&nbsp;&nbsp;&nbsp;&nbsp;volumes:<br>&nbsp;&nbsp;&nbsp;&nbsp;- name: jenkins-home<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;persistentVolumeClaim:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;claimName: jenkins-pvc<br>&nbsp;&nbsp;&nbsp;&nbsp;- name: docker-sock<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hostPath:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;path: /var/run/docker.sock<br>---<br>apiVersion: v1<br>kind: Service<br>metadata:<br>&nbsp;&nbsp;name: jenkins-service<br>&nbsp;&nbsp;namespace: jenkins<br>spec:<br>&nbsp;&nbsp;type: NodePort<br>&nbsp;&nbsp;selector:<br>&nbsp;&nbsp;&nbsp;&nbsp;app: jenkins<br>&nbsp;&nbsp;ports:<br>&nbsp;&nbsp;- name: http<br>&nbsp;&nbsp;&nbsp;&nbsp;port: 8080<br>&nbsp;&nbsp;&nbsp;&nbsp;targetPort: 8080<br>&nbsp;&nbsp;&nbsp;&nbsp;nodePort: 30081<br>&nbsp;&nbsp;- name: agent<br>&nbsp;&nbsp;&nbsp;&nbsp;port: 50000<br>&nbsp;&nbsp;&nbsp;&nbsp;targetPort: 50000<br>---<br>apiVersion: v1<br>kind: PersistentVolumeClaim<br>metadata:<br>&nbsp;&nbsp;name: jenkins-pvc<br>&nbsp;&nbsp;namespace: jenkins<br>spec:<br>&nbsp;&nbsp;accessModes:<br>&nbsp;&nbsp;&nbsp;&nbsp;- ReadWriteOnce<br>&nbsp;&nbsp;resources:<br>&nbsp;&nbsp;&nbsp;&nbsp;requests:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;storage: 20Gi</code>
+                                </div>
+                            </div>
+                            
+                            <h6>2. 创建 Jenkins ServiceAccount 和 RBAC</h6>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># jenkins-rbac.yaml</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: v1<br>kind: ServiceAccount<br>metadata:<br>&nbsp;&nbsp;name: jenkins<br>&nbsp;&nbsp;namespace: jenkins<br>---<br>apiVersion: rbac.authorization.k8s.io/v1<br>kind: ClusterRole<br>metadata:<br>&nbsp;&nbsp;name: jenkins-role<br>rules:<br>- apiGroups: ["", "extensions", "apps"]<br>&nbsp;&nbsp;resources: ["deployments", "replicasets", "pods", "services"]<br>&nbsp;&nbsp;verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]<br>- apiGroups: ["", "extensions", "apps"]<br>&nbsp;&nbsp;resources: ["configmaps", "secrets"]<br>&nbsp;&nbsp;verbs: ["*"]<br>---<br>apiVersion: rbac.authorization.k8s.io/v1<br>kind: ClusterRoleBinding<br>metadata:<br>&nbsp;&nbsp;name: jenkins-role-binding<br>roleRef:<br>&nbsp;&nbsp;apiGroup: rbac.authorization.k8s.io<br>&nbsp;&nbsp;kind: ClusterRole<br>&nbsp;&nbsp;name: jenkins-role<br>subjects:<br>- kind: ServiceAccount<br>&nbsp;&nbsp;name: jenkins<br>&nbsp;&nbsp;namespace: jenkins</code>
+                                </div>
+                            </div>
+                            
+                            <h6>3. 部署 Jenkins</h6>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 创建 Jenkins 命名空间并部署</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code"># 创建命名空间<br>kubectl create namespace jenkins<br><br># 应用 RBAC 配置<br>kubectl apply -f jenkins-rbac.yaml<br><br># 应用部署配置<br>kubectl apply -f jenkins-deployment.yaml<br><br># 检查部署状态<br>kubectl get pods -n jenkins<br>kubectl get services -n jenkins</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">第四步：配置 Jenkins 自动化流水线</h5>
+                            <p>配置 Jenkins 以实现从 Gogs 代码仓库到 Kubernetes 的自动化部署。</p>
+                            
+                            <h6>1. Jenkins 安装必要插件</h6>
+                            <p>需要安装以下插件：</p>
+                            <ul>
+                                <li>Kubernetes plugin</li>
+                                <li>Docker plugin</li>
+                                <li>Git plugin</li>
+                                <li>Pipeline plugin</li>
+                                <li>Blue Ocean plugin</li>
+                            </ul>
+                            
+                            <h6>2. Jenkins Pipeline 脚本示例</h6>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># Jenkinsfile 示例</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">pipeline {<br>&nbsp;&nbsp;agent {<br>&nbsp;&nbsp;&nbsp;&nbsp;label 'master'<br>&nbsp;&nbsp;}<br><br>&nbsp;&nbsp;environment {<br>&nbsp;&nbsp;&nbsp;&nbsp;DOCKER_REGISTRY = 'your-registry.com'<br>&nbsp;&nbsp;&nbsp;&nbsp;IMAGE_NAME = 'myapp'<br>&nbsp;&nbsp;&nbsp;&nbsp;NAMESPACE = 'production'<br>&nbsp;&nbsp;}<br><br>&nbsp;&nbsp;stages {<br>&nbsp;&nbsp;&nbsp;&nbsp;stage('Checkout') {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;steps {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;checkout scm<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>&nbsp;&nbsp;}<br><br>&nbsp;&nbsp;&nbsp;&nbsp;stage('Build') {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;steps {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;script {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;def appImage = docker.build("${env.DOCKER_REGISTRY}/${env.IMAGE_NAME}:${env.BUILD_NUMBER}")<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;docker.withRegistry('', 'docker-registry-credential') {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;appImage.push()<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;appImage.push('latest')<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>&nbsp;&nbsp;}<br><br>&nbsp;&nbsp;&nbsp;&nbsp;stage('Deploy to Kubernetes') {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;steps {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;script {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// 更新 Kubernetes 部署<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sh """<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kubectl set image deployment/${env.IMAGE_NAME}-deployment \\<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${env.IMAGE_NAME}=${env.DOCKER_REGISTRY}/${env.IMAGE_NAME}:${env.BUILD_NUMBER} \\<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--namespace=${env.NAMESPACE}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"""<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>&nbsp;&nbsp;}<br><br>&nbsp;&nbsp;&nbsp;&nbsp;stage('Verify Deployment') {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;steps {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;script {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sh """<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo '验证部署状态...'<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kubectl rollout status deployment/${env.IMAGE_NAME}-deployment --namespace=${env.NAMESPACE}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"""<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>&nbsp;&nbsp;}<br>&nbsp;&nbsp;}<br><br>&nbsp;&nbsp;post {<br>&nbsp;&nbsp;&nbsp;&nbsp;always {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo 'Pipeline completed'<br>&nbsp;&nbsp;&nbsp;&nbsp;}<br>&nbsp;&nbsp;&nbsp;&nbsp;success {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo 'Pipeline succeeded'<br>&nbsp;&nbsp;&nbsp;&nbsp;}<br>&nbsp;&nbsp;&nbsp;&nbsp;failure {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo 'Pipeline failed'<br>&nbsp;&nbsp;&nbsp;&nbsp;}<br>&nbsp;&nbsp;}<br>}</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">第五步：配置 Gogs Webhook</h5>
+                            <p>配置 Gogs 仓库的 Webhook，实现代码提交后自动触发 Jenkins 构建。</p>
+                            
+                            <h6>1. Webhook 配置示例</h6>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># Gogs Webhook 配置</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">Webhook URL: http://jenkins-service.jenkins.svc.cluster.local:8080/gogs-webhook/post<br>Content type: application/json<br>Push events: checked<br>Payload URL: http://jenkins-service.jenkins.svc.cluster.local:8080/gogs-webhook/post</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">第六步：创建应用部署示例</h5>
+                            <p>创建一个简单的应用程序示例，用于演示自动部署流程。</p>
+                            
+                            <h6>1. 示例应用 Dockerfile</h6>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># Dockerfile 示例</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code"># 使用官方 Node.js 运行时作为基础镜像<br>FROM node:16-alpine<br><br># 设置工作目录<br>WORKDIR /app<br><br># 复制 package 文件并安装依赖<br>COPY package*.json ./<br>RUN npm install --only=production<br><br># 复制应用代码<br>COPY . .<br><br># 暴露端口<br>EXPOSE 3000<br><br># 定义启动命令<br>CMD ["npm", "start"]</code>
+                                </div>
+                            </div>
+                            
+                            <h6>2. 应用部署配置</h6>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># app-deployment.yaml</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: apps/v1<br>kind: Deployment<br>metadata:<br>&nbsp;&nbsp;name: myapp-deployment<br>&nbsp;&nbsp;namespace: production<br>spec:<br>&nbsp;&nbsp;replicas: 2<br>&nbsp;&nbsp;selector:<br>&nbsp;&nbsp;&nbsp;&nbsp;matchLabels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: myapp<br>&nbsp;&nbsp;template:<br>&nbsp;&nbsp;&nbsp;&nbsp;metadata:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;labels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: myapp<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: myapp<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;image: myapp:latest<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ports:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- containerPort: 3000<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;env:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: NODE_ENV<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;value: "production"<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resources:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;requests:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;memory: "128Mi"<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cpu: "100m"<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;limits:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;memory: "256Mi"<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cpu: "200m"<br>---<br>apiVersion: v1<br>kind: Service<br>metadata:<br>&nbsp;&nbsp;name: myapp-service<br>&nbsp;&nbsp;namespace: production<br>spec:<br>&nbsp;&nbsp;type: ClusterIP<br>&nbsp;&nbsp;selector:<br>&nbsp;&nbsp;&nbsp;&nbsp;app: myapp<br>&nbsp;&nbsp;ports:<br>&nbsp;&nbsp;- port: 80<br>&nbsp;&nbsp;&nbsp;&nbsp;targetPort: 3000</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">自动化部署流程</h5>
+                            <p>完整的自动化部署流程如下：</p>
+                            
+                            <div class="architecture-diagram bg-light p-4 rounded">
+                                <pre class="mermaid">
+sequenceDiagram
+    participant Dev as 开发者
+    participant Gogs as Gogs 仓库
+    participant Jenkins as Jenkins
+    participant Docker as Docker
+    participant Registry as 镜像仓库
+    participant K8s as Kubernetes
+    
+    Dev->>Gogs: 提交代码
+    Gogs->>Jenkins: 触发 Webhook
+    Jenkins->>Docker: 构建 Docker 镜像
+    Docker->>Registry: 推送镜像
+    Jenkins->>K8s: 部署到 K8s 集群
+    K8s->>K8s: 更新应用部署
+    K8s->>Jenkins: 返回部署状态
+    Jenkins->>Dev: 通知构建结果
+                                </pre>
+                            </div>
+                            
+                            <h5 class="mt-4">最佳实践和注意事项</h5>
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <h6>安全最佳实践</h6>
+                                    <ul>
+                                        <li>使用 Kubernetes Secrets 管理敏感信息</li>
+                                        <li>配置 RBAC 权限控制</li>
+                                        <li>使用私有镜像仓库</li>
+                                        <li>定期更新系统和组件</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>运维最佳实践</h6>
+                                    <ul>
+                                        <li>配置健康检查和监控</li>
+                                        <li>使用配置管理（ConfigMap/Secret）</li>
+                                        <li>实现蓝绿部署或滚动更新</li>
+                                        <li>备份和恢复策略</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">故障排除</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="table-light">
+                                        <tr><th>问题</th><th>可能原因</th><th>解决方案</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Webhook 无法触发</td>
+                                            <td>网络不通或认证失败</td>
+                                            <td>检查 Jenkins 服务可访问性，验证 Webhook URL</td>
+                                        </tr>
+                                        <tr>
+                                            <td>镜像构建失败</td>
+                                            <td>Dockerfile 问题或依赖缺失</td>
+                                            <td>检查 Dockerfile 语法，验证构建环境</td>
+                                        </tr>
+                                        <tr>
+                                            <td>部署失败</td>
+                                            <td>K8s 权限不足或资源配置错误</td>
+                                            <td>检查 RBAC 权限，验证资源清单</td>
+                                        </tr>
+                                        <tr>
+                                            <td>应用无法访问</td>
+                                            <td>服务配置错误或网络策略限制</td>
+                                            <td>检查 Service 和 Ingress 配置</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h5 class="mt-4">常用命令</h5>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 检查所有组件状态</span><br>
+                                    <code class="command-code">kubectl get pods -A</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 查看 Jenkins 日志</span><br>
+                                    <code class="command-code">kubectl logs -f deployment/jenkins-deployment -n jenkins</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 查看应用部署状态</span><br>
+                                    <code class="command-code">kubectl rollout status deployment/myapp-deployment -n production</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 测试应用访问</span><br>
+                                    <code class="command-code">kubectl port-forward service/myapp-service -n production 8080:80</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="../../assets/js/mermaid.min.js"></script>
+    <script src="../../assets/js/bootstrap.min.js"></script>
+    <script src="../../assets/js/script.js"></script>
+</body>
+</html>

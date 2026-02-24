@@ -322,8 +322,9 @@ flowchart LR
                                                     <h6 class="card-title deployment-title">5. CronJob (定时任务)</h6>
                                                     <p class="card-text deployment-description">CronJob 用于创建定时任务，按照预定的时间表运行 Job，适用于周期性执行的任务（如备份、清理、报表生成等）。</p>
                                                 </div>
-                                                <div class="architecture-diagram bg-light p-3 rounded my-3">
-                                                    <pre class="mermaid mb-0">
+                                            </div>
+                                            <div class="architecture-diagram bg-light p-3 rounded my-3">
+                                                <pre class="mermaid mb-0">
 flowchart TD
     S[Schedule] --> CJ[CronJob]
     CJ --> J[Job]
@@ -331,28 +332,27 @@ flowchart TD
     P --> R[Run Task]
     R --> |Success| D[Done]
     R --> |Failed| R[Retry/Failed]
-                                                    </pre>
+                                                </pre>
+                                            </div>
+                                            <div class="table-responsive my-3">
+                                                <table class="table table-bordered">
+                                                    <thead class="table-warning">
+                                                        <tr><th>特性</th><th>Deployment</th><th>CronJob</th></tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr><td>用途</td><td>持续运行应用</td><td>定时执行任务</td></tr>
+                                                        <tr><td>运行模式</td><td>持续运行</td><td>周期性运行</td></tr>
+                                                        <tr><td>调度方式</td><td>自动扩缩容</td><td>Cron 表达式</td></tr>
+                                                        <tr><td>适用场景</td><td>Web 应用、API</td><td>备份、清理、报表</td></tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="command-block deployment-config">
+                                                <div class="command-item">
+                                                    <span class="command-prompt"># 创建定时任务（每分钟执行一次）</span>
                                                 </div>
-                                                <div class="table-responsive my-3">
-                                                    <table class="table table-bordered">
-                                                        <thead class="table-warning">
-                                                            <tr><th>特性</th><th>Deployment</th><th>CronJob</th></tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr><td>用途</td><td>持续运行应用</td><td>定时执行任务</td></tr>
-                                                            <tr><td>运行模式</td><td>持续运行</td><td>周期性运行</td></tr>
-                                                            <tr><td>调度方式</td><td>自动扩缩容</td><td>Cron 表达式</td></tr>
-                                                            <tr><td>适用场景</td><td>Web 应用、API</td><td>备份、清理、报表</td></tr>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                                <div class="command-block deployment-config">
-                                                    <div class="command-item">
-                                                        <span class="command-prompt"># 创建定时任务（每分钟执行一次）</span>
-                                                    </div>
-                                                    <div class="command-item">
-                                                        <code class="command-code">apiVersion: batch/v1<br>kind: CronJob<br>metadata:<br>&nbsp;&nbsp;name: my-cronjob<br>spec:<br>&nbsp;&nbsp;schedule: "* * * * *"&nbsp;&nbsp;# Cron 表达式<br>&nbsp;&nbsp;jobTemplate:<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;template:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: cronjob<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;image: busybox:1.28<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;args:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- /bin/sh<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- -c<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- date; echo "Running a scheduled task"<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;restartPolicy: OnFailure<br>&nbsp;&nbsp;successfulJobsHistoryLimit: 3<br>&nbsp;&nbsp;failedJobsHistoryLimit: 1</code>
-                                                    </div>
+                                                <div class="command-item">
+                                                    <code class="command-code">apiVersion: batch/v1<br>kind: CronJob<br>metadata:<br>&nbsp;&nbsp;name: my-cronjob<br>spec:<br>&nbsp;&nbsp;schedule: "* * * * *"&nbsp;&nbsp;# Cron 表达式<br>&nbsp;&nbsp;jobTemplate:<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;template:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: cronjob<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;image: busybox:1.28<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;args:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- /bin/sh<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- -c<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- date; echo "Running a scheduled task"<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;restartPolicy: OnFailure<br>&nbsp;&nbsp;successfulJobsHistoryLimit: 3<br>&nbsp;&nbsp;failedJobsHistoryLimit: 1</code>
                                                 </div>
                                             </div>
                                         </div>

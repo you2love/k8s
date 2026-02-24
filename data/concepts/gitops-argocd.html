@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitOps 与 Argo CD - Kubernetes 学习教程</title>
+    <link href="../../assets/css/bootstrap-local.css" rel="stylesheet">
+    <link href="../../assets/css/fonts-local.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Left Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <span>K8s 教程</span>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#architecture" data-target="architecture">
+                        <span>架构图</span>
+                    </a>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="../../index.html#concepts" data-target="concepts">
+                        <span>核心概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../concepts/pod.html">Pod</a></li>
+                        <li><a href="../concepts/deployment.html">Deployment</a></li>
+                        <li><a href="../concepts/service.html">Service</a></li>
+                        <li><a href="../concepts/node.html">Node</a></li>
+                        <li><a href="../concepts/configmap.html">ConfigMap</a></li>
+                        <li><a href="../concepts/secret.html">Secret</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="../../index.html#advanced-concepts" data-target="advanced-concepts">
+                        <span>高级概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="helm.html">Helm</a></li>
+                        <li><a href="networking.html">网络原理</a></li>
+                        <li><a href="storage.html">存储</a></li>
+                        <li><a href="namespace.html">命名空间</a></li>
+                        <li><a href="labels.html">标签与选择器</a></li>
+                        <li><a href="certificates.html">证书管理</a></li>
+                        <li><a href="scaling.html">节点扩缩容</a></li>
+                        <li><a href="upgrades.html">集群版本升级</a></li>
+                        <li><a href="helm-charts.html">Helm Chart 编写</a></li>
+                        <li><a href="coredns.html">CoreDNS</a></li>
+                        <li><a href="stateful-apps.html">数据库/中间件部署</a></li>
+                        <li><a href="ingress.html">Ingress 高级配置</a></li>
+                        <li><a href="ci-integration.html">CI 集成</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../data/installation.html" data-target="installation">
+                        <span>安装指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../data/practice.html" data-target="practice">
+                        <span>实践指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../data/troubleshooting.html" data-target="troubleshooting">
+                        <span>常见问题</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../data/best-practices.html" data-target="best-practices">
+                        <span>最佳实践</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../data/rancher.html" data-target="rancher">
+                        <span>Rancher</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <section class="py-5" id="gitops-argocd">
+                <div class="container">
+                    <h2 class="text-center mb-5">GitOps 与 Argo CD</h2>
+                    
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <p>GitOps 是一种基于 Git 的集群声明式管理和持续交付方法。Argo CD 是一个开源的 GitOps 工具，提供声明式、自动化、GitOps 驱动的 Kubernetes 应用程序部署和生命周期管理。</p>
+                            
+                            <h5 class="mt-4">GitOps 与 Argo CD 架构</h5>
+                            <div class="architecture-diagram bg-light p-4 rounded">
+                                <pre class="mermaid">
+graph TB
+    subgraph "Git 仓库"
+        REPO[Git Repository]
+        BRANCH[分支: main<br/>分支: dev]
+    end
+    
+    subgraph "Argo CD"
+        ARGO[Argo CD Server]
+        API[Argo CD API]
+        RECONCILER[应用同步器]
+    end
+    
+    subgraph "Kubernetes 集群"
+        K8S[K8s 集群]
+        DEPLOY[部署资源]
+        SVC[服务资源]
+    end
+    
+    REPO --> ARGO
+    ARGO --> RECONCILER
+    RECONCILER --> K8S
+    K8S --> API
+    API --> REPO
+    BRANCH --> REPO
+    DEPLOY --> K8S
+    SVC --> K8S
+                                </pre>
+                            </div>
+                            
+                            <h5 class="mt-4">GitOps 与传统 CI/CD 对比</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="table-primary">
+                                        <tr><th>对比项</th><th>传统 CI/CD</th><th>GitOps</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>部署触发</strong></td>
+                                            <td>CI/CD 管道触发部署</td>
+                                            <td>Git 仓库状态变化触发同步</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>配置管理</strong></td>
+                                            <td>配置可能散落在不同系统</td>
+                                            <td>所有配置存储在 Git 仓库</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>状态一致性</strong></td>
+                                            <td>难以保证状态一致性</td>
+                                            <td>持续监控，自动同步至期望状态</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>审计追踪</strong></td>
+                                            <td>分散在多个系统</td>
+                                            <td>Git 提供完整审计追踪</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>回滚机制</strong></td>
+                                            <td>需要专门的回滚流程</td>
+                                            <td>Git commit 回退即回滚</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h5 class="mt-4">Argo CD 安装与配置</h5>
+                            <p>Argo CD 由几个核心组件构成，包括 API 服务器、数据库、应用控制器和仓库服务器。</p>
+                            
+                            <h6>1. Argo CD 部署清单</h6>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># Argo CD 基础部署</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: v1<br>kind: Namespace<br>metadata:<br>&nbsp;&nbsp;name: argocd<br>---<br>apiVersion: apps/v1<br>kind: Deployment<br>metadata:<br>&nbsp;&nbsp;name: argocd-server<br>&nbsp;&nbsp;namespace: argocd<br>spec:<br>&nbsp;&nbsp;replicas: 1<br>&nbsp;&nbsp;selector:<br>&nbsp;&nbsp;&nbsp;&nbsp;matchLabels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app.kubernetes.io/name: argocd-server<br>&nbsp;&nbsp;template:<br>&nbsp;&nbsp;&nbsp;&nbsp;metadata:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;labels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app.kubernetes.io/name: argocd-server<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: argocd-server<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;image: quay.io/argoproj/argocd:v2.7.10<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;command:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- argocd-server<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- --staticassets<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- /shared/app<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- --insecure<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ports:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: http<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;protocol: TCP<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containerPort: 8080<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: https<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;protocol: TCP<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containerPort: 8080</code>
+                                </div>
+                            </div>
+                            
+                            <h6>2. Argo CD Service 与 Ingress</h6>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># Argo CD 服务配置</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: v1<br>kind: Service<br>metadata:<br>&nbsp;&nbsp;name: argocd-server<br>&nbsp;&nbsp;namespace: argocd<br>spec:<br>&nbsp;&nbsp;type: ClusterIP<br>&nbsp;&nbsp;ports:<br>&nbsp;&nbsp;- name: http<br>&nbsp;&nbsp;&nbsp;&nbsp;protocol: TCP<br>&nbsp;&nbsp;&nbsp;&nbsp;port: 80<br>&nbsp;&nbsp;&nbsp;&nbsp;targetPort: 8080<br>&nbsp;&nbsp;- name: https<br>&nbsp;&nbsp;&nbsp;&nbsp;protocol: TCP<br>&nbsp;&nbsp;&nbsp;&nbsp;port: 443<br>&nbsp;&nbsp;&nbsp;&nbsp;targetPort: 8080<br>&nbsp;&nbsp;selector:<br>&nbsp;&nbsp;&nbsp;&nbsp;app.kubernetes.io/name: argocd-server<br>---<br>apiVersion: networking.k8s.io/v1<br>kind: Ingress<br>metadata:<br>&nbsp;&nbsp;name: argocd-ingress<br>&nbsp;&nbsp;namespace: argocd<br>&nbsp;&nbsp;annotations:<br>&nbsp;&nbsp;&nbsp;&nbsp;kubernetes.io/ingress.class: nginx<br>&nbsp;&nbsp;&nbsp;&nbsp;nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"<br>spec:<br>&nbsp;&nbsp;rules:<br>&nbsp;&nbsp;- host: argocd.example.com<br>&nbsp;&nbsp;&nbsp;&nbsp;http:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;paths:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- path: /<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pathType: Prefix<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;backend:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;service:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name: argocd-server<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;port:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;number: 443</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">Argo CD Application 配置</h5>
+                            <p>Argo CD Application 定义了从 Git 仓库同步到 Kubernetes 集群的应用部署。</p>
+                            
+                            <h6>1. Application CRD 配置示例</h6>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># Argo CD Application 配置</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: argoproj.io/v1alpha1<br>kind: Application<br>metadata:<br>&nbsp;&nbsp;name: myapp<br>&nbsp;&nbsp;namespace: argocd<br>spec:<br>&nbsp;&nbsp;project: default<br>&nbsp;&nbsp;source:<br>&nbsp;&nbsp;&nbsp;&nbsp;repoURL: https://github.com/username/myapp.git<br>&nbsp;&nbsp;&nbsp;&nbsp;targetRevision: HEAD<br>&nbsp;&nbsp;&nbsp;&nbsp;path: k8s/overlays/prod<br>&nbsp;&nbsp;destination:<br>&nbsp;&nbsp;&nbsp;&nbsp;server: https://kubernetes.default.svc<br>&nbsp;&nbsp;&nbsp;&nbsp;namespace: myapp<br>&nbsp;&nbsp;syncPolicy:<br>&nbsp;&nbsp;&nbsp;&nbsp;automated:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;prune: true<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;selfHeal: true<br>&nbsp;&nbsp;&nbsp;&nbsp;syncOptions:<br>&nbsp;&nbsp;&nbsp;&nbsp;- CreateNamespace=true<br>&nbsp;&nbsp;&nbsp;&nbsp;- ApplyOutOfSyncOnly=true</code>
+                                </div>
+                            </div>
+                            
+                            <h6>2. Argo CD Project 配置</h6>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># Argo CD Project 定义</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: argoproj.io/v1alpha1<br>kind: AppProject<br>metadata:<br>&nbsp;&nbsp;name: default<br>&nbsp;&nbsp;namespace: argocd<br>spec:<br>&nbsp;&nbsp;description: Default Argo CD Project<br>&nbsp;&nbsp;destinations:<br>&nbsp;&nbsp;- namespace: '*'<br>&nbsp;&nbsp;&nbsp;&nbsp;server: https://kubernetes.default.svc<br>&nbsp;&nbsp;sourceRepos:<br>&nbsp;&nbsp;- '*'<br>&nbsp;&nbsp;clusterResourceWhitelist:<br>&nbsp;&nbsp;- group: '*'<br>&nbsp;&nbsp;&nbsp;&nbsp;kind: '*'<br>&nbsp;&nbsp;namespaceResourceWhitelist:<br>&nbsp;&nbsp;- group: '*'<br>&nbsp;&nbsp;&nbsp;&nbsp;kind: '*'</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">GitOps 工作流程</h5>
+                            <p>GitOps 的核心是将系统声明状态存储在 Git 仓库中，Argo CD 持续监控集群状态并自动同步到期望状态。</p>
+                            
+                            <div class="architecture-diagram bg-light p-4 rounded">
+                                <pre class="mermaid">
+sequenceDiagram
+    participant Dev as 开发者
+    participant Git as Git 仓库
+    participant ArgoCD as Argo CD
+    participant K8s as Kubernetes 集群
+    
+    Dev->>Git: 提交配置更改
+    Git-->>ArgoCD: 变更通知
+    ArgoCD->>Git: 拉取最新配置
+    ArgoCD->>K8s: 部署/更新资源
+    K8s-->>ArgoCD: 当前状态
+    ArgoCD->>ArgoCD: 比较期望状态与实际状态
+    Note over ArgoCD,K8s: 持续监控和同步
+                                </pre>
+                            </div>
+                            
+                            <h5 class="mt-4">Argo CD 同步策略</h5>
+                            <p>Argo CD 提供多种同步策略，以满足不同的部署需求。</p>
+                            
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <h6>自动同步 (Automated Sync)</h6>
+                                    <ul>
+                                        <li>当 Git 仓库中的配置发生变化时自动同步</li>
+                                        <li>需要配置 selfHeal 以自动修复偏移</li>
+                                        <li>适合生产环境的声明式管理</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>手动同步 (Manual Sync)</h6>
+                                    <ul>
+                                        <li>通过 UI 或 CLI 手动触发同步</li>
+                                        <li>提供更精细的控制</li>
+                                        <li>适合需要人工审批的场景</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <h6>自动同步配置示例</h6>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 自动同步配置</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: argoproj.io/v1alpha1<br>kind: Application<br>metadata:<br>&nbsp;&nbsp;name: myapp-autosync<br>&nbsp;&nbsp;namespace: argocd<br>spec:<br>&nbsp;&nbsp;source:<br>&nbsp;&nbsp;&nbsp;&nbsp;repoURL: https://github.com/username/myapp.git<br>&nbsp;&nbsp;&nbsp;&nbsp;targetRevision: HEAD<br>&nbsp;&nbsp;&nbsp;&nbsp;path: k8s<br>&nbsp;&nbsp;destination:<br>&nbsp;&nbsp;&nbsp;&nbsp;server: https://kubernetes.default.svc<br>&nbsp;&nbsp;&nbsp;&nbsp;namespace: myapp<br>&nbsp;&nbsp;syncPolicy:<br>&nbsp;&nbsp;&nbsp;&nbsp;automated:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;prune: true<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;selfHeal: true<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;allowEmpty: false<br>&nbsp;&nbsp;&nbsp;&nbsp;syncOptions:<br>&nbsp;&nbsp;&nbsp;&nbsp;- CreateNamespace=true<br>&nbsp;&nbsp;&nbsp;&nbsp;- ApplyOutOfSyncOnly=true<br>&nbsp;&nbsp;&nbsp;&nbsp;- Validate=false<br>&nbsp;&nbsp;&nbsp;&nbsp;- SkipDryRunOnMissingResource=true</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">Argo CD 与 Helm 集成</h5>
+                            <p>Argo CD 可以直接管理 Helm charts，提供对 Helm 应用的声明式管理和同步。</p>
+                            
+                            <h6>Helm Chart 作为 Argo CD 应用</h6>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 使用 Helm Chart 的 Argo CD Application</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: argoproj.io/v1alpha1<br>kind: Application<br>metadata:<br>&nbsp;&nbsp;name: myapp-helm<br>&nbsp;&nbsp;namespace: argocd<br>spec:<br>&nbsp;&nbsp;source:<br>&nbsp;&nbsp;&nbsp;&nbsp;repoURL: https://charts.helm.sh/stable<br>&nbsp;&nbsp;&nbsp;&nbsp;chart: nginx-ingress<br>&nbsp;&nbsp;&nbsp;&nbsp;targetRevision: 1.41.3<br>&nbsp;&nbsp;&nbsp;&nbsp;helm:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;releaseName: my-nginx-ingress<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;valueFiles:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- values.yaml<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;parameters:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: controller.service.type<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;value: LoadBalancer<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: controller.service.loadBalancerIP<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;value: 10.10.10.10<br>&nbsp;&nbsp;destination:<br>&nbsp;&nbsp;&nbsp;&nbsp;server: https://kubernetes.default.svc<br>&nbsp;&nbsp;&nbsp;&nbsp;namespace: nginx-ingress<br>&nbsp;&nbsp;syncPolicy:<br>&nbsp;&nbsp;&nbsp;&nbsp;automated:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;prune: true<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;selfHeal: true</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">Argo CD 与 Kustomize 集成</h5>
+                            <p>Argo CD 内置支持 Kustomize，可以直接使用 Kustomize 的基础和覆盖层功能。</p>
+                            
+                            <h6>Kustomize 作为 Argo CD 应用源</h6>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 使用 Kustomize 的 Argo CD Application</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: argoproj.io/v1alpha1<br>kind: Application<br>metadata:<br>&nbsp;&nbsp;name: myapp-kustomize<br>&nbsp;&nbsp;namespace: argocd<br>spec:<br>&nbsp;&nbsp;source:<br>&nbsp;&nbsp;&nbsp;&nbsp;repoURL: https://github.com/username/myapp.git<br>&nbsp;&nbsp;&nbsp;&nbsp;targetRevision: HEAD<br>&nbsp;&nbsp;&nbsp;&nbsp;path: k8s/base<br>&nbsp;&nbsp;&nbsp;&nbsp;kustomize:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;namePrefix: prod-<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nameSuffix: -v1<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;images:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- myapp:1.2.3<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;replicas:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: myapp<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;count: 3<br>&nbsp;&nbsp;destination:<br>&nbsp;&nbsp;&nbsp;&nbsp;server: https://kubernetes.default.svc<br>&nbsp;&nbsp;&nbsp;&nbsp;namespace: myapp<br>&nbsp;&nbsp;syncPolicy:<br>&nbsp;&nbsp;&nbsp;&nbsp;automated:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;prune: true<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;selfHeal: true</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">GitOps 最佳实践</h5>
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <h6>安全最佳实践</h6>
+                                    <ul>
+                                        <li>使用 RBAC 限制对 Argo CD 的访问</li>
+                                        <li>通过项目 (Project) 限制可部署的资源类型</li>
+                                        <li>使用安全的 Git 仓库访问方式</li>
+                                        <li>启用审计日志记录所有操作</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>操作最佳实践</h6>
+                                    <ul>
+                                        <li>使用自动同步与自愈功能</li>
+                                        <li>定期备份 Argo CD 配置</li>
+                                        <li>实施适当的健康检查</li>
+                                        <li>配置通知和告警</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">GitOps 故障排除</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="table-light">
+                                        <tr><th>常见问题</th><th>可能原因</th><th>解决方案</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>应用无法同步</td>
+                                            <td>Git 仓库访问问题</td>
+                                            <td>验证仓库 URL、认证凭据和网络连接</td>
+                                        </tr>
+                                        <td>同步冲突</td>
+                                            <td>手动修改了集群资源</td>
+                                            <td>使用 'replace' 或 'force' 选项同步</td>
+                                        </tr>
+                                        <tr>
+                                            <td>健康检查失败</td>
+                                            <td>资源定义不正确</td>
+                                            <td>检查资源定义和健康检查配置</td>
+                                        </tr>
+                                        <tr>
+                                            <td>权限不足</td>
+                                            <td>RBAC 配置不当</td>
+                                            <td>配置正确的 RBAC 角色和绑定</td>
+                                        </tr>
+                                        <tr>
+                                            <td>性能问题</td>
+                                            <td>同步频率过高</td>
+                                            <td>调整同步间隔和资源限制</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h5 class="mt-4">常用命令</h5>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 安装 Argo CD CLI</span><br>
+                                    <code class="command-code">curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 登录 Argo CD 服务器</span><br>
+                                    <code class="command-code">argocd login argocd-server.example.com --username admin --password $(kubectl get pods -n argocd -l app.kubernetes.io/name=argocd-server -o name | cut -d'/' -f 2)</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 创建应用</span><br>
+                                    <code class="command-code">argocd app create myapp --repo https://github.com/username/myapp.git --path k8s --dest-server https://kubernetes.default.svc --dest-namespace myapp</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 同步应用</span><br>
+                                    <code class="command-code">argocd app sync myapp</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 查看应用状态</span><br>
+                                    <code class="command-code">argocd app get myapp</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 启用自动同步</span><br>
+                                    <code class="command-code">argocd app set myapp --sync-policy automated</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="../../assets/js/mermaid.min.js"></script>
+    <script src="../../assets/js/bootstrap.min.js"></script>
+    <script src="../../assets/js/script.js"></script>
+</body>
+</html>

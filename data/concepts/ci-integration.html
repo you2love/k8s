@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CI 集成 - Kubernetes 学习教程</title>
+    <link href="../../assets/css/bootstrap-local.css" rel="stylesheet">
+    <link href="../../assets/css/fonts-local.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Left Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <span>K8s 教程</span>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#architecture" data-target="architecture">
+                        <span>架构图</span>
+                    </a>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="../../index.html#concepts" data-target="concepts">
+                        <span>核心概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../concepts/pod.html">Pod</a></li>
+                        <li><a href="../concepts/deployment.html">Deployment</a></li>
+                        <li><a href="../concepts/service.html">Service</a></li>
+                        <li><a href="../concepts/node.html">Node</a></li>
+                        <li><a href="../concepts/configmap.html">ConfigMap</a></li>
+                        <li><a href="../concepts/secret.html">Secret</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="../../index.html#advanced-concepts" data-target="advanced-concepts">
+                        <span>高级概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="helm.html">Helm</a></li>
+                        <li><a href="networking.html">网络原理</a></li>
+                        <li><a href="storage.html">存储</a></li>
+                        <li><a href="namespace.html">命名空间</a></li>
+                        <li><a href="labels.html">标签与选择器</a></li>
+                        <li><a href="certificates.html">证书管理</a></li>
+                        <li><a href="scaling.html">节点扩缩容</a></li>
+                        <li><a href="upgrades.html">集群版本升级</a></li>
+                        <li><a href="helm-charts.html">Helm Chart 编写</a></li>
+                        <li><a href="coredns.html">CoreDNS</a></li>
+                        <li><a href="stateful-apps.html">数据库/中间件部署</a></li>
+                        <li><a href="ingress.html">Ingress 高级配置</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../data/installation.html" data-target="installation">
+                        <span>安装指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../data/practice.html" data-target="practice">
+                        <span>实践指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../data/troubleshooting.html" data-target="troubleshooting">
+                        <span>常见问题</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../data/best-practices.html" data-target="best-practices">
+                        <span>最佳实践</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../data/rancher.html" data-target="rancher">
+                        <span>Rancher</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <section class="py-5" id="ci-integration">
+                <div class="container">
+                    <h2 class="text-center mb-5">CI 集成</h2>
+                    
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <p>CI（持续集成）是现代软件开发流程中的关键环节，它与 Kubernetes 集成可以实现应用程序的自动化构建、测试和部署。本章节将介绍如何将 Jenkins、GitLab CI 和 GitHub Actions 与 Kubernetes 集成，实现从代码提交到容器化部署的完整自动化流水线。</p>
+                            
+                            <h5 class="mt-4">CI/CD 与 Kubernetes 集成架构</h5>
+                            <div class="architecture-diagram bg-light p-4 rounded">
+                                <pre class="mermaid">
+graph TB
+    subgraph "代码仓库"
+        GIT[Git Repository]
+    end
+    
+    subgraph "CI/CD 系统"
+        JENKINS[Jenkins<br/>GitLab CI<br/>GitHub Actions]
+        DOCKER[容器化构建]
+        TEST[自动化测试]
+    end
+    
+    subgraph "Kubernetes 集群"
+        REGISTRY[镜像仓库]
+        DEPLOY[自动部署]
+        MONITOR[监控系统]
+    end
+    
+    GIT --> JENKINS
+    JENKINS --> DOCKER
+    DOCKER --> REGISTRY
+    REGISTRY --> DEPLOY
+    DEPLOY --> MONITOR
+    TEST --> REGISTRY
+                                </pre>
+                            </div>
+                            
+                            <h5 class="mt-4">CI 工具对比</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="table-primary">
+                                        <tr><th>工具</th><th>优点</th><th>缺点</th><th>适用场景</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>Jenkins</strong></td>
+                                            <td>功能强大，插件丰富，社区支持好</td>
+                                            <td>配置复杂，资源消耗大，升级困难</td>
+                                            <td>大型企业，复杂流水线</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>GitLab CI</strong></td>
+                                            <td>与 GitLab 集成度高，配置简单</td>
+                                            <td>仅限于 GitLab 平台</td>
+                                            <td>GitLab 用户，中型企业</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>GitHub Actions</strong></td>
+                                            <td>与 GitHub 深度集成，易上手</td>
+                                            <td>依赖于 GitHub 平台，成本可能较高</td>
+                                            <td>GitHub 用户，开源项目</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h5 class="mt-4">Jenkins 与 Kubernetes 集成</h5>
+                            <p>Jenkins 是最流行的 CI/CD 工具之一，通过 Kubernetes 插件可以实现在 Kubernetes 集群中动态创建 Jenkins 构建节点。</p>
+                            
+                            <h6>1. Jenkins K8s 插件配置</h6>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># Jenkins K8s 插件配置示例</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: v1<br>kind: ServiceAccount<br>metadata:<br>&nbsp;&nbsp;name: jenkins<br>&nbsp;&nbsp;namespace: jenkins<br>---<br>apiVersion: rbac.authorization.k8s.io/v1<br>kind: ClusterRole<br>metadata:<br>&nbsp;&nbsp;name: jenkins<br>rules:<br>- apiGroups: ["", "extensions", "apps"]<br>&nbsp;&nbsp;resources: ["deployments", "replicasets", "pods"]<br>&nbsp;&nbsp;verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]<br>- apiGroups: ["", "extensions", "apps"]<br>&nbsp;&nbsp;resources: ["configmaps", "services"]<br>&nbsp;&nbsp;verbs: ["*"]<br>---<br>apiVersion: rbac.authorization.k8s.io/v1<br>kind: ClusterRoleBinding<br>metadata:<br>&nbsp;&nbsp;name: jenkins<br>roleRef:<br>&nbsp;&nbsp;apiGroup: rbac.authorization.k8s.io<br>&nbsp;&nbsp;kind: ClusterRole<br>&nbsp;&nbsp;name: jenkins<br>subjects:<br>- kind: ServiceAccount<br>&nbsp;&nbsp;name: jenkins<br>&nbsp;&nbsp;namespace: jenkins</code>
+                                </div>
+                            </div>
+                            
+                            <h6>2. Jenkins Pod 模板配置</h6>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># Jenkins Pod 模板配置</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: v1<br>kind: Pod<br>spec:<br>&nbsp;&nbsp;serviceAccount: jenkins<br>&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;- name: jnlp<br>&nbsp;&nbsp;&nbsp;&nbsp;image: jenkins/inbound-agent:4.11-1-jdk11<br>&nbsp;&nbsp;&nbsp;&nbsp;args: ['$(JENKINS_SECRET)', '$(JENKINS_NAME)']<br>&nbsp;&nbsp;- name: docker<br>&nbsp;&nbsp;&nbsp;&nbsp;image: docker:20.10.16-dind<br>&nbsp;&nbsp;&nbsp;&nbsp;securityContext:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;privileged: true<br>&nbsp;&nbsp;&nbsp;&nbsp;volumeMounts:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: docker-sock<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mountPath: /var/run/docker.sock<br>&nbsp;&nbsp;volumes:<br>&nbsp;&nbsp;- name: docker-sock<br>&nbsp;&nbsp;&nbsp;&nbsp;hostPath:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;path: /var/run/docker.sock<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;type: Socket</code>
+                                </div>
+                            </div>
+                            
+                            <h6>3. Jenkins Pipeline 示例</h6>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># Jenkinsfile 示例</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">pipeline {<br>&nbsp;&nbsp;agent {<br>&nbsp;&nbsp;&nbsp;&nbsp;kubernetes {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;yaml """<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;apiVersion: v1<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kind: Pod<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: docker<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;image: docker:20.10.16-dind<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;securityContext:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;privileged: true<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;volumeMounts:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: docker-sock<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mountPath: /var/run/docker.sock<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;command:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- sleep<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- 3600<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;volumes:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: docker-sock<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hostPath:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;path: /var/run/docker.sock<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;type: Socket<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"""<br>&nbsp;&nbsp;&nbsp;&nbsp;}<br>&nbsp;&nbsp;}<br>&nbsp;&nbsp;stages {<br>&nbsp;&nbsp;&nbsp;&nbsp;stage('构建') {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;steps {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;container('docker') {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;script {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;docker.build("myapp:${env.BUILD_NUMBER}")<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>&nbsp;&nbsp;&nbsp;&nbsp;}<br>&nbsp;&nbsp;&nbsp;&nbsp;stage('部署到K8s') {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;steps {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sh '''<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo "apiVersion: apps/v1" > deployment.yaml<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo "kind: Deployment" >> deployment.yaml<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo "metadata:" >> deployment.yaml<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo "  name: myapp" >> deployment.yaml<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo "spec:" >> deployment.yaml<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo "  replicas: 2" >> deployment.yaml<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo "  selector:" >> deployment.yaml<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo "    matchLabels:" >> deployment.yaml<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo "      app: myapp" >> deployment.yaml<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo "  template:" >> deployment.yaml<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo "    metadata:" >> deployment.yaml<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo "      labels:" >> deployment.yaml<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo "        app: myapp" >> deployment.yaml<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo "    spec:" >> deployment.yaml<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo "      containers:" >> deployment.yaml<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo "      - name: myapp" >> deployment.yaml<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo "        image: myapp:${env.BUILD_NUMBER}" >> deployment.yaml<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kubectl apply -f deployment.yaml<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'''<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>&nbsp;&nbsp;&nbsp;&nbsp;}<br>&nbsp;&nbsp;}<br>}</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">GitLab CI 与 Kubernetes 集成</h5>
+                            <p>GitLab CI 是 GitLab 内置的 CI/CD 工具，与 GitLab 代码仓库深度集成，可以通过 Runner 实现在 Kubernetes 集群中的构建和部署。</p>
+                            
+                            <h6>1. GitLab Runner 部署</h6>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># GitLab Runner 部署配置</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: apps/v1<br>kind: Deployment<br>metadata:<br>&nbsp;&nbsp;name: gitlab-runner<br>&nbsp;&nbsp;namespace: gitlab-runner<br>spec:<br>&nbsp;&nbsp;replicas: 1<br>&nbsp;&nbsp;selector:<br>&nbsp;&nbsp;&nbsp;&nbsp;matchLabels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name: gitlab-runner<br>&nbsp;&nbsp;template:<br>&nbsp;&nbsp;&nbsp;&nbsp;metadata:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;labels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name: gitlab-runner<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;serviceAccountName: gitlab-runner<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: gitlab-runner<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;image: gitlab/gitlab-runner:alpine-v14.10.1<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;imagePullPolicy: Always<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;volumeMounts:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: config<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mountPath: /etc/gitlab-runner<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: docker-sock<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mountPath: /var/run/docker.sock<br>&nbsp;&nbsp;&nbsp;&nbsp;volumes:<br>&nbsp;&nbsp;&nbsp;&nbsp;- name: config<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;emptyDir: {}<br>&nbsp;&nbsp;&nbsp;&nbsp;- name: docker-sock<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hostPath:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;path: /var/run/docker.sock<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;type: Socket</code>
+                                </div>
+                            </div>
+                            
+                            <h6>2. .gitlab-ci.yml 示例</h6>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># .gitlab-ci.yml 示例</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">stages:<br>&nbsp;&nbsp;- build<br>&nbsp;&nbsp;- test<br>&nbsp;&nbsp;- deploy<br><br>variables:<br>&nbsp;&nbsp;DOCKER_DRIVER: overlay2<br>&nbsp;&nbsp;DOCKER_TLS_CERTDIR: ""<br><br>before_script:<br>&nbsp;&nbsp;- docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY<br><br>build-image:<br>&nbsp;&nbsp;stage: build<br>&nbsp;&nbsp;script:<br>&nbsp;&nbsp;&nbsp;&nbsp;- echo "构建 Docker 镜像"<br>&nbsp;&nbsp;&nbsp;&nbsp;- docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .<br>&nbsp;&nbsp;&nbsp;&nbsp;- docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA<br>&nbsp;&nbsp;&nbsp;&nbsp;- docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:latest<br>&nbsp;&nbsp;&nbsp;&nbsp;- docker push $CI_REGISTRY_IMAGE:latest<br>&nbsp;&nbsp;only:<br>&nbsp;&nbsp;&nbsp;&nbsp;- main<br><br>test-app:<br>&nbsp;&nbsp;stage: test<br>&nbsp;&nbsp;script:<br>&nbsp;&nbsp;&nbsp;&nbsp;- echo "运行单元测试"<br>&nbsp;&nbsp;&nbsp;&nbsp;- docker run --rm $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA npm test<br>&nbsp;&nbsp;dependencies:<br>&nbsp;&nbsp;&nbsp;&nbsp;- build-image<br><br>deploy-to-k8s:<br>&nbsp;&nbsp;stage: deploy<br>&nbsp;&nbsp;script:<br>&nbsp;&nbsp;&nbsp;&nbsp;- echo "部署到 K8s"<br>&nbsp;&nbsp;&nbsp;&nbsp;- export KUBECONFIG=$KUBECONFIG_FILE<br>&nbsp;&nbsp;&nbsp;&nbsp;- kubectl set image deployment/myapp myapp=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA<br>&nbsp;&nbsp;only:<br>&nbsp;&nbsp;&nbsp;&nbsp;- main<br>&nbsp;&nbsp;when: manual<br>&nbsp;&nbsp;environment:<br>&nbsp;&nbsp;&nbsp;&nbsp;name: production<br>&nbsp;&nbsp;&nbsp;&nbsp;url: https://myapp.example.com</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">GitHub Actions 与 Kubernetes 集成</h5>
+                            <p>GitHub Actions 是 GitHub 提供的 CI/CD 服务，可以通过工作流文件定义自动化构建和部署流程。</p>
+                            
+                            <h6>1. GitHub Actions 工作流示例</h6>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># .github/workflows/deploy.yml 示例</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">name: 构建和部署到 K8s<br><br>on:<br>&nbsp;&nbsp;push:<br>&nbsp;&nbsp;&nbsp;&nbsp;branches: [ main ]<br>&nbsp;&nbsp;pull_request:<br>&nbsp;&nbsp;&nbsp;&nbsp;branches: [ main ]<br><br>env:<br>&nbsp;&nbsp;REGISTRY: ghcr.io<br>&nbsp;&nbsp;IMAGE_NAME: ${{ github.repository }}<br><br>jobs:<br>&nbsp;&nbsp;build-and-deploy:<br>&nbsp;&nbsp;&nbsp;&nbsp;runs-on: ubuntu-latest<br>&nbsp;&nbsp;&nbsp;&nbsp;permissions:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;contents: read<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;packages: write<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;id-token: write<br><br>&nbsp;&nbsp;&nbsp;&nbsp;steps:<br>&nbsp;&nbsp;&nbsp;&nbsp;- name: 检出代码<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;uses: actions/checkout@v3<br><br>&nbsp;&nbsp;&nbsp;&nbsp;- name: 设置 Docker Buildx<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;uses: docker/setup-buildx-action@v2<br><br>&nbsp;&nbsp;&nbsp;&nbsp;- name: 登录到容器注册表<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;uses: docker/login-action@v2<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;with:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;registry: ${{ env.REGISTRY }}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;username: ${{ github.actor }}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;password: ${{ secrets.GITHUB_TOKEN }}<br><br>&nbsp;&nbsp;&nbsp;&nbsp;- name: 提取 Docker 镜像元数据<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;id: meta<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;uses: docker/metadata-action@v4<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;with:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}<br><br>&nbsp;&nbsp;&nbsp;&nbsp;- name: 构建并推送 Docker 镜像<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;id: build-and-push<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;uses: docker/build-push-action@v4<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;with:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context: .<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;push: true<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tags: ${{ steps.meta.outputs.tags }}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;labels: ${{ steps.meta.outputs.labels }}<br><br>&nbsp;&nbsp;&nbsp;&nbsp;- name: 设置 kubectl<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;uses: azure/setup-kubectl@v3<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;with:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;version: 'v1.24.0'<br><br>&nbsp;&nbsp;&nbsp;&nbsp;- name: 配置 K8s 集群访问<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;uses: azure/k8s-set-context@v1<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;with:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kubeconfig: ${{ secrets.KUBE_CONFIG_DATA }}<br><br>&nbsp;&nbsp;&nbsp;&nbsp;- name: 部署到 K8s<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;run: |<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cat <<EOF | kubectl apply -f -<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;apiVersion: apps/v1<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kind: Deployment<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;metadata:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name: myapp-deployment<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;replicas: 2<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;selector:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;matchLabels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: myapp<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;template:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;metadata:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;labels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: myapp<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: myapp<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ports:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- containerPort: 80<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EOF<br><br>&nbsp;&nbsp;&nbsp;&nbsp;- name: 验证部署<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;run: |<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kubectl rollout status deployment/myapp-deployment<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kubectl get services -o wide</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">CI/CD 最佳实践</h5>
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <h6>安全最佳实践</h6>
+                                    <ul>
+                                        <li>使用服务账户和 RBAC 授权</li>
+                                        <li>将敏感信息存储在 Secret 中</li>
+                                        <li>启用镜像扫描和安全审计</li>
+                                        <li>使用多阶段构建减少攻击面</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>性能最佳实践</h6>
+                                    <ul>
+                                        <li>使用缓存加速构建过程</li>
+                                        <li>并行执行测试任务</li>
+                                        <li>优化 Docker 镜像大小</li>
+                                        <li>使用资源限制避免资源争用</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">CI/CD 故障排除</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="table-light">
+                                        <tr><th>常见问题</th><th>可能原因</th><th>解决方案</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>构建权限不足</td>
+                                            <td>服务账户权限配置不当</td>
+                                            <td>配置正确的 RBAC 权限</td>
+                                        </tr>
+                                        <tr>
+                                            <td>镜像推送失败</td>
+                                            <td>镜像仓库认证问题</td>
+                                            <td>检查认证凭据和网络连接</td>
+                                        </tr>
+                                        <tr>
+                                            <td>部署失败</td>
+                                            <td>Kubernetes API 访问问题</td>
+                                            <td>验证 kubeconfig 和网络策略</td>
+                                        </tr>
+                                        <tr>
+                                            <td>资源不足</td>
+                                            <td>集群资源分配不足</td>
+                                            <td>调整资源请求和限制</td>
+                                        </tr>
+                                        <tr>
+                                            <td>网络连接问题</td>
+                                            <td>网络策略或防火墙限制</td>
+                                            <td>配置正确的网络策略</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h5 class="mt-4">常用命令</h5>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 验证 Jenkins Pod 模板</span><br>
+                                    <code class="command-code">kubectl apply -f jenkins-pod-template.yaml</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 检查 GitLab Runner 状态</span><br>
+                                    <code class="command-code">kubectl get pods -n gitlab-runner</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 查看 GitHub Actions 日志</span><br>
+                                    <code class="command-code">kubectl logs -f deployment/myapp-deployment</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 测试部署状态</span><br>
+                                    <code class="command-code">kubectl rollout status deployment/myapp-deployment</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="../../assets/js/mermaid.min.js"></script>
+    <script src="../../assets/js/bootstrap.min.js"></script>
+    <script src="../../assets/js/script.js"></script>
+</body>
+</html>

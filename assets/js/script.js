@@ -433,6 +433,26 @@ document.addEventListener('DOMContentLoaded', function() {
                         parentLink.classList.add('active');
                     }
                 }
+            } else if (link.textContent.trim() === 'CI 集成' && currentPage.includes('ci-integration.html')) {
+                link.classList.add('active');
+                
+                const parentItem = link.closest('.nav-item.has-submenu');
+                if (parentItem) {
+                    const parentLink = parentItem.querySelector('.nav-link');
+                    if (parentLink) {
+                        parentLink.classList.add('active');
+                    }
+                }
+            } else if (link.textContent.trim() === 'GitOps 与 Argo CD' && currentPage.includes('gitops-argocd.html')) {
+                link.classList.add('active');
+                
+                const parentItem = link.closest('.nav-item.has-submenu');
+                if (parentItem) {
+                    const parentLink = parentItem.querySelector('.nav-link');
+                    if (parentLink) {
+                        parentLink.classList.add('active');
+                    }
+                }
             }
         });
     }

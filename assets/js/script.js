@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Update active nav link on scroll
+    // Update active nav link on scroll for index page
     const sections = document.querySelectorAll('section[id], header[id]');
     const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
     
@@ -184,10 +184,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Sidebar submenu toggle
+    // Sidebar submenu toggle - use data-target instead of href for submenu toggling
     document.querySelectorAll('.nav-item.has-submenu > .nav-link').forEach(link => {
         link.addEventListener('click', function(e) {
-            if (this.getAttribute('href') === '#concepts' || this.getAttribute('href') === '#advanced-concepts') {
+            // Check if this link has a data-target attribute for submenu
+            const target = this.getAttribute('data-target');
+            if (target) {
                 e.preventDefault();
                 const parent = this.parentElement;
                 parent.classList.toggle('open');
@@ -204,4 +206,49 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    
+    // Auto-highlight current page on load
+    const currentPath = window.location.pathname;
+    const currentPage = currentPath.substring(currentPath.lastIndexOf('/') + 1);
+    
+    // Remove all active classes first
+    document.querySelectorAll('.sidebar-nav .nav-link').forEach(link => {
+        link.classList.remove('active');
+    });
+    
+    document.querySelectorAll('.sidebar-submenu a').forEach(link => {
+        link.classList.remove('active');
+    });
+    
+    // Add active class based on current page
+    if (currentPage === 'index.html' || currentPage === '') {
+        // For index page, highlight architecture
+        const architectureLink = document.querySelector('.nav-link[href="#architecture"]');
+        if (architectureLink) {
+            architectureLink.classList.add('active');
+        }
+    } else {
+        // For other pages, find the matching link
+        document.querySelectorAll('.sidebar-submenu a').forEach(link => {
+            if (link.getAttribute('href') && 
+                (link.getAttribute('href').includes(currentPage) || 
+                 (currentPage.includes('pod.html') && link.textContent.trim() === 'Pod') ||
+                 (currentPage.includes('deployment.html') && link.textContent.trim() === 'Deployment') ||
+                 (currentPage.includes('service.html') && link.textContent.trim() === 'Service') ||
+                 (currentPage.includes('node.html') && link.textContent.trim() === 'Node') ||
+                 (currentPage.includes('configmap.html') && link.textContent.trim() === 'ConfigMap') ||
+                 (currentPage.includes('secret.html') && link.textContent.trim() === 'Secret'))) {
+                link.classList.add('active');
+                
+                // Also highlight parent menu
+                const parentItem = link.closest('.nav-item.has-submenu');
+                if (parentItem) {
+                    const parentLink = parentItem.querySelector('.nav-link');
+                    if (parentLink) {
+                        parentLink.classList.add('active');
+                    }
+                }
+            }
+        });
+    }
 });

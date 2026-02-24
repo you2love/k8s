@@ -454,4 +454,14 @@ document.addEventListener('DOMContentLoaded', function() {
             parentItem.classList.add('open');
         }
     }
+    
+    // Additional logic to ensure submenu items remain open when navigating between pages
+    document.querySelectorAll('.sidebar-submenu a').forEach(link => {
+        if (link.classList.contains('active')) {
+            const parentItem = link.closest('.nav-item.has-submenu');
+            if (parentItem) {
+                parentItem.classList.add('open');
+            }
+        }
+    });
 });

@@ -441,7 +441,8 @@ section#home {
 }
 
 .nav-item.has-submenu.open .sidebar-submenu {
-    max-height: 300px;
+    max-height: 500px; /* 增加最大高度以容纳更多子项 */
+    overflow-y: auto;  /* 添加滚动条 */
 }
 
 .sidebar-submenu li {
@@ -460,6 +461,9 @@ section#home {
     text-decoration: none;
     font-size: 0.9rem;
     transition: all 0.2s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .sidebar-submenu a:hover {

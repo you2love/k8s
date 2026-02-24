@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helm Chart 编写 - Kubernetes 学习教程</title>
+    <link href="../../assets/css/bootstrap-local.css" rel="stylesheet">
+    <link href="../../assets/css/fonts-local.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Left Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <span>K8s 教程</span>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#architecture" data-target="architecture">
+                        <span>架构图</span>
+                    </a>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="../../index.html#concepts" data-target="concepts">
+                        <span>核心概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../../index.html#concept-pod">Pod</a></li>
+                        <li><a href="../../index.html#concept-deployment">Deployment</a></li>
+                        <li><a href="../../index.html#concept-service">Service</a></li>
+                        <li><a href="../../index.html#concept-node">Node</a></li>
+                        <li><a href="../../index.html#concept-configmap">ConfigMap</a></li>
+                        <li><a href="../../index.html#concept-secret">Secret</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link active" href="../../index.html#advanced-concepts" data-target="advanced-concepts">
+                        <span>高级概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../../index.html#concept-helm">Helm</a></li>
+                        <li><a href="../../index.html#concept-networking">网络原理</a></li>
+                        <li><a href="../../index.html#concept-storage">存储</a></li>
+                        <li><a href="../../index.html#concept-namespace">命名空间</a></li>
+                        <li><a href="../../index.html#concept-labels">标签与选择器</a></li>
+                        <li><a href="../../index.html#concept-certificates">证书管理</a></li>
+                        <li><a href="../../index.html#concept-scaling">节点扩缩容</a></li>
+                        <li><a href="../../index.html#concept-upgrades">集群版本升级</a></li>
+                        <li><a href="#" class="active">Helm Chart 编写</a></li>
+                        <li><a href="../../index.html#concept-coredns">CoreDNS</a></li>
+                        <li><a href="../../index.html#concept-stateful-apps">数据库/中间件部署</a></li>
+                        <li><a href="../../index.html#concept-ingress">Ingress 高级配置</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#installation" data-target="installation">
+                        <span>安装指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#practice" data-target="practice">
+                        <span>实践指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#troubleshooting" data-target="troubleshooting">
+                        <span>常见问题</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#best-practices" data-target="best-practices">
+                        <span>最佳实践</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#rancher" data-target="rancher">
+                        <span>Rancher</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <section class="py-5" id="concept-helm-charts">
+                <div class="container">
+                    <h2 class="text-center mb-5">Helm Chart 编写</h2>
+                    
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <p>Helm Chart 是 Kubernetes 应用的打包格式，包含描述应用所需资源的模板文件。编写高质量的 Helm Chart 是实现应用标准化部署的关键。</p>
+                            
+                            <h5 class="mt-4">Chart 项目结构</h5>
+                            <div class="architecture-diagram bg-light p-4 rounded">
+                                <pre class="mermaid">
+graph TD
+    A[Helm Chart]
+    A --> B[Chart.yaml]
+    A --> C[values.yaml]
+    A --> D[templates/]
+    A --> E[charts/]
+    A --> F[README.md]
+    
+    D --> G[deployment.yaml]
+    D --> H[service.yaml]
+    D --> I[_helpers.tpl]
+    D --> J[ingress.yaml]
+    D --> K[NOTES.txt]
+    
+    E --> L[依赖 Chart]
+    
+    B --> M[元数据]
+    C --> N[默认值]
+    G --> O[应用部署]
+    H --> P[服务暴露]
+                                </pre>
+                            </div>
+                            
+                            <h5 class="mt-4">创建 Chart 示例</h5>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 创建新的 Chart</span><br>
+                                    <code class="command-code">helm create my-app</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># Chart.yaml 示例</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: v2<br>name: my-app<br>description: A Helm chart for my application<br>type: application<br>version: 0.1.0<br>appVersion: "1.0.0"<br>home: https://example.com<br>sources:<br>&nbsp;&nbsp;- https://github.com/my-org/my-app<br>maintainers:<br>&nbsp;&nbsp;- name: maintainer<br>&nbsp;&nbsp;&nbsp;&nbsp;email: maintainer@example.com<br>dependencies:<br>&nbsp;&nbsp;- name: redis<br>&nbsp;&nbsp;&nbsp;&nbsp;version: "15.x"<br>&nbsp;&nbsp;&nbsp;&nbsp;repository: "https://charts.bitnami.com/bitnami"<br>&nbsp;&nbsp;&nbsp;&nbsp;condition: redis.enabled</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">模板语法与函数</h5>
+                            <p>Helm 使用 Go 模板语言和 Sprig 库函数来动态生成 Kubernetes 资源清单。</p>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 模板函数示例</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code"># deployment.yaml<br>apiVersion: apps/v1<br>kind: Deployment<br>metadata:<br>&nbsp;&nbsp;name: {{ include "my-app.fullname" . }}<br>&nbsp;&nbsp;labels:<br>&nbsp;&nbsp;&nbsp;&nbsp;{{- include "my-app.labels" . | nindent 4 }}<br>spec:<br>&nbsp;&nbsp;replicas: {{ .Values.replicaCount }}<br>&nbsp;&nbsp;selector:<br>&nbsp;&nbsp;&nbsp;&nbsp;matchLabels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{- include "my-app.selectorLabels" . | nindent 6 }}<br>&nbsp;&nbsp;template:<br>&nbsp;&nbsp;&nbsp;&nbsp;metadata:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;labels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{- include "my-app.selectorLabels" . | nindent 8 }}<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: {{ .Chart.Name }}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;imagePullPolicy: {{ .Values.image.pullPolicy }}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ports:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: http<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containerPort: {{ .Values.service.port }}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;protocol: TCP</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">_helpers.tpl 命名模板</h5>
+                            <p>使用命名模板来定义可重用的模板片段，提高代码复用性。</p>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># _helpers.tpl 示例</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">{{/*<br>Expand the name of the chart.<br>*/}}<br>{{- define "my-app.name" -}}<br>{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}<br>{{- end }}<br><br>{{/*<br>Create a default fully qualified app name.<br>We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).<br>If release name contains chart name it will be used as a full name.<br>*/}}<br>{{- define "my-app.fullname" -}}<br>{{- if .Values.fullnameOverride }}<br>{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}<br>{{- else }}<br>{{- $name := default .Chart.Name .Values.nameOverride }}<br>{{- if contains $name .Release.Name }}<br>{{- .Release.Name | trunc 63 | trimSuffix "-" }}<br>{{- else }}<br>{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}<br>{{- end }}<br>{{- end }}<br>{{- end }}<br><br>{{/*<br>Common labels<br>*/}}<br>{{- define "my-app.labels" -}}<br>helm.sh/chart: {{ include "my-app.chart" . }}<br>{{ include "my-app.selectorLabels" . }}<br>{{- if .Chart.AppVersion }}<br>app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}<br>{{- end }}<br>app.kubernetes.io/managed-by: {{ .Release.Service }}<br>{{- end }}</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">Chart 最佳实践</h5>
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <h6>结构与组织</h6>
+                                    <ul>
+                                        <li>使用语义化版本控制</li>
+                                        <li>提供清晰的 README.md</li>
+                                        <li>合理组织模板文件</li>
+                                        <li>使用命名模板提高复用性</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>配置与测试</h6>
+                                    <ul>
+                                        <li>提供合理的默认值</li>
+                                        <li>支持条件部署</li>
+                                        <li>包含测试模板</li>
+                                        <li>验证 Chart 质量</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">常用 Chart 开发命令</h5>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 验证 Chart</span><br>
+                                    <code class="command-code">helm lint</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 查看渲染后的模板</span><br>
+                                    <code class="command-code">helm template .</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 安装开发版本</span><br>
+                                    <code class="command-code">helm install my-test . --dry-run</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 打包 Chart</span><br>
+                                    <code class="command-code">helm package .</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 测试 Chart</span><br>
+                                    <code class="command-code">helm test &lt;release-name&gt;</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="../../assets/js/mermaid.min.js"></script>
+    <script src="../../assets/js/bootstrap.min.js"></script>
+    <script src="../../assets/js/script.js"></script>
+</body>
+</html>

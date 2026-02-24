@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>安装指南 - Kubernetes 学习教程</title>
+    <link href="../assets/css/bootstrap-local.css" rel="stylesheet">
+    <link href="../assets/css/fonts-local.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Left Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <span>K8s 教程</span>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="../index.html#architecture" data-target="architecture">
+                        <span>架构图</span>
+                    </a>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="../index.html#concepts" data-target="concepts">
+                        <span>核心概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../index.html#concept-pod">Pod</a></li>
+                        <li><a href="../index.html#concept-deployment">Deployment</a></li>
+                        <li><a href="../index.html#concept-service">Service</a></li>
+                        <li><a href="../index.html#concept-node">Node</a></li>
+                        <li><a href="../index.html#concept-configmap">ConfigMap</a></li>
+                        <li><a href="../index.html#concept-secret">Secret</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="../index.html#advanced-concepts" data-target="advanced-concepts">
+                        <span>高级概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../index.html#concept-helm">Helm</a></li>
+                        <li><a href="../index.html#concept-networking">网络原理</a></li>
+                        <li><a href="../index.html#concept-storage">存储</a></li>
+                        <li><a href="../index.html#concept-namespace">命名空间</a></li>
+                        <li><a href="../index.html#concept-labels">标签与选择器</a></li>
+                        <li><a href="../index.html#concept-certificates">证书管理</a></li>
+                        <li><a href="../index.html#concept-scaling">节点扩缩容</a></li>
+                        <li><a href="../index.html#concept-upgrades">集群版本升级</a></li>
+                        <li><a href="../index.html#concept-helm-charts">Helm Chart 编写</a></li>
+                        <li><a href="../index.html#concept-coredns">CoreDNS</a></li>
+                        <li><a href="../index.html#concept-stateful-apps">数据库/中间件部署</a></li>
+                        <li><a href="../index.html#concept-ingress">Ingress 高级配置</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="#installation" data-target="installation">
+                        <span>安装指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../index.html#practice" data-target="practice">
+                        <span>实践指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../index.html#troubleshooting" data-target="troubleshooting">
+                        <span>常见问题</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../index.html#best-practices" data-target="best-practices">
+                        <span>最佳实践</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../index.html#rancher" data-target="rancher">
+                        <span>Rancher</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <section class="py-5 bg-light" id="installation">
+                <div class="container">
+                    <h2 class="text-center mb-5">安装指南</h2>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="accordion" id="installationAccordion">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#install1">
+                                            macOS 安装 Minikube
+                                        </button>
+                                    </h2>
+                                    <div id="install1" class="accordion-collapse collapse show" data-bs-parent="#installationAccordion">
+                                        <div class="accordion-body">
+                                            <h5>使用 Homebrew 安装</h5>
+                                            <pre><code># 安装 Homebrew（如果尚未安装）
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# 安装 Minikube
+brew install minikube
+
+# 安装 kubectl
+brew install kubectl
+
+# 启动 Minikube
+minikube start
+
+# 验证安装
+kubectl cluster-info</code></pre>
+                                            <h5 class="mt-4">可选：使用 Docker 驱动</h5>
+                                            <pre><code># 使用 Docker 驱动启动
+minikube start --driver=docker
+
+# 查看驱动
+minikube config view</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#install2">
+                                            Linux 安装 Minikube
+                                        </button>
+                                    </h2>
+                                    <div id="install2" class="accordion-collapse collapse" data-bs-parent="#installationAccordion">
+                                        <div class="accordion-body">
+                                            <h5>下载并安装 Minikube</h5>
+                                            <pre><code># 下载 Minikube
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
+
+# 安装 kubectl
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+# 启动 Minikube
+minikube start
+
+# 验证安装
+kubectl cluster-info</code></pre>
+                                            <h5 class="mt-4">Ubuntu/Debian 系统</h5>
+                                            <pre><code># 更新包列表
+sudo apt-get update
+
+# 安装依赖
+sudo apt-get install -y conntrack
+
+# 启动 Minikube
+minikube start</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#install3">
+                                            Windows 安装 Minikube
+                                        </button>
+                                    </h2>
+                                    <div id="install3" class="accordion-collapse collapse" data-bs-parent="#installationAccordion">
+                                        <div class="accordion-body">
+                                            <h5>使用 Chocolatey 安装</h5>
+                                            <pre><code># 安装 Chocolatey（如果尚未安装）
+Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+
+# 安装 Minikube
+choco install minikube
+
+# 安装 kubectl
+choco install kubernetes-cli
+
+# 启动 Minikube
+minikube start
+
+# 验证安装
+kubectl cluster-info</code></pre>
+                                            <h5 class="mt-4">手动安装</h5>
+                                            <pre><code># 下载 Minikube
+# 访问 https://minikube.sigs.k8s.io/docs/start/ 下载 Windows 安装包
+
+# 下载 kubectl
+curl -LO "https://dl.k8s.io/release/stable.txt" -o kubectl_version.txt
+curl -LO "https://dl.k8s.io/release/$(cat kubectl_version.txt)/bin/windows/amd64/kubectl.exe"
+
+# 将 kubectl.exe 添加到 PATH 环境变量</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#install4">
+                                            云服务商安装（GKE、EKS、AKS）
+                                        </button>
+                                    </h2>
+                                    <div id="install4" class="accordion-collapse collapse" data-bs-parent="#installationAccordion">
+                                        <div class="accordion-body">
+                                            <h5>Google Kubernetes Engine (GKE)</h5>
+                                            <pre><code># 安装 gcloud CLI
+curl https://sdk.cloud.google.com | bash
+
+# 初始化 gcloud
+gcloud init
+
+# 创建 GKE 集群
+gcloud container clusters create my-cluster \
+  --num-nodes=3 \
+  --zone=us-central1-a
+
+# 配置 kubectl
+gcloud container clusters get-credentials my-cluster \
+  --zone=us-central1-a
+
+# 验证连接
+kubectl get nodes</code></pre>
+                                            <h5 class="mt-4">Amazon Elastic Kubernetes Service (EKS)</h5>
+                                            <pre><code># 安装 AWS CLI
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+
+# 安装 eksctl
+curl --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+sudo mv /tmp/eksctl /usr/local/bin
+
+# 创建 EKS 集群
+eksctl create cluster --name my-cluster --region us-west-2</code></pre>
+                                            <h5 class="mt-4">Azure Kubernetes Service (AKS)</h5>
+                                            <pre><code># 安装 Azure CLI
+curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
+# 登录 Azure
+az login
+
+# 创建 AKS 集群
+az aks create --resource-group myResourceGroup \
+  --name myAKSCluster \
+  --node-count 3 \
+  --generate-ssh-keys
+
+# 配置 kubectl
+az aks get-credentials --resource-group myResourceGroup \
+  --name myAKSCluster</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#install5">
+                                            配置 kubectl
+                                        </button>
+                                    </h2>
+                                    <div id="install5" class="accordion-collapse collapse" data-bs-parent="#installationAccordion">
+                                        <div class="accordion-body">
+                                            <h5>配置自动补全</h5>
+                                            <pre><code># Bash
+echo 'source <(kubectl completion bash)' >> ~/.bashrc
+source ~/.bashrc
+
+# Zsh
+echo 'source <(kubectl completion zsh)' >> ~/.zshrc
+source ~/.zshrc</code></pre>
+                                            <h5 class="mt-4">配置别名</h5>
+                                            <pre><code># 添加常用别名到 ~/.bashrc 或 ~/.zshrc
+alias k='kubectl'
+alias kgp='kubectl get pods'
+alias kgd='kubectl get deployments'
+alias kgs='kubectl get services'
+alias k logs='kubectl logs'
+alias k exec='kubectl exec -it'</code></pre>
+                                            <h5 class="mt-4">配置多个集群</h5>
+                                            <pre><code># 查看当前上下文
+kubectl config current-context
+
+# 查看所有上下文
+kubectl config get-contexts
+
+# 切换上下文
+kubectl config use-context minikube
+
+# 设置默认命名空间
+kubectl config set-context --current --namespace=default</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="../assets/js/mermaid.min.js"></script>
+    <script src="../assets/js/bootstrap.min.js"></script>
+    <script src="../assets/js/script.js"></script>
+</body>
+</html>

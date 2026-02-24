@@ -1,9 +1,468 @@
-<div class="card concept-card h-100">
-    <div class="card-body text-center">
-        <i class="material-icons material-icons-large text-success">backup</i>
-        <h3 class="card-title mt-3">Deployment</h3>
-        <p class="card-text">管理 Pod 的副本数量和更新策略</p>
-        <button class="btn btn-success concept-btn" data-topic="deployment">了解更多</button>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deployment - Kubernetes 学习教程</title>
+    <link href="../../assets/css/bootstrap-local.css" rel="stylesheet">
+    <link href="../../assets/css/fonts-local.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Left Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <span>K8s 教程</span>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#architecture" data-target="architecture">
+                        <span>架构图</span>
+                    </a>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link active" href="../../index.html#concepts" data-target="concepts">
+                        <span>核心概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../../index.html#concept-pod">Pod</a></li>
+                        <li><a href="#" class="active">Deployment</a></li>
+                        <li><a href="../../index.html#concept-service">Service</a></li>
+                        <li><a href="../../index.html#concept-node">Node</a></li>
+                        <li><a href="../../index.html#concept-configmap">ConfigMap</a></li>
+                        <li><a href="../../index.html#concept-secret">Secret</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="../../index.html#advanced-concepts" data-target="advanced-concepts">
+                        <span>高级概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../../index.html#concept-helm">Helm</a></li>
+                        <li><a href="../../index.html#concept-networking">网络原理</a></li>
+                        <li><a href="../../index.html#concept-storage">存储</a></li>
+                        <li><a href="../../index.html#concept-namespace">命名空间</a></li>
+                        <li><a href="../../index.html#concept-labels">标签与选择器</a></li>
+                        <li><a href="../../index.html#concept-certificates">证书管理</a></li>
+                        <li><a href="../../index.html#concept-scaling">节点扩缩容</a></li>
+                        <li><a href="../../index.html#concept-upgrades">集群版本升级</a></li>
+                        <li><a href="../../index.html#concept-helm-charts">Helm Chart 编写</a></li>
+                        <li><a href="../../index.html#concept-coredns">CoreDNS</a></li>
+                        <li><a href="../../index.html#concept-stateful-apps">数据库/中间件部署</a></li>
+                        <li><a href="../../index.html#concept-ingress">Ingress 高级配置</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#installation" data-target="installation">
+                        <span>安装指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#practice" data-target="practice">
+                        <span>实践指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#troubleshooting" data-target="troubleshooting">
+                        <span>常见问题</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#best-practices" data-target="best-practices">
+                        <span>最佳实践</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#rancher" data-target="rancher">
+                        <span>Rancher</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <section class="py-5" id="concept-deployment">
+                <div class="container">
+                    <h2 class="text-center mb-5">Deployment</h2>
+                    
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <p>Deployment 管理无状态应用的部署和更新，提供声明式更新和回滚能力。</p>
+                            
+                            <h5 class="mt-4">架构关系</h5>
+                            <div class="architecture-diagram bg-light p-4 rounded">
+                                <pre class="mermaid">
+flowchart TB
+    D[Deployment] --> RS1[ReplicaSet v1]
+    D --> RS2[ReplicaSet v2]
+    RS1 --> P1[Pod v1]
+    RS2 --> P2[Pod v2]
+                                </pre>
+                            </div>
+                            
+                            <h5 class="mt-4">更新策略对比</h5>
+                            <table class="table table-bordered">
+                                <thead class="table-success">
+                                    <tr><th>策略</th><th>RollingUpdate</th><th>Recreate</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>更新方式</td><td>逐步替换</td><td>全部替换</td></tr>
+                                    <tr><td>停机时间</td><td>无</td><td>有</td></tr>
+                                    <tr><td>适用场景</td><td>生产环境</td><td>开发测试</td></tr>
+                                </tbody>
+                            </table>
+                            
+                            <h5 class="mt-4">不同部署形式</h5>
+                            
+                            <div class="row mt-4">
+                                <div class="col-12 mb-4">
+                                    <div class="card deployment-card">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-start">
+                                                <div class="deployment-icon me-3">
+                                                    <i class="material-icons text-primary">sync</i>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <h6 class="card-title deployment-title">1. 滚动更新 (Rolling Update)</h6>
+                                                    <p class="card-text deployment-description">逐步替换旧版本 Pod，确保服务始终可用。</p>
+                                                </div>
+                                            </div>
+                                            <div class="architecture-diagram bg-light p-3 rounded my-3">
+                                                <pre class="mermaid mb-0">
+flowchart LR
+    subgraph Old[旧版本]
+        O1[Pod v1]
+        O2[Pod v1]
+        O3[Pod v1]
+    end
+    subgraph New[新版本]
+        N1[Pod v2]
+        N2[Pod v2]
+        N3[Pod v2]
+    end
+    Old -- 逐步替换 --> New
+                                                </pre>
+                                            </div>
+                                            <div class="command-block deployment-config">
+                                                <div class="command-item">
+                                                    <span class="command-prompt"># 滚动更新配置</span>
+                                                </div>
+                                                <div class="command-item">
+                                                    <code class="command-code">strategy:<br>&nbsp;&nbsp;type: RollingUpdate<br>&nbsp;&nbsp;rollingUpdate:<br>&nbsp;&nbsp;&nbsp;&nbsp;maxSurge: 25%<br>&nbsp;&nbsp;&nbsp;&nbsp;maxUnavailable: 25%</code>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12 mb-4">
+                                    <div class="card deployment-card">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-start">
+                                                <div class="deployment-icon me-3">
+                                                    <i class="material-icons text-success">swap_horiz</i>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <h6 class="card-title deployment-title">2. 蓝绿部署 (Blue-Green Deployment)</h6>
+                                                    <p class="card-text deployment-description">同时运行两个完全相同的环境（蓝和绿），通过切换流量实现零停机部署。</p>
+                                                </div>
+                                            </div>
+                                            <div class="architecture-diagram bg-light p-3 rounded my-3">
+                                                <pre class="mermaid mb-0">
+flowchart LR
+    LB[负载均衡器]
+    subgraph Blue[蓝环境 v1]
+        B1[Pod v1]
+        B2[Pod v1]
+    end
+    subgraph Green[绿环境 v2]
+        G1[Pod v2]
+        G2[Pod v2]
+    end
+    LB --> Blue
+    LB -.-> Green
+                                                </pre>
+                                            </div>
+                                            <div class="command-block deployment-config">
+                                                <div class="command-item">
+                                                    <span class="command-prompt"># 蓝绿部署示例</span>
+                                                </div>
+                                                <div class="command-item">
+                                                    <code class="command-code"># 创建新版本 Deployment<br>kubectl create deployment myapp-v2 --image=myapp:2.0<br># 通过 Service 切换流量<br>kubectl patch service myapp -p '{"spec":{"selector":{"version":"2.0"}}}'</code>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12 mb-4">
+                                    <div class="card deployment-card">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-start">
+                                                <div class="deployment-icon me-3">
+                                                    <i class="material-icons text-warning">flag</i>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <h6 class="card-title deployment-title">3. 金丝雀部署 (Canary Deployment)</h6>
+                                                    <p class="card-text deployment-description">先向少量用户发布新版本，验证无误后逐步扩大范围。</p>
+                                                </div>
+                                            </div>
+                                            <div class="architecture-diagram bg-light p-3 rounded my-3">
+                                                <pre class="mermaid mb-0">
+flowchart LR
+    subgraph Traffic[流量分配]
+        T[100% 流量]
+    end
+    subgraph V1[版本1]
+        P1[Pod v1]
+        P2[Pod v1]
+    end
+    subgraph V2[版本2]
+        P3[Pod v2]
+    end
+    T --> V1
+    T --> V2
+                                                </pre>
+                                            </div>
+                                            <div class="command-block deployment-config">
+                                                <div class="command-item">
+                                                    <span class="command-prompt"># 金丝雀部署示例</span>
+                                                </div>
+                                                <div class="command-item">
+                                                    <code class="command-code"># 创建金丝雀版本（少量副本）<br>kubectl create deployment myapp-canary --image=myapp:2.0 --replicas=1<br># 监控金丝雀版本<br>kubectl get pods -l app=myapp<br># 逐步扩大金丝雀版本<br>kubectl scale deployment myapp-canary --replicas=3</code>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12 mb-4">
+                                    <div class="card deployment-card">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-start">
+                                                <div class="deployment-icon me-3">
+                                                    <i class="material-icons text-info">analytics</i>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <h6 class="card-title deployment-title">4. A/B 测试部署</h6>
+                                                    <p class="card-text deployment-description">同时运行两个不同版本，根据用户特征分配流量进行测试。</p>
+                                                </div>
+                                            </div>
+                                            <div class="architecture-diagram bg-light p-3 rounded my-3">
+                                                <pre class="mermaid mb-0">
+flowchart LR
+    subgraph Users[用户流量]
+        U1[用户组A]
+        U2[用户组B]
+    end
+    subgraph VersionA[版本A]
+        A1[Pod v1]
+        A2[Pod v1]
+    end
+    subgraph VersionB[版本B]
+        B1[Pod v2]
+        B2[Pod v2]
+    end
+    U1 --> VersionA
+    U2 --> VersionB
+                                                </pre>
+                                            </div>
+                                            <div class="command-block deployment-config">
+                                                <div class="command-item">
+                                                    <span class="command-prompt"># A/B 测试示例</span>
+                                                </div>
+                                                <div class="command-item">
+                                                    <code class="command-code"># 通常结合 Ingress 或 Service Mesh 实现<br># 使用 Istio 进行流量分割<br>apiVersion: networking.istio.io/v1beta1<br>kind: VirtualService<br>spec:<br>&nbsp;&nbsp;http:<br>&nbsp;&nbsp;- route:<br>&nbsp;&nbsp;&nbsp;&nbsp;- destination:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;host: myapp<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;subset: v1<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;weight: 50<br>&nbsp;&nbsp;&nbsp;&nbsp;- destination:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;host: myapp<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;subset: v2<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;weight: 50</code>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">常用命令</h5>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 创建 Deployment</span><br>
+                                    <code class="command-code">kubectl create deployment nginx --image=nginx:1.21</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 扩展副本数</span><br>
+                                    <code class="command-code">kubectl scale deployment nginx --replicas=3</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 更新镜像</span><br>
+                                    <code class="command-code">kubectl set image deployment/nginx nginx=nginx:1.22</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 查看更新状态</span><br>
+                                    <code class="command-code">kubectl rollout status deployment/nginx</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 回滚到上一版本</span><br>
+                                    <code class="command-code">kubectl rollout undo deployment/nginx</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">其他部署类型</h5>
+                            
+                            <div class="row mt-4">
+                                <div class="col-12 mb-4">
+                                    <div class="card deployment-card">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-start">
+                                                <div class="deployment-icon me-3">
+                                                    <i class="material-icons text-warning">schedule</i>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <h6 class="card-title deployment-title">5. CronJob (定时任务)</h6>
+                                                    <p class="card-text deployment-description">CronJob 用于创建定时任务，按照预定的时间表运行 Job，适用于周期性执行的任务（如备份、清理、报表生成等）。</p>
+                                                </div>
+                                                <div class="architecture-diagram bg-light p-3 rounded my-3">
+                                                    <pre class="mermaid mb-0">
+flowchart TD
+    S[Schedule] --> CJ[CronJob]
+    CJ --> J[Job]
+    J --> P[Pod]
+    P --> R[Run Task]
+    R --> |Success| D[Done]
+    R --> |Failed| R[Retry/Failed]
+                                                    </pre>
+                                                </div>
+                                                <div class="table-responsive my-3">
+                                                    <table class="table table-bordered">
+                                                        <thead class="table-warning">
+                                                            <tr><th>特性</th><th>Deployment</th><th>CronJob</th></tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr><td>用途</td><td>持续运行应用</td><td>定时执行任务</td></tr>
+                                                            <tr><td>运行模式</td><td>持续运行</td><td>周期性运行</td></tr>
+                                                            <tr><td>调度方式</td><td>自动扩缩容</td><td>Cron 表达式</td></tr>
+                                                            <tr><td>适用场景</td><td>Web 应用、API</td><td>备份、清理、报表</td></tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                <div class="command-block deployment-config">
+                                                    <div class="command-item">
+                                                        <span class="command-prompt"># 创建定时任务（每分钟执行一次）</span>
+                                                    </div>
+                                                    <div class="command-item">
+                                                        <code class="command-code">apiVersion: batch/v1<br>kind: CronJob<br>metadata:<br>&nbsp;&nbsp;name: my-cronjob<br>spec:<br>&nbsp;&nbsp;schedule: "* * * * *"&nbsp;&nbsp;# Cron 表达式<br>&nbsp;&nbsp;jobTemplate:<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;template:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: cronjob<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;image: busybox:1.28<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;args:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- /bin/sh<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- -c<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- date; echo "Running a scheduled task"<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;restartPolicy: OnFailure<br>&nbsp;&nbsp;successfulJobsHistoryLimit: 3<br>&nbsp;&nbsp;failedJobsHistoryLimit: 1</code>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12 mb-4">
+                                    <div class="card deployment-card">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-start">
+                                                <div class="deployment-icon me-3">
+                                                    <i class="material-icons text-info">storage</i>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <h6 class="card-title deployment-title">6. StatefulSet (有状态应用)</h6>
+                                                    <p class="card-text deployment-description">StatefulSet 管理有状态应用的部署和扩展，为每个 Pod 提供稳定的标识符（如持久化存储、网络标识等），适用于数据库、分布式系统等需要稳定网络标识和持久化存储的应用。</p>
+                                                </div>
+                                            </div>
+                                            <div class="architecture-diagram bg-light p-3 rounded my-3">
+                                                <pre class="mermaid mb-0">
+flowchart TD
+    SS[StatefulSet] --> RS[ReplicaSet]
+    RS --> P1[Pod-0<br/>Persistent Volume<br/>Stable Identity]
+    RS --> P2[Pod-1<br/>Persistent Volume<br/>Stable Identity]
+    RS --> P3[Pod-2<br/>Persistent Volume<br/>Stable Identity]
+    P1 --> S1[Service]
+    P2 --> S1
+    P3 --> S1
+                                                </pre>
+                                            </div>
+                                            <div class="table-responsive my-3">
+                                                <table class="table table-bordered">
+                                                    <thead class="table-info">
+                                                        <tr><th>特性</th><th>Deployment</th><th>StatefulSet</th></tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr><td>Pod 标识</td><td>临时、无序</td><td>稳定、有序</td></tr>
+                                                        <tr><td>网络标识</td><td>动态分配</td><td>稳定 DNS</td></tr>
+                                                        <tr><td>存储</td><td>共享存储卷</td><td>独立持久卷</td></tr>
+                                                        <tr><td>部署顺序</td><td>并行</td><td>顺序</td></tr>
+                                                        <tr><td>适用场景</td><td>无状态应用</td><td>数据库、集群</td></tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="command-block deployment-config">
+                                                <div class="command-item">
+                                                    <span class="command-prompt"># 创建有状态应用</span>
+                                                </div>
+                                                <div class="command-item">
+                                                    <code class="command-code">apiVersion: apps/v1<br>kind: StatefulSet<br>metadata:<br>&nbsp;&nbsp;name: my-statefulset<br>spec:<br>&nbsp;&nbsp;serviceName: my-service<br>&nbsp;&nbsp;replicas: 3<br>&nbsp;&nbsp;selector:<br>&nbsp;&nbsp;&nbsp;&nbsp;matchLabels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: my-app<br>&nbsp;&nbsp;template:<br>&nbsp;&nbsp;&nbsp;&nbsp;metadata:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;labels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: my-app<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: app<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;image: nginx:1.21<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;volumeMounts:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: storage<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mountPath: /usr/share/nginx/html<br>&nbsp;&nbsp;volumeClaimTemplates:<br>&nbsp;&nbsp;- metadata:<br>&nbsp;&nbsp;&nbsp;&nbsp;name: storage<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accessModes: [ "ReadWriteOnce" ]<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resources:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;requests:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;storage: 1Gi</code>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12 mb-4">
+                                    <div class="card deployment-card">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-start">
+                                                <div class="deployment-icon me-3">
+                                                    <i class="material-icons text-success">apps</i>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <h6 class="card-title deployment-title">7. DaemonSet (守护进程集)</h6>
+                                                    <p class="card-text deployment-description">DaemonSet 确保所有（或部分）节点上都运行一个 Pod 副本，适用于需要在每个节点上运行的系统级应用，如日志收集、监控、网络代理等。</p>
+                                                </div>
+                                            </div>
+                                            <div class="architecture-diagram bg-light p-3 rounded my-3">
+                                                <pre class="mermaid mb-0">
+flowchart LR
+    DS[DaemonSet] --> N1[Node 1<br/>Pod]
+    DS --> N2[Node 2<br/>Pod]
+    DS --> N3[Node 3<br/>Pod]
+    DS --> N4[Node N<br/>Pod]
+                                                </pre>
+                                            </div>
+                                            <div class="table-responsive my-3">
+                                                <table class="table table-bordered">
+                                                    <thead class="table-success">
+                                                        <tr><th>特性</th><th>Deployment</th><th>DaemonSet</th></tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr><td>Pod 分布</td><td>集中部署</td><td>节点部署</td></tr>
+                                                        <tr><td>节点关联</td><td>无特定节点</td><td>每个节点一个</td></tr>
+                                                        <tr><td>扩展方式</td><td>按副本数</td><td>按节点数</td></tr>
+                                                        <tr><td>适用场景</td><td>应用服务</td><td>系统级服务</td></tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="command-block deployment-config">
+                                                <div class="command-item">
+                                                    <span class="command-prompt"># 创建守护进程集</span>
+                                                </div>
+                                                <div class="command-item">
+                                                    <code class="command-code">apiVersion: apps/v1<br>kind: DaemonSet<br>metadata:<br>&nbsp;&nbsp;name: my-daemonset<br>spec:<br>&nbsp;&nbsp;selector:<br>&nbsp;&nbsp;&nbsp;&nbsp;matchLabels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: my-daemon<br>&nbsp;&nbsp;template:<br>&nbsp;&nbsp;&nbsp;&nbsp;metadata:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;labels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: my-daemon<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: daemon<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;image: fluent/fluent-bit:1.8<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;volumeMounts:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: varlog<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mountPath: /var/log<br>&nbsp;&nbsp;&nbsp;&nbsp;volumes:<br>&nbsp;&nbsp;&nbsp;&nbsp;- name: varlog<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hostPath:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;path: /var/log</code>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
     </div>
-    <div class="concept-detail-content d-none" id="deployment-detail"></div>
-</div>
+
+    <script src="../../assets/js/mermaid.min.js"></script>
+    <script src="../../assets/js/bootstrap.min.js"></script>
+    <script src="../../assets/js/script.js"></script>
+</body>
+</html>

@@ -1,9 +1,146 @@
-<div class="card concept-card h-100">
-    <div class="card-body text-center">
-        <i class="material-icons material-icons-large text-danger">volume_up</i>
-        <h3 class="card-title mt-3">ConfigMap</h3>
-        <p class="card-text">存储配置数据，实现配置与代码分离</p>
-        <button class="btn btn-danger concept-btn" data-topic="configmap">了解更多</button>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConfigMap - Kubernetes 学习教程</title>
+    <link href="../../assets/css/bootstrap-local.css" rel="stylesheet">
+    <link href="../../assets/css/fonts-local.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Left Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <span>K8s 教程</span>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#architecture" data-target="architecture">
+                        <span>架构图</span>
+                    </a>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link active" href="../../index.html#concepts" data-target="concepts">
+                        <span>核心概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../../index.html#concept-pod">Pod</a></li>
+                        <li><a href="../../index.html#concept-deployment">Deployment</a></li>
+                        <li><a href="../../index.html#concept-service">Service</a></li>
+                        <li><a href="../../index.html#concept-node">Node</a></li>
+                        <li><a href="#" class="active">ConfigMap</a></li>
+                        <li><a href="../../index.html#concept-secret">Secret</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="../../index.html#advanced-concepts" data-target="advanced-concepts">
+                        <span>高级概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../../index.html#concept-helm">Helm</a></li>
+                        <li><a href="../../index.html#concept-networking">网络原理</a></li>
+                        <li><a href="../../index.html#concept-storage">存储</a></li>
+                        <li><a href="../../index.html#concept-namespace">命名空间</a></li>
+                        <li><a href="../../index.html#concept-labels">标签与选择器</a></li>
+                        <li><a href="../../index.html#concept-certificates">证书管理</a></li>
+                        <li><a href="../../index.html#concept-scaling">节点扩缩容</a></li>
+                        <li><a href="../../index.html#concept-upgrades">集群版本升级</a></li>
+                        <li><a href="../../index.html#concept-helm-charts">Helm Chart 编写</a></li>
+                        <li><a href="../../index.html#concept-coredns">CoreDNS</a></li>
+                        <li><a href="../../index.html#concept-stateful-apps">数据库/中间件部署</a></li>
+                        <li><a href="../../index.html#concept-ingress">Ingress 高级配置</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#installation" data-target="installation">
+                        <span>安装指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#practice" data-target="practice">
+                        <span>实践指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#troubleshooting" data-target="troubleshooting">
+                        <span>常见问题</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#best-practices" data-target="best-practices">
+                        <span>最佳实践</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#rancher" data-target="rancher">
+                        <span>Rancher</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <section class="py-5" id="concept-configmap">
+                <div class="container">
+                    <h2 class="text-center mb-5">ConfigMap</h2>
+                    
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <p>ConfigMap 用于存储非敏感的配置数据，实现配置与代码分离。</p>
+                            
+                            <h5 class="mt-4">使用方式</h5>
+                            <div class="architecture-diagram bg-light p-4 rounded">
+                                <pre class="mermaid">
+flowchart TB
+    CM[ConfigMap] --> E[Env Variables]
+    CM --> F[Files]
+    E --> P[Pod]
+    F --> P
+                                </pre>
+                            </div>
+                            
+                            <h5 class="mt-4">使用方式对比</h5>
+                            <table class="table table-bordered">
+                                <thead class="table-danger">
+                                    <tr><th>方式</th><th>优点</th><th>缺点</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>环境变量</td><td>简单直接</td><td>更新需重启</td></tr>
+                                    <tr><td>挂载文件</td><td>支持热更新</td><td>需应用监听</td></tr>
+                                </tbody>
+                            </table>
+                            
+                            <h5 class="mt-4">常用命令</h5>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 从字面值创建 ConfigMap</span><br>
+                                    <code class="command-code">kubectl create configmap app-config --from-literal=key=value</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 从文件创建 ConfigMap</span><br>
+                                    <code class="command-code">kubectl create configmap app-config --from-file=config.yaml</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 查看所有 ConfigMap</span><br>
+                                    <code class="command-code">kubectl get configmaps</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 编辑 ConfigMap</span><br>
+                                    <code class="command-code">kubectl edit configmap app-config</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
     </div>
-    <div class="concept-detail-content d-none" id="configmap-detail"></div>
-</div>
+
+    <script src="../../assets/js/mermaid.min.js"></script>
+    <script src="../../assets/js/bootstrap.min.js"></script>
+    <script src="../../assets/js/script.js"></script>
+</body>
+</html>

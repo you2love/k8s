@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实践指南 - Kubernetes 学习教程</title>
+    <link href="../assets/css/bootstrap-local.css" rel="stylesheet">
+    <link href="../assets/css/fonts-local.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Left Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <span>K8s 教程</span>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="../index.html#architecture" data-target="architecture">
+                        <span>架构图</span>
+                    </a>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="../index.html#concepts" data-target="concepts">
+                        <span>核心概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../index.html#concept-pod">Pod</a></li>
+                        <li><a href="../index.html#concept-deployment">Deployment</a></li>
+                        <li><a href="../index.html#concept-service">Service</a></li>
+                        <li><a href="../index.html#concept-node">Node</a></li>
+                        <li><a href="../index.html#concept-configmap">ConfigMap</a></li>
+                        <li><a href="../index.html#concept-secret">Secret</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="../index.html#advanced-concepts" data-target="advanced-concepts">
+                        <span>高级概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../index.html#concept-helm">Helm</a></li>
+                        <li><a href="../index.html#concept-networking">网络原理</a></li>
+                        <li><a href="../index.html#concept-storage">存储</a></li>
+                        <li><a href="../index.html#concept-namespace">命名空间</a></li>
+                        <li><a href="../index.html#concept-labels">标签与选择器</a></li>
+                        <li><a href="../index.html#concept-certificates">证书管理</a></li>
+                        <li><a href="../index.html#concept-scaling">节点扩缩容</a></li>
+                        <li><a href="../index.html#concept-upgrades">集群版本升级</a></li>
+                        <li><a href="../index.html#concept-helm-charts">Helm Chart 编写</a></li>
+                        <li><a href="../index.html#concept-coredns">CoreDNS</a></li>
+                        <li><a href="../index.html#concept-stateful-apps">数据库/中间件部署</a></li>
+                        <li><a href="../index.html#concept-ingress">Ingress 高级配置</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../index.html#installation" data-target="installation">
+                        <span>安装指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="#practice" data-target="practice">
+                        <span>实践指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../index.html#troubleshooting" data-target="troubleshooting">
+                        <span>常见问题</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../index.html#best-practices" data-target="best-practices">
+                        <span>最佳实践</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../index.html#rancher" data-target="rancher">
+                        <span>Rancher</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <section class="py-5 bg-light" id="practice">
+                <div class="container">
+                    <h2 class="text-center mb-5">实践指南</h2>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="accordion" id="practiceAccordion">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#practice1">
+                                            第一步：安装 Kubernetes
+                                        </button>
+                                    </h2>
+                                    <div id="practice1" class="accordion-collapse collapse show" data-bs-parent="#practiceAccordion">
+                                        <div class="accordion-body">
+                                            <h5>Minikube 快速安装</h5>
+                                            <pre><code># macOS
+brew install minikube
+
+# Linux
+curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+chmod +x minikube
+sudo mv minikube /usr/local/bin/
+
+# 启动集群
+minikube start</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#practice2">
+                                            第二步：创建第一个 Pod
+                                        </button>
+                                    </h2>
+                                    <div id="practice2" class="accordion-collapse collapse" data-bs-parent="#practiceAccordion">
+                                        <div class="accordion-body">
+                                            <h5>使用 kubectl 创建 Pod</h5>
+                                            <pre><code># 创建简单的 Nginx Pod
+kubectl run nginx --image=nginx
+
+# 查看 Pod 状态
+kubectl get pods
+
+# 查看详细信息
+kubectl describe pod nginx</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#practice3">
+                                            第三步：部署应用程序
+                                        </button>
+                                    </h2>
+                                    <div id="practice3" class="accordion-collapse collapse" data-bs-parent="#practiceAccordion">
+                                        <div class="accordion-body">
+                                            <h5>创建 Deployment</h5>
+                                            <pre><code># 创建部署
+kubectl create deployment myapp --image=nginx
+
+# 扩展副本数
+kubectl scale deployment myapp --replicas=3
+
+# 查看部署状态
+kubectl get deployments</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#practice4">
+                                            第四步：暴露服务
+                                        </button>
+                                    </h2>
+                                    <div id="practice4" class="accordion-collapse collapse" data-bs-parent="#practiceAccordion">
+                                        <div class="accordion-body">
+                                            <h5>创建 Service</h5>
+                                            <pre><code># 创建 NodePort 服务
+kubectl expose deployment myapp --port=80 --type=NodePort
+
+# 获取服务地址
+minikube service myapp
+
+# 查看服务详情
+kubectl get services</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="../assets/js/mermaid.min.js"></script>
+    <script src="../assets/js/bootstrap.min.js"></script>
+    <script src="../assets/js/script.js"></script>
+</body>
+</html>

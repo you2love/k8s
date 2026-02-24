@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>常见问题 - Kubernetes 学习教程</title>
+    <link href="../assets/css/bootstrap-local.css" rel="stylesheet">
+    <link href="../assets/css/fonts-local.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Left Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <span>K8s 教程</span>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="../index.html#architecture" data-target="architecture">
+                        <span>架构图</span>
+                    </a>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="../index.html#concepts" data-target="concepts">
+                        <span>核心概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../index.html#concept-pod">Pod</a></li>
+                        <li><a href="../index.html#concept-deployment">Deployment</a></li>
+                        <li><a href="../index.html#concept-service">Service</a></li>
+                        <li><a href="../index.html#concept-node">Node</a></li>
+                        <li><a href="../index.html#concept-configmap">ConfigMap</a></li>
+                        <li><a href="../index.html#concept-secret">Secret</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="../index.html#advanced-concepts" data-target="advanced-concepts">
+                        <span>高级概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../index.html#concept-helm">Helm</a></li>
+                        <li><a href="../index.html#concept-networking">网络原理</a></li>
+                        <li><a href="../index.html#concept-storage">存储</a></li>
+                        <li><a href="../index.html#concept-namespace">命名空间</a></li>
+                        <li><a href="../index.html#concept-labels">标签与选择器</a></li>
+                        <li><a href="../index.html#concept-certificates">证书管理</a></li>
+                        <li><a href="../index.html#concept-scaling">节点扩缩容</a></li>
+                        <li><a href="../index.html#concept-upgrades">集群版本升级</a></li>
+                        <li><a href="../index.html#concept-helm-charts">Helm Chart 编写</a></li>
+                        <li><a href="../index.html#concept-coredns">CoreDNS</a></li>
+                        <li><a href="../index.html#concept-stateful-apps">数据库/中间件部署</a></li>
+                        <li><a href="../index.html#concept-ingress">Ingress 高级配置</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../index.html#installation" data-target="installation">
+                        <span>安装指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../index.html#practice" data-target="practice">
+                        <span>实践指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="#troubleshooting" data-target="troubleshooting">
+                        <span>常见问题</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../index.html#best-practices" data-target="best-practices">
+                        <span>最佳实践</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../index.html#rancher" data-target="rancher">
+                        <span>Rancher</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <section class="py-5" id="troubleshooting">
+                <div class="container">
+                    <h2 class="text-center mb-5">常见问题</h2>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="accordion" id="troubleshootingAccordion">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#troubleshoot1">
+                                            Pod 一直处于 Pending 状态
+                                        </button>
+                                    </h2>
+                                    <div id="troubleshoot1" class="accordion-collapse collapse show" data-bs-parent="#troubleshootingAccordion">
+                                        <div class="accordion-body">
+                                            <h5>可能原因和解决方案</h5>
+                                            <ul>
+                                                <li><strong>资源不足</strong>：检查节点 CPU、内存是否足够</li>
+                                                <li><strong>调度失败</strong>：查看 Pod 事件，使用 <code>kubectl describe pod &lt;pod-name&gt;</code></li>
+                                                <li><strong>镜像拉取失败</strong>：检查镜像名称、tag 和仓库访问权限</li>
+                                                <li><strong>污点（Taints）</strong>：检查节点是否有污点阻止调度</li>
+                                            </ul>
+                                            <pre><code># 查看详细信息
+kubectl describe pod &lt;pod-name&gt;
+
+# 查看事件
+kubectl get events --sort-by=.metadata.creationTimestamp
+
+# 检查节点资源
+kubectl describe nodes
+
+# 检查节点污点
+kubectl get nodes -o custom-columns=NAME:.metadata.name,TAINTS:.spec.taints</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#troubleshoot2">
+                                            Pod 不断重启（CrashLoopBackOff）
+                                        </button>
+                                    </h2>
+                                    <div id="troubleshoot2" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                                        <div class="accordion-body">
+                                            <h5>可能原因和解决方案</h5>
+                                            <ul>
+                                                <li><strong>应用错误</strong>：查看应用日志，修复代码问题</li>
+                                                <li><strong>配置错误</strong>：检查环境变量、ConfigMap、Secret</li>
+                                                <li><strong>资源限制</strong>：检查内存或 CPU 限制是否过小</li>
+                                                <li><strong>健康检查失败</strong>：检查 liveness 和 readiness 探针配置</li>
+                                            </ul>
+                                            <pre><code># 查看日志
+kubectl logs &lt;pod-name&gt;
+
+# 查看之前的容器日志
+kubectl logs &lt;pod-name&gt; --previous
+
+# 查看详细信息
+kubectl describe pod &lt;pod-name&gt;
+
+# 进入容器调试
+kubectl exec -it &lt;pod-name&gt; -- /bin/bash</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#troubleshoot3">
+                                            Service 无法访问
+                                        </button>
+                                    </h2>
+                                    <div id="troubleshoot3" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                                        <div class="accordion-body">
+                                            <h5>可能原因和解决方案</h5>
+                                            <ul>
+                                                <li><strong>选择器错误</strong>：检查 Service 的选择器是否匹配 Pod 的标签</li>
+                                                <li><strong>端口配置错误</strong>：检查 targetPort 是否与 Pod 暴露的端口一致</li>
+                                                <li><strong>Pod 未就绪</strong>：检查 Pod 的 readiness 探针是否通过</li>
+                                                <li><strong>网络策略</strong>：检查是否有网络策略阻止访问</li>
+                                            </ul>
+                                            <pre><code># 查看 Service 详情
+kubectl describe service &lt;service-name&gt;
+
+# 查看 Endpoints
+kubectl get endpoints &lt;service-name&gt;
+
+# 查看 Pod 标签
+kubectl get pods --show-labels
+
+# 测试 Service 连接
+kubectl run -it --rm debug --image=busybox --restart=Never -- wget -O- &lt;service-name&gt;</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#troubleshoot4">
+                                            镜像拉取失败（ImagePullBackOff）
+                                        </button>
+                                    </h2>
+                                    <div id="troubleshoot4" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                                        <div class="accordion-body">
+                                            <h5>可能原因和解决方案</h5>
+                                            <ul>
+                                                <li><strong>镜像不存在</strong>：检查镜像名称和 tag 是否正确</li>
+                                                <li><strong>权限问题</strong>：配置 imagePullSecrets，确保有拉取权限</li>
+                                                <li><strong>网络问题</strong>：检查集群是否能访问镜像仓库</li>
+                                                <li><strong>私有仓库</strong>：创建 Docker registry Secret 并配置到 Pod</li>
+                                            </ul>
+                                            <pre><code># 查看详细信息
+kubectl describe pod &lt;pod-name&gt;
+
+# 创建 Docker registry Secret
+kubectl create secret docker-registry regcred \
+  --docker-server=&lt;registry&gt; \
+  --docker-username=&lt;username&gt; \
+  --docker-password=&lt;password&gt;
+
+# 在 Pod 中使用
+spec:
+  imagePullSecrets:
+  - name: regcred</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#troubleshoot5">
+                                            节点处于 NotReady 状态
+                                        </button>
+                                    </h2>
+                                    <div id="troubleshoot5" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                                        <div class="accordion-body">
+                                            <h5>可能原因和解决方案</h5>
+                                            <ul>
+                                                <li><strong>kubelet 未运行</strong>：检查 kubelet 服务状态</li>
+                                                <li><strong>资源压力</strong>：检查 CPU、内存、磁盘是否充足</li>
+                                                <li><strong>网络问题</strong>：检查网络连接和 DNS</li>
+                                                <li><strong>容器运行时问题</strong>：检查 Docker/containerd 状态</li>
+                                            </ul>
+                                            <pre><code># 查看节点详情
+kubectl describe node &lt;node-name&gt;
+
+# 检查节点条件
+kubectl get nodes -o wide
+
+# 在节点上检查 kubelet
+sudo systemctl status kubelet
+
+# 查看节点日志
+sudo journalctl -u kubelet -f</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#troubleshoot6">
+                                            DNS 解析问题
+                                        </button>
+                                    </h2>
+                                    <div id="troubleshoot6" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                                        <div class="accordion-body">
+                                            <h5>可能原因和解决方案</h5>
+                                            <ul>
+                                                <li><strong>CoreDNS Pod 问题</strong>：检查 CoreDNS Pod 是否正常运行</li>
+                                                <li><strong>DNS 配置错误</strong>：检查 /etc/resolv.conf 配置</li>
+                                                <li><strong>网络策略</strong>：检查是否阻止了 DNS 流量</li>
+                                                <li><strong>Service 名称错误</strong>：确认 Service 名称和命名空间</li>
+                                            </ul>
+                                            <pre><code># 检查 CoreDNS Pod
+kubectl get pods -n kube-system -l k8s-app=kube-dns
+
+# 查看 CoreDNS 日志
+kubectl logs -n kube-system -l k8s-app=kube-dns
+
+# 测试 DNS 解析
+kubectl run -it --rm debug --image=busybox --restart=Never -- nslookup kubernetes.default
+
+# 查看 DNS 配置
+kubectl get configmap coredns -n kube-system -o yaml</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="../assets/js/mermaid.min.js"></script>
+    <script src="../assets/js/bootstrap.min.js"></script>
+    <script src="../assets/js/script.js"></script>
+</body>
+</html>

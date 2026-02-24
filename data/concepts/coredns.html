@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoreDNS - Kubernetes 学习教程</title>
+    <link href="../../assets/css/bootstrap-local.css" rel="stylesheet">
+    <link href="../../assets/css/fonts-local.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Left Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <span>K8s 教程</span>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#architecture" data-target="architecture">
+                        <span>架构图</span>
+                    </a>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="../../index.html#concepts" data-target="concepts">
+                        <span>核心概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../../index.html#concept-pod">Pod</a></li>
+                        <li><a href="../../index.html#concept-deployment">Deployment</a></li>
+                        <li><a href="../../index.html#concept-service">Service</a></li>
+                        <li><a href="../../index.html#concept-node">Node</a></li>
+                        <li><a href="../../index.html#concept-configmap">ConfigMap</a></li>
+                        <li><a href="../../index.html#concept-secret">Secret</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link active" href="../../index.html#advanced-concepts" data-target="advanced-concepts">
+                        <span>高级概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../../index.html#concept-helm">Helm</a></li>
+                        <li><a href="../../index.html#concept-networking">网络原理</a></li>
+                        <li><a href="../../index.html#concept-storage">存储</a></li>
+                        <li><a href="../../index.html#concept-namespace">命名空间</a></li>
+                        <li><a href="../../index.html#concept-labels">标签与选择器</a></li>
+                        <li><a href="../../index.html#concept-certificates">证书管理</a></li>
+                        <li><a href="../../index.html#concept-scaling">节点扩缩容</a></li>
+                        <li><a href="../../index.html#concept-upgrades">集群版本升级</a></li>
+                        <li><a href="../../index.html#concept-helm-charts">Helm Chart 编写</a></li>
+                        <li><a href="#" class="active">CoreDNS</a></li>
+                        <li><a href="../../index.html#concept-stateful-apps">数据库/中间件部署</a></li>
+                        <li><a href="../../index.html#concept-ingress">Ingress 高级配置</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#installation" data-target="installation">
+                        <span>安装指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#practice" data-target="practice">
+                        <span>实践指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#troubleshooting" data-target="troubleshooting">
+                        <span>常见问题</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#best-practices" data-target="best-practices">
+                        <span>最佳实践</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#rancher" data-target="rancher">
+                        <span>Rancher</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <section class="py-5" id="concept-coredns">
+                <div class="container">
+                    <h2 class="text-center mb-5">CoreDNS</h2>
+                    
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <p>CoreDNS 是 Kubernetes 集群的默认 DNS 服务，负责为集群内的 Pod 和 Service 提供域名解析服务。它取代了早期版本中的 kube-dns，提供了更好的性能、灵活性和可扩展性。</p>
+                            
+                            <h5 class="mt-4">CoreDNS 架构</h5>
+                            <div class="architecture-diagram bg-light p-4 rounded">
+                                <pre class="mermaid">
+graph TB
+    subgraph "K8s 集群"
+        subgraph "Master 节点"
+            API[API Server]
+            ETCD[etcd]
+        end
+        
+        subgraph "CoreDNS Pod"
+            COREDNS[CoreDNS Server]
+            PLUGIN[插件系统<br/>kubernetes, k8s_gateway等]
+        end
+        
+        subgraph "客户端"
+            POD1[应用 Pod]
+            POD2[应用 Pod]
+            SVC[Service]
+        end
+        
+        subgraph "外部 DNS"
+            UPSTREAM[上游 DNS<br/>8.8.8.8]
+        end
+    end
+    
+    POD1 --> COREDNS
+    POD2 --> COREDNS
+    SVC --> COREDNS
+    COREDNS --> API
+    COREDNS --> ETCD
+    COREDNS --> UPSTREAM
+    API --> PLUGIN
+                                </pre>
+                            </div>
+                            
+                            <h5 class="mt-4">CoreDNS 核心特性</h5>
+                            <div class="row mt-4">
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <i class="material-icons text-success" style="font-size: 2.5rem;">extension</i>
+                                            <h5 class="card-title mt-3">插件架构</h5>
+                                            <p class="card-text">基于插件系统，支持多种功能扩展</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <i class="material-icons text-info" style="font-size: 2.5rem;">dns</i>
+                                            <h5 class="card-title mt-3">服务发现</h5>
+                                            <p class="card-text">自动发现并解析集群内的服务</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <i class="material-icons text-warning" style="font-size: 2.5rem;">cached</i>
+                                            <h5 class="card-title mt-3">缓存机制</h5>
+                                            <p class="card-text">高效缓存机制，提升解析性能</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <i class="material-icons text-primary" style="font-size: 2.5rem;">settings_ethernet</i>
+                                            <h5 class="card-title mt-3">可配置性</h5>
+                                            <p class="card-text">灵活的配置选项，满足不同需求</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">CoreDNS 配置详解</h5>
+                            <p>CoreDNS 使用 Corefile 配置文件来定义 DNS 解析规则和插件行为。</p>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># CoreDNS 配置示例</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: v1<br>kind: ConfigMap<br>metadata:<br>&nbsp;&nbsp;name: coredns<br>&nbsp;&nbsp;namespace: kube-system<br>data:<br>&nbsp;&nbsp;Corefile: |<br>&nbsp;&nbsp;&nbsp;&nbsp;. {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;errors<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;health {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lameduck 5s<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kubernetes cluster.local in-addr.arpa ip6.arpa {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pods insecure<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fallthrough in-addr.arpa ip6.arpa<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ttl 30<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;prometheus :9153<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;forward . /etc/resolv.conf<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cache 30<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;loop<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;reload<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;loadbalance<br>&nbsp;&nbsp;&nbsp;&nbsp;}</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">CoreDNS 常用插件</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="table-success">
+                                        <tr><th>插件</th><th>功能</th><th>使用场景</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>kubernetes</td><td>与 Kubernetes API 集成，提供服务发现</td><td>解析 Service 和 Pod 域名</td></tr>
+                                        <tr><td>forward</td><td>将查询转发到上游 DNS 服务器</td><td>解析外部域名</td></tr>
+                                        <tr><td>cache</td><td>DNS 查询结果缓存</td><td>提升解析性能</td></tr>
+                                        <tr><td>health</td><td>健康检查端点</td><td>监控 CoreDNS 服务状态</td></tr>
+                                        <tr><td>prometheus</td><td>暴露监控指标</td><td>性能监控和告警</td></tr>
+                                        <tr><td>loop</td><td>检测和防止 DNS 循环</td><td>防止查询循环</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h5 class="mt-4">DNS 解析流程</h5>
+                            <div class="architecture-diagram bg-light p-4 rounded">
+                                <pre class="mermaid">
+sequenceDiagram
+    participant Pod as 应用 Pod
+    participant CoreDNS as CoreDNS
+    participant API as Kubernetes API
+    participant Upstream as 上游 DNS
+    
+    Pod->>CoreDNS: 查询 service.namespace.svc.cluster.local
+    CoreDNS->>API: 检查 Service 定义
+    API-->>CoreDNS: 返回 Service IP
+    CoreDNS-->>Pod: 返回解析结果
+    alt 未找到内部服务
+        CoreDNS->>Upstream: 转发查询
+        Upstream-->>CoreDNS: 外部域名解析结果
+        CoreDNS-->>Pod: 返回外部解析结果
+    end
+                                </pre>
+                            </div>
+                            
+                            <h5 class="mt-4">CoreDNS 故障排查</h5>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 查看 CoreDNS Pod 状态</span><br>
+                                    <code class="command-code">kubectl get pods -n kube-system -l k8s-app=kube-dns</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 查看 CoreDNS 日志</span><br>
+                                    <code class="command-code">kubectl logs -n kube-system -l k8s-app=kube-dns</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 测试 DNS 解析</span><br>
+                                    <code class="command-code">kubectl run -it --rm debug --image=busybox:1.28 --restart=Never -- nslookup kubernetes.default</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 查看 CoreDNS 配置</span><br>
+                                    <code class="command-code">kubectl get configmap coredns -n kube-system -o yaml</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 重新加载 CoreDNS 配置</span><br>
+                                    <code class="command-code">kubectl rollout restart deployment/coredns -n kube-system</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">CoreDNS 性能优化</h5>
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <h6>缓存优化</h6>
+                                    <ul>
+                                        <li>调整缓存大小和 TTL</li>
+                                        <li>根据负载调整缓存策略</li>
+                                        <li>监控缓存命中率</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>资源优化</h6>
+                                    <ul>
+                                        <li>调整副本数以提高可用性</li>
+                                        <li>设置合适的资源请求和限制</li>
+                                        <li>启用负载均衡策略</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="../../assets/js/mermaid.min.js"></script>
+    <script src="../../assets/js/bootstrap.min.js"></script>
+    <script src="../../assets/js/script.js"></script>
+</body>
+</html>

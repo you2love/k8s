@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>标签与选择器 - Kubernetes 学习教程</title>
+    <link href="../../assets/css/bootstrap-local.css" rel="stylesheet">
+    <link href="../../assets/css/fonts-local.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Left Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <span>K8s 教程</span>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#architecture" data-target="architecture">
+                        <span>架构图</span>
+                    </a>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="../../index.html#concepts" data-target="concepts">
+                        <span>核心概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../../index.html#concept-pod">Pod</a></li>
+                        <li><a href="../../index.html#concept-deployment">Deployment</a></li>
+                        <li><a href="../../index.html#concept-service">Service</a></li>
+                        <li><a href="../../index.html#concept-node">Node</a></li>
+                        <li><a href="../../index.html#concept-configmap">ConfigMap</a></li>
+                        <li><a href="../../index.html#concept-secret">Secret</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link active" href="../../index.html#advanced-concepts" data-target="advanced-concepts">
+                        <span>高级概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../../index.html#concept-helm">Helm</a></li>
+                        <li><a href="../../index.html#concept-networking">网络原理</a></li>
+                        <li><a href="../../index.html#concept-storage">存储</a></li>
+                        <li><a href="../../index.html#concept-namespace">命名空间</a></li>
+                        <li><a href="#" class="active">标签与选择器</a></li>
+                        <li><a href="../../index.html#concept-certificates">证书管理</a></li>
+                        <li><a href="../../index.html#concept-scaling">节点扩缩容</a></li>
+                        <li><a href="../../index.html#concept-upgrades">集群版本升级</a></li>
+                        <li><a href="../../index.html#concept-helm-charts">Helm Chart 编写</a></li>
+                        <li><a href="../../index.html#concept-coredns">CoreDNS</a></li>
+                        <li><a href="../../index.html#concept-stateful-apps">数据库/中间件部署</a></li>
+                        <li><a href="../../index.html#concept-ingress">Ingress 高级配置</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#installation" data-target="installation">
+                        <span>安装指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#practice" data-target="practice">
+                        <span>实践指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#troubleshooting" data-target="troubleshooting">
+                        <span>常见问题</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#best-practices" data-target="best-practices">
+                        <span>最佳实践</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#rancher" data-target="rancher">
+                        <span>Rancher</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <section class="py-5" id="concept-labels">
+                <div class="container">
+                    <h2 class="text-center mb-5">标签与选择器 (Labels & Selectors)</h2>
+                    
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <p>标签 (Labels) 是附加到 Kubernetes 对象（如 Pod、Service）上的键值对，用于标识和组织资源。选择器 (Selectors) 是根据标签来查询和筛选资源的机制。</p>
+                            
+                            <h5 class="mt-4">标签与选择器工作原理</h5>
+                            <div class="architecture-diagram bg-light p-4 rounded">
+                                <pre class="mermaid">
+graph LR
+    subgraph "集群资源"
+        P1[Pod 1<br/>app=frontend<br/>version=v1.0]
+        P2[Pod 2<br/>app=frontend<br/>version=v1.0]
+        P3[Pod 3<br/>app=backend<br/>version=v2.0]
+        P4[Pod 4<br/>app=backend<br/>version=v2.0]
+        P5[Pod 5<br/>app=database<br/>version=v1.0]
+    end
+    
+    S[Service<br/>选择器: app=frontend]
+    DS[Deployment<br/>选择器: app=backend<br/>version=v2.0]
+    
+    S --> P1
+    S --> P2
+    DS --> P3
+    DS --> P4
+                                </pre>
+                            </div>
+                            
+                            <h5 class="mt-4">标签最佳实践</h5>
+                            <div class="row mt-4">
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h5 class="card-title text-primary">推荐标签</h5>
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item"><code>app.kubernetes.io/name</code> - 应用名称</li>
+                                                <li class="list-group-item"><code>app.kubernetes.io/version</code> - 应用版本</li>
+                                                <li class="list-group-item"><code>app.kubernetes.io/component</code> - 组件名称</li>
+                                                <li class="list-group-item"><code>app.kubernetes.io/part-of</code> - 所属应用</li>
+                                                <li class="list-group-item"><code>app.kubernetes.io/managed-by</code> - 管理工具</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h5 class="card-title text-success">自定义标签</h5>
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item"><code>env</code> - 环境 (dev/staging/prod)</li>
+                                                <li class="list-group-item"><code>team</code> - 负责团队</li>
+                                                <li class="list-group-item"><code>tier</code> - 层级 (frontend/backend)</li>
+                                                <li class="list-group-item"><code>release</code> - 发布渠道</li>
+                                                <li class="list-group-item"><code>track</code> - 发布轨道</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">选择器类型</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="table-info">
+                                        <tr><th>选择器类型</th><th>语法</th><th>示例</th><th>说明</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>等值匹配</td><td><code>=</code>, <code>==</code></td><td><code>environment = production</code></td><td>精确匹配指定值</td></tr>
+                                        <tr><td>不等值匹配</td><td><code>!=</code></td><td><code>version != v1.0</code></td><td>匹配不等于指定值的资源</td></tr>
+                                        <tr><td>集合匹配</td><td><code>in</code>, <code>notin</code></td><td><code>tier in (frontend, backend)</code></td><td>匹配值在/不在指定集合中</td></tr>
+                                        <tr><td>存在匹配</td><td><code>exists</code></td><td><code>environment</code></td><td>匹配存在指定键的资源</td></tr>
+                                        <tr><td>不存在匹配</td><td><code>!key</code></td><td><code>!deprecated</code></td><td>匹配不存在指定键的资源</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h5 class="mt-4">标签和选择器应用示例</h5>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 为资源添加标签</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: apps/v1<br>kind: Deployment<br>metadata:<br>&nbsp;&nbsp;name: frontend<br>&nbsp;&nbsp;labels:<br>&nbsp;&nbsp;&nbsp;&nbsp;app: frontend<br>&nbsp;&nbsp;&nbsp;&nbsp;version: v1.0<br>&nbsp;&nbsp;&nbsp;&nbsp;environment: production<br>spec:<br>&nbsp;&nbsp;replicas: 3<br>&nbsp;&nbsp;selector:<br>&nbsp;&nbsp;&nbsp;&nbsp;matchLabels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: frontend<br>&nbsp;&nbsp;template:<br>&nbsp;&nbsp;&nbsp;&nbsp;metadata:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;labels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: frontend<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;version: v1.0<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: frontend<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;image: nginx:1.21</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">常用标签操作命令</h5>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 通过标签查找资源</span><br>
+                                    <code class="command-code">kubectl get pods -l environment=production</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 多个标签条件查找</span><br>
+                                    <code class="command-code">kubectl get pods -l environment=production,tier=frontend</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 添加标签到现有资源</span><br>
+                                    <code class="command-code">kubectl label pods my-pod version=v2.0</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 更新标签</span><br>
+                                    <code class="command-code">kubectl label pods my-pod version=v3.0 --overwrite</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 删除标签</span><br>
+                                    <code class="command-code">kubectl label pods my-pod version-</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 查看标签</span><br>
+                                    <code class="command-code">kubectl get pods --show-labels</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="../../assets/js/mermaid.min.js"></script>
+    <script src="../../assets/js/bootstrap.min.js"></script>
+    <script src="../../assets/js/script.js"></script>
+</body>
+</html>

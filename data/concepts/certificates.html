@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>证书管理 - Kubernetes 学习教程</title>
+    <link href="../../assets/css/bootstrap-local.css" rel="stylesheet">
+    <link href="../../assets/css/fonts-local.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Left Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <span>K8s 教程</span>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#architecture" data-target="architecture">
+                        <span>架构图</span>
+                    </a>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="../../index.html#concepts" data-target="concepts">
+                        <span>核心概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../../index.html#concept-pod">Pod</a></li>
+                        <li><a href="../../index.html#concept-deployment">Deployment</a></li>
+                        <li><a href="../../index.html#concept-service">Service</a></li>
+                        <li><a href="../../index.html#concept-node">Node</a></li>
+                        <li><a href="../../index.html#concept-configmap">ConfigMap</a></li>
+                        <li><a href="../../index.html#concept-secret">Secret</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link active" href="../../index.html#advanced-concepts" data-target="advanced-concepts">
+                        <span>高级概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../../index.html#concept-helm">Helm</a></li>
+                        <li><a href="../../index.html#concept-networking">网络原理</a></li>
+                        <li><a href="../../index.html#concept-storage">存储</a></li>
+                        <li><a href="../../index.html#concept-namespace">命名空间</a></li>
+                        <li><a href="../../index.html#concept-labels">标签与选择器</a></li>
+                        <li><a href="#" class="active">证书管理</a></li>
+                        <li><a href="../../index.html#concept-scaling">节点扩缩容</a></li>
+                        <li><a href="../../index.html#concept-upgrades">集群版本升级</a></li>
+                        <li><a href="../../index.html#concept-helm-charts">Helm Chart 编写</a></li>
+                        <li><a href="../../index.html#concept-coredns">CoreDNS</a></li>
+                        <li><a href="../../index.html#concept-stateful-apps">数据库/中间件部署</a></li>
+                        <li><a href="../../index.html#concept-ingress">Ingress 高级配置</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#installation" data-target="installation">
+                        <span>安装指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#practice" data-target="practice">
+                        <span>实践指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#troubleshooting" data-target="troubleshooting">
+                        <span>常见问题</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#best-practices" data-target="best-practices">
+                        <span>最佳实践</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#rancher" data-target="rancher">
+                        <span>Rancher</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <section class="py-5" id="concept-certificates">
+                <div class="container">
+                    <h2 class="text-center mb-5">证书管理</h2>
+                    
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <p>证书管理是 Kubernetes 集群安全的重要组成部分，用于确保集群内部组件和用户之间的通信安全。Kubernetes 使用 PKI（Public Key Infrastructure）系统来管理证书和密钥。</p>
+                            
+                            <h5 class="mt-4">Kubernetes 证书架构</h5>
+                            <div class="architecture-diagram bg-light p-4 rounded">
+                                <pre class="mermaid">
+graph TB
+    subgraph "CA (证书颁发机构)"
+        ROOT[根 CA<br/>kubernetes-ca]
+    end
+    
+    subgraph "集群组件证书"
+        API[API Server<br/>apiserver.crt]
+        ETCD[etcd<br/>etcd-server.crt]
+        KUBELET[kubelet<br/>kubelet.crt]
+        PROXY[kube-proxy<br/>kube-proxy.crt]
+    end
+    
+    subgraph "客户端证书"
+        ADMIN[管理员<br/>admin.crt]
+        KUBE[系统组件<br/>system:node:kubelet]
+        SERVICE[Service Account<br/>sa.key/sa.pub]
+    end
+    
+    ROOT --> API
+    ROOT --> ETCD
+    ROOT --> KUBELET
+    ROOT --> PROXY
+    ROOT --> ADMIN
+    ROOT --> KUBE
+    ROOT --> SERVICE
+                                </pre>
+                            </div>
+                            
+                            <h5 class="mt-4">主要证书类型</h5>
+                            <div class="row mt-4">
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h5 class="card-title text-primary">集群组件证书</h5>
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item"><strong>CA 证书:</strong> kubernetes-ca.crt/key - 根证书颁发机构</li>
+                                                <li class="list-group-item"><strong>API Server:</strong> apiserver.crt/key - API 服务器身份验证</li>
+                                                <li class="list-group-item"><strong>etcd:</strong> etcd-server.crt/key - etcd 数据库通信</li>
+                                                <li class="list-group-item"><strong>Kubelet:</strong> kubelet.crt/key - 节点代理通信</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h5 class="card-title text-success">客户端证书</h5>
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item"><strong>Admin 证书:</strong> admin.crt/key - 管理员身份</li>
+                                                <li class="list-group-item"><strong>Kubelet 证书:</strong> system:node:* - 节点身份</li>
+                                                <li class="list-group-item"><strong>Front Proxy:</strong> front-proxy.crt/key - 聚合 API</li>
+                                                <li class="list-group-item"><strong>Service Account:</strong> sa.key/sa.pub - 服务账户密钥</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">证书签发流程</h5>
+                            <div class="architecture-diagram bg-light p-4 rounded">
+                                <pre class="mermaid">
+sequenceDiagram
+    participant Admin as 管理员
+    participant CSR as CertificateSigningRequest
+    participant Controller as CSR Controller
+    participant CA as 证书颁发机构
+    
+    Admin->>CSR: 创建 CSR 对象
+    CSR->>Controller: 等待批准
+    Controller->>CA: 验证并签名
+    CA->>CSR: 返回签发的证书
+    CSR-->>Admin: 证书签发完成
+                                </pre>
+                            </div>
+                            
+                            <h5 class="mt-4">证书管理最佳实践</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="table-dark">
+                                        <tr><th>实践</th><th>说明</th><th>重要性</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>定期轮换</td><td>定期更新证书，避免过期</td><td>高</td></tr>
+                                        <tr><td>安全存储</td><td>私钥文件存储在安全位置，权限限制</td><td>高</td></tr>
+                                        <tr><td>最小权限</td><td>证书只包含必要的权限和范围</td><td>高</td></tr>
+                                        <tr><td>监控告警</td><td>监控证书有效期，设置过期告警</td><td>中</td></tr>
+                                        <tr><td>备份策略</td><td>定期备份 CA 证书和私钥</td><td>高</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h5 class="mt-4">证书操作命令</h5>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 查看集群证书文件</span><br>
+                                    <code class="command-code">ls -la /etc/kubernetes/pki/</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 检查证书有效期</span><br>
+                                    <code class="command-code">openssl x509 -in /etc/kubernetes/pki/apiserver.crt -noout -text</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 使用 kubeadm 检查证书有效期</span><br>
+                                    <code class="command-code">kubeadm certs check-expiration</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 为用户创建证书签名请求</span><br>
+                                    <code class="command-code">cat &lt;&lt;EOF | kubectl apply -f -<br>apiVersion: certificates.k8s.io/v1<br>kind: CertificateSigningRequest<br>metadata:<br>&nbsp;&nbsp;name: user-csr<br>spec:<br>&nbsp;&nbsp;request: $(echo -n '{"CN":"username","O":["system:masters"]}' | base64 | tr -d '\n')<br>&nbsp;&nbsp;signerName: kubernetes.io/kube-apiserver-client<br>&nbsp;&nbsp;usages:<br>&nbsp;&nbsp;- client auth<br>EOF</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 批准证书签名请求</span><br>
+                                    <code class="command-code">kubectl certificate approve user-csr</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">Service Account 证书管理</h5>
+                            <p>Service Account 是 Kubernetes 中用于 Pod 身份验证的机制，每个命名空间都有默认的 Service Account。</p>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 查看 Service Account</span><br>
+                                    <code class="command-code">kubectl get serviceaccount -A</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 查看 Service Account 详细信息</span><br>
+                                    <code class="command-code">kubectl describe serviceaccount default -n default</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 创建自定义 Service Account</span><br>
+                                    <code class="command-code">kubectl create serviceaccount my-sa -n my-namespace</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="../../assets/js/mermaid.min.js"></script>
+    <script src="../../assets/js/bootstrap.min.js"></script>
+    <script src="../../assets/js/script.js"></script>
+</body>
+</html>

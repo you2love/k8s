@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>存储 - Kubernetes 学习教程</title>
+    <link href="../../assets/css/bootstrap-local.css" rel="stylesheet">
+    <link href="../../assets/css/fonts-local.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Left Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <span>K8s 教程</span>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#architecture" data-target="architecture">
+                        <span>架构图</span>
+                    </a>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="../../index.html#concepts" data-target="concepts">
+                        <span>核心概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../../index.html#concept-pod">Pod</a></li>
+                        <li><a href="../../index.html#concept-deployment">Deployment</a></li>
+                        <li><a href="../../index.html#concept-service">Service</a></li>
+                        <li><a href="../../index.html#concept-node">Node</a></li>
+                        <li><a href="../../index.html#concept-configmap">ConfigMap</a></li>
+                        <li><a href="../../index.html#concept-secret">Secret</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link active" href="../../index.html#advanced-concepts" data-target="advanced-concepts">
+                        <span>高级概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../../index.html#concept-helm">Helm</a></li>
+                        <li><a href="../../index.html#concept-networking">网络原理</a></li>
+                        <li><a href="#" class="active">存储</a></li>
+                        <li><a href="../../index.html#concept-namespace">命名空间</a></li>
+                        <li><a href="../../index.html#concept-labels">标签与选择器</a></li>
+                        <li><a href="../../index.html#concept-certificates">证书管理</a></li>
+                        <li><a href="../../index.html#concept-scaling">节点扩缩容</a></li>
+                        <li><a href="../../index.html#concept-upgrades">集群版本升级</a></li>
+                        <li><a href="../../index.html#concept-helm-charts">Helm Chart 编写</a></li>
+                        <li><a href="../../index.html#concept-coredns">CoreDNS</a></li>
+                        <li><a href="../../index.html#concept-stateful-apps">数据库/中间件部署</a></li>
+                        <li><a href="../../index.html#concept-ingress">Ingress 高级配置</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#installation" data-target="installation">
+                        <span>安装指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#practice" data-target="practice">
+                        <span>实践指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#troubleshooting" data-target="troubleshooting">
+                        <span>常见问题</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#best-practices" data-target="best-practices">
+                        <span>最佳实践</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#rancher" data-target="rancher">
+                        <span>Rancher</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <section class="py-5" id="concept-storage">
+                <div class="container">
+                    <h2 class="text-center mb-5">存储</h2>
+                    
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <p>Kubernetes 存储系统为 Pod 提供持久化存储能力，允许数据在 Pod 生命周期之外独立存在。K8s 提供了多种存储抽象，包括 Volume、PersistentVolume (PV)、PersistentVolumeClaim (PVC) 和 StorageClass。</p>
+                            
+                            <h5 class="mt-4">存储架构关系</h5>
+                            <div class="architecture-diagram bg-light p-4 rounded">
+                                <pre class="mermaid">
+graph TD
+    subgraph "应用层"
+        P[Pod]
+        C[Container]
+    end
+    
+    subgraph "K8s 存储抽象层"
+        V[Volume]
+        PVC[PersistentVolumeClaim]
+        PV[PersistentVolume]
+    end
+    
+    subgraph "存储提供层"
+        SC[StorageClass]
+        St[底层存储<br/>NFS/EBS/Ceph等]
+    end
+    
+    P --> V
+    V --> PVC
+    PVC --> PV
+    PV --> SC
+    SC --> St
+                                </pre>
+                            </div>
+                            
+                            <h5 class="mt-4">Volume 类型</h5>
+                            <div class="row mt-4">
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h5 class="card-title text-primary">emptyDir</h5>
+                                            <p><strong>特点：</strong>Pod 创建时创建，Pod 删除时自动删除，生命周期与 Pod 相同。</p>
+                                            <p><strong>用途：</strong>临时存储、缓存、Pod 内容器间共享数据。</p>
+                                            <div class="command-block">
+                                                <div class="command-item">
+                                                    <code class="command-code">apiVersion: v1<br>kind: Pod<br>metadata:<br>&nbsp;&nbsp;name: test-pod<br>spec:<br>&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;- name: container1<br>&nbsp;&nbsp;&nbsp;&nbsp;image: nginx<br>&nbsp;&nbsp;&nbsp;&nbsp;volumeMounts:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: cache-volume<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mountPath: /cache<br>&nbsp;&nbsp;volumes:<br>&nbsp;&nbsp;- name: cache-volume<br>&nbsp;&nbsp;&nbsp;&nbsp;emptyDir: {}</code>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h5 class="card-title text-success">hostPath</h5>
+                                            <p><strong>特点：</strong>将节点上的文件或目录挂载到 Pod 中，仅适用于单节点测试。</p>
+                                            <p><strong>用途：</strong>访问节点上的文件系统、调试、单节点测试。</p>
+                                            <div class="command-block">
+                                                <div class="command-item">
+                                                    <code class="command-code">volumes:<br>- name: host-volume<br>&nbsp;&nbsp;hostPath:<br>&nbsp;&nbsp;&nbsp;&nbsp;path: /data<br>&nbsp;&nbsp;&nbsp;&nbsp;type: Directory</code>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h5 class="card-title text-warning">持久化存储</h5>
+                                            <p><strong>特点：</strong>包括 NFS、iSCSI、云存储（AWS EBS、GCE PD、Azure Disk）等。</p>
+                                            <p><strong>用途：</strong>生产环境中的持久化数据存储。</p>
+                                            <div class="command-block">
+                                                <div class="command-item">
+                                                    <code class="command-code">volumes:<br>- name: nfs-volume<br>&nbsp;&nbsp;nfs:<br>&nbsp;&nbsp;&nbsp;&nbsp;server: nfs-server.example.com<br>&nbsp;&nbsp;&nbsp;&nbsp;path: /share</code>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h5 class="card-title text-info">configMap/Secret</h5>
+                                            <p><strong>特点：</strong>将配置数据和敏感信息作为存储卷挂载到 Pod 中。</p>
+                                            <p><strong>用途：</strong>配置管理、密钥管理。</p>
+                                            <div class="command-block">
+                                                <div class="command-item">
+                                                    <code class="command-code">volumes:<br>- name: config-volume<br>&nbsp;&nbsp;configMap:<br>&nbsp;&nbsp;&nbsp;&nbsp;name: app-config</code>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">PV/PVC 详解</h5>
+                            <div class="row mt-4">
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <i class="material-icons text-warning" style="font-size: 2.5rem;">storage</i>
+                                            <h5 class="card-title mt-3">PersistentVolume (PV)</h5>
+                                            <p class="card-text">集群中的存储资源，由管理员预配置或通过 StorageClass 动态创建。</p>
+                                            <ul class="list-group list-group-flush text-start">
+                                                <li class="list-group-item">集群级别资源</li>
+                                                <li class="list-group-item">独立于 Pod 生命周期</li>
+                                                <li class="list-group-item">支持多种存储后端</li>
+                                                <li class="list-group-item">定义存储容量、访问模式</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <i class="material-icons text-success" style="font-size: 2.5rem;">flag</i>
+                                            <h5 class="card-title mt-3">PersistentVolumeClaim (PVC)</h5>
+                                            <p class="card-text">用户对存储资源的请求，绑定到合适的 PV 上。</p>
+                                            <ul class="list-group list-group-flush text-start">
+                                                <li class="list-group-item">命名空间级别资源</li>
+                                                <li class="list-group-item">定义存储需求</li>
+                                                <li class="list-group-item">与 PV 进行动态绑定</li>
+                                                <li class="list-group-item">Pod 通过 PVC 使用存储</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">PV/PVC 工作流程</h5>
+                            <div class="architecture-diagram bg-light p-4 rounded">
+                                <pre class="mermaid">
+sequenceDiagram
+    participant Dev as 开发者
+    participant K8s as Kubernetes
+    participant Storage as 存储系统
+    
+    Dev->>K8s: 创建 PVC (请求 10GB)
+    K8s->>Storage: 寻找匹配的 PV
+    Storage-->>K8s: 返回可用 PV
+    K8s->>K8s: 绑定 PVC 到 PV
+    K8s-->>Dev: PVC 绑定成功
+    Dev->>K8s: 创建 Pod 使用 PVC
+    K8s->>Storage: 挂载存储到 Pod
+                                </pre>
+                            </div>
+                            
+                            <h5 class="mt-4">存储访问模式</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="table-success">
+                                        <tr><th>访问模式</th><th>缩写</th><th>说明</th><th>适用场景</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>ReadWriteOnce</td><td>RWO</td><td>单节点读写</td><td>单节点应用，如数据库</td></tr>
+                                        <tr><td>ReadOnlyMany</td><td>ROX</td><td>多节点只读</td><td>配置文件、静态资源</td></tr>
+                                        <tr><td>ReadWriteMany</td><td>RWX</td><td>多节点读写</td><td>共享文件系统</td></tr>
+                                        <tr><td>ReadWriteOncePod</td><td>RWOP</td><td>单 Pod 读写</td><td>确保只有一个 Pod 访问</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h5 class="mt-4">StorageClass 详解</h5>
+                            <p>StorageClass 定义了存储的类型和供应策略，支持动态 PV 创建。</p>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 创建 StorageClass 示例</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: storage.k8s.io/v1<br>kind: StorageClass<br>metadata:<br>&nbsp;&nbsp;name: fast-ssd<br>provisioner: kubernetes.io/aws-ebs<br>parameters:<br>&nbsp;&nbsp;type: gp2<br>reclaimPolicy: Retain<br>allowVolumeExpansion: true<br>mountOptions:<br>&nbsp;&nbsp;- debug</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 使用 StorageClass 的 PVC</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: v1<br>kind: PersistentVolumeClaim<br>metadata:<br>&nbsp;&nbsp;name: my-pvc<br>spec:<br>&nbsp;&nbsp;accessModes:<br>&nbsp;&nbsp;&nbsp;&nbsp;- ReadWriteOnce<br>&nbsp;&nbsp;resources:<br>&nbsp;&nbsp;&nbsp;&nbsp;requests:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;storage: 50Gi<br>&nbsp;&nbsp;storageClassName: fast-ssd</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">存储最佳实践</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="table-light">
+                                        <tr><th>实践</th><th>建议</th><th>原因</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>选择合适的存储类型</td>
+                                            <td>根据应用需求选择 Volume、PVC 或其他存储方案</td>
+                                            <td>避免性能瓶颈和数据丢失风险</td>
+                                        </tr>
+                                        <tr>
+                                            <td>配置存储资源请求</td>
+                                            <td>明确指定存储容量和访问模式</td>
+                                            <td>确保应用有足够的存储空间</td>
+                                        </tr>
+                                        <tr>
+                                            <td>设置合理的回收策略</td>
+                                            <td>Retain、Delete 或 Recycle</td>
+                                            <td>避免重要数据被意外删除</td>
+                                        </tr>
+                                        <tr>
+                                            <td>使用 StorageClass</td>
+                                            <td>实现动态存储供应</td>
+                                            <td>提高存储管理的灵活性和自动化程度</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h5 class="mt-4">常用存储命令</h5>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 查看 PV</span><br>
+                                    <code class="command-code">kubectl get pv</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 查看 PVC</span><br>
+                                    <code class="command-code">kubectl get pvc -n &lt;namespace&gt;</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 查看 StorageClass</span><br>
+                                    <code class="command-code">kubectl get storageclass</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 查看存储使用情况</span><br>
+                                    <code class="command-code">kubectl describe pvc &lt;pvc-name&gt;</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 动态创建 PV</span><br>
+                                    <code class="command-code">kubectl apply -f pvc.yaml</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="../../assets/js/mermaid.min.js"></script>
+    <script src="../../assets/js/bootstrap.min.js"></script>
+    <script src="../../assets/js/script.js"></script>
+</body>
+</html>

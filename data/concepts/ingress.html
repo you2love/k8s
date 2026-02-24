@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ingress 高级配置 - Kubernetes 学习教程</title>
+    <link href="../../assets/css/bootstrap-local.css" rel="stylesheet">
+    <link href="../../assets/css/fonts-local.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Left Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <span>K8s 教程</span>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#architecture" data-target="architecture">
+                        <span>架构图</span>
+                    </a>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="../../index.html#concepts" data-target="concepts">
+                        <span>核心概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../../index.html#concept-pod">Pod</a></li>
+                        <li><a href="../../index.html#concept-deployment">Deployment</a></li>
+                        <li><a href="../../index.html#concept-service">Service</a></li>
+                        <li><a href="../../index.html#concept-node">Node</a></li>
+                        <li><a href="../../index.html#concept-configmap">ConfigMap</a></li>
+                        <li><a href="../../index.html#concept-secret">Secret</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link active" href="../../index.html#advanced-concepts" data-target="advanced-concepts">
+                        <span>高级概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../../index.html#concept-helm">Helm</a></li>
+                        <li><a href="../../index.html#concept-networking">网络原理</a></li>
+                        <li><a href="../../index.html#concept-storage">存储</a></li>
+                        <li><a href="../../index.html#concept-namespace">命名空间</a></li>
+                        <li><a href="../../index.html#concept-labels">标签与选择器</a></li>
+                        <li><a href="../../index.html#concept-certificates">证书管理</a></li>
+                        <li><a href="../../index.html#concept-scaling">节点扩缩容</a></li>
+                        <li><a href="../../index.html#concept-upgrades">集群版本升级</a></li>
+                        <li><a href="../../index.html#concept-helm-charts">Helm Chart 编写</a></li>
+                        <li><a href="../../index.html#concept-coredns">CoreDNS</a></li>
+                        <li><a href="../../index.html#concept-stateful-apps">数据库/中间件部署</a></li>
+                        <li><a href="#" class="active">Ingress 高级配置</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#installation" data-target="installation">
+                        <span>安装指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#practice" data-target="practice">
+                        <span>实践指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#troubleshooting" data-target="troubleshooting">
+                        <span>常见问题</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#best-practices" data-target="best-practices">
+                        <span>最佳实践</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#rancher" data-target="rancher">
+                        <span>Rancher</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <section class="py-5" id="concept-ingress">
+                <div class="container">
+                    <h2 class="text-center mb-5">Ingress 高级配置</h2>
+                    
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <p>Ingress 是 Kubernetes 中管理外部访问集群服务的 API 对象，通过 HTTP/HTTPS 路由规则提供负载均衡、SSL 终止和基于名称的虚拟主机等功能。Ingress 高级配置涉及多种复杂场景和功能扩展。</p>
+                            
+                            <h5 class="mt-4">Ingress 架构图</h5>
+                            <div class="architecture-diagram bg-light p-4 rounded">
+                                <pre class="mermaid">
+graph TB
+    subgraph "外部网络"
+        CLIENT[客户端请求]
+        DNS[DNS 解析]
+    end
+    
+    subgraph "K8s 集群"
+        subgraph "Ingress Controller"
+            INGRESS[Ingress Controller<br/>Nginx/HAProxy/Traefik]
+            CONFIG[配置同步<br/>监听 Ingress 资源]
+        end
+        
+        subgraph "服务后端"
+            SVC1[Service A<br/>app1.example.com]
+            SVC2[Service B<br/>app2.example.com]
+            SVC3[Service C<br/>路径: /api]
+        end
+    end
+    
+    CLIENT --> DNS
+    DNS --> INGRESS
+    INGRESS --> SVC1
+    INGRESS --> SVC2
+    INGRESS --> SVC3
+    CONFIG --> SVC1
+    CONFIG --> SVC2
+    CONFIG --> SVC3
+                                </pre>
+                            </div>
+                            
+                            <h5 class="mt-4">Ingress 高级功能</h5>
+                            <div class="row mt-4">
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <i class="material-icons text-info" style="font-size: 2.5rem;">route</i>
+                                            <h5 class="card-title mt-3">路径路由</h5>
+                                            <p class="card-text">基于 URL 路径将请求路由到不同后端服务</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <i class="material-icons text-success" style="font-size: 2.5rem;">domain</i>
+                                            <h5 class="card-title mt-3">基于主机路由</h5>
+                                            <p class="card-text">根据 Host 头将请求路由到不同服务</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <i class="material-icons text-warning" style="font-size: 2.5rem;">lock</i>
+                                            <h5 class="card-title mt-3">TLS/SSL 终止</h5>
+                                            <p class="card-text">在 Ingress 层处理 SSL 证书和加密解密</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <i class="material-icons text-primary" style="font-size: 2.5rem;">speed</i>
+                                            <h5 class="card-title mt-3">负载均衡</h5>
+                                            <p class="card-text">通过多种算法实现请求分发</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">Ingress TLS/SSL 配置</h5>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># TLS 终止配置示例</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: networking.k8s.io/v1<br>kind: Ingress<br>metadata:<br>&nbsp;&nbsp;name: tls-ingress<br>&nbsp;&nbsp;annotations:<br>&nbsp;&nbsp;&nbsp;&nbsp;nginx.ingress.kubernetes.io/ssl-redirect: "true"<br>&nbsp;&nbsp;&nbsp;&nbsp;nginx.ingress.kubernetes.io/force-ssl-redirect: "true"<br>spec:<br>&nbsp;&nbsp;tls:<br>&nbsp;&nbsp;- hosts:<br>&nbsp;&nbsp;&nbsp;&nbsp;- secure.example.com<br>&nbsp;&nbsp;&nbsp;&nbsp;secretName: tls-secret<br>&nbsp;&nbsp;rules:<br>&nbsp;&nbsp;- host: secure.example.com<br>&nbsp;&nbsp;&nbsp;&nbsp;http:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;paths:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- path: /<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pathType: Prefix<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;backend:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;service:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name: web-service<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;port:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;number: 80</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">路径重写和负载均衡配置</h5>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 路径重写配置</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: networking.k8s.io/v1<br>kind: Ingress<br>metadata:<br>&nbsp;&nbsp;name: rewrite-ingress<br>&nbsp;&nbsp;annotations:<br>&nbsp;&nbsp;&nbsp;&nbsp;nginx.ingress.kubernetes.io/rewrite-target: /$2<br>&nbsp;&nbsp;&nbsp;&nbsp;nginx.ingress.kubernetes.io/configuration-snippet: |<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;proxy_set_header Accept-Encoding "";<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gzip off;<br>&nbsp;&nbsp;&nbsp;&nbsp;nginx.ingress.kubernetes.io/upstream-hash-by: "$request_uri"<br>spec:<br>&nbsp;&nbsp;rules:<br>&nbsp;&nbsp;- http:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;paths:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- path: /api(/|$)(.*)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pathType: Prefix<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;backend:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;service:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name: api-service<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;port:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;number: 8080</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">流量控制和限流配置</h5>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 限流和流量控制配置</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: networking.k8s.io/v1<br>kind: Ingress<br>metadata:<br>&nbsp;&nbsp;name: rate-limit-ingress<br>&nbsp;&nbsp;annotations:<br>&nbsp;&nbsp;&nbsp;&nbsp;nginx.ingress.kubernetes.io/rate-limit-connections: "10"<br>&nbsp;&nbsp;&nbsp;&nbsp;nginx.ingress.kubernetes.io/rate-limit-requests-per-second: "5"<br>&nbsp;&nbsp;&nbsp;&nbsp;nginx.ingress.kubernetes.io/custom-http-errors: "404,429,500,502,503"<br>&nbsp;&nbsp;&nbsp;&nbsp;nginx.ingress.kubernetes.io/configuration-snippet: |<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;limit_req_zone $binary_remote_addr zone=api:10m rate=5r/s;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;limit_req zone=api burst=10 nodelay;<br>spec:<br>&nbsp;&nbsp;rules:<br>&nbsp;&nbsp;- host: api.example.com<br>&nbsp;&nbsp;&nbsp;&nbsp;http:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;paths:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- path: /api<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pathType: Prefix<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;backend:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;service:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name: api-service<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;port:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;number: 8080</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">Ingress Controller 配置</h5>
+                            <p>Ingress Controller 是实际处理路由规则的负载均衡器，常见的有 Nginx、Traefik、HAProxy 等。</p>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># Nginx Ingress Controller 配置示例</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: v1<br>kind: ConfigMap<br>metadata:<br>&nbsp;&nbsp;name: nginx-configuration<br>&nbsp;&nbsp;namespace: ingress-nginx<br>&nbsp;&nbsp;labels:<br>&nbsp;&nbsp;&nbsp;&nbsp;app.kubernetes.io/name: ingress-nginx<br>&nbsp;&nbsp;&nbsp;&nbsp;app.kubernetes.io/part-of: ingress-nginx<br>data:<br>&nbsp;&nbsp;use-proxy-protocol: "false"<br>&nbsp;&nbsp;use-forwarded-headers: "true"<br>&nbsp;&nbsp;compute-full-forwarded-for: "true"<br>&nbsp;&nbsp;forwarded-for-header: "X-Forwarded-For"<br>&nbsp;&nbsp;enable-real-ip: "true"<br>&nbsp;&nbsp;http-snippet: |<br>&nbsp;&nbsp;&nbsp;&nbsp;map $http_x_forwarded_proto $proxy_x_forwarded_proto {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;default $http_x_forwarded_proto;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" " $scheme;<br>&nbsp;&nbsp;&nbsp;&nbsp;}<br>&nbsp;&nbsp;server-snippet: |<br>&nbsp;&nbsp;&nbsp;&nbsp;server_tokens off;<br>&nbsp;&nbsp;&nbsp;&nbsp;location ~ /\. {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;deny all;<br>&nbsp;&nbsp;&nbsp;&nbsp;}</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">高级 Ingress 策略对比</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="table-info">
+                                        <tr><th>策略</th><th>应用场景</th><th>优势</th><th>注意事项</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>路径路由</td><td>单域名多服务</td><td>资源利用率高</td><td>路径冲突需注意</td></tr>
+                                        <tr><td>主机路由</td><td>多域名服务</td><td>服务隔离好</td><td>需要多个域名</td></tr>
+                                        <tr><td>SSL 终止</td><td>HTTPS 访问</td><td>统一证书管理</td><td>内部网络需额外安全措施</td></tr>
+                                        <tr><td>重定向</td><td>HTTP 到 HTTPS</td><td>安全访问保障</td><td>避免重定向循环</td></tr>
+                                        <tr><td>限流</td><td>防止过载</td><td>保护后端服务</td><td>合理设置阈值</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h5 class="mt-4">Ingress 故障排查</h5>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 检查 Ingress 状态</span><br>
+                                    <code class="command-code">kubectl get ingress</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 查看 Ingress 详细信息</span><br>
+                                    <code class="command-code">kubectl describe ingress &lt;ingress-name&gt;</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 检查 Ingress Controller 日志</span><br>
+                                    <code class="command-code">kubectl logs -n ingress-nginx deployment/ingress-nginx-controller</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 测试 Ingress 规则</span><br>
+                                    <code class="command-code">curl -H "Host: example.com" http://&lt;ingress-ip&gt;/path</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 验证 TLS 配置</span><br>
+                                    <code class="command-code">openssl s_client -connect example.com:443 -servername example.com</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">Ingress 最佳实践</h5>
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <h6>安全配置</h6>
+                                    <ul>
+                                        <li>使用 HTTPS 和有效的 SSL 证书</li>
+                                        <li>配置适当的 TLS 版本和加密套件</li>
+                                        <li>启用 HSTS 和安全头</li>
+                                        <li>配置适当的访问控制</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>性能优化</h6>
+                                    <ul>
+                                        <li>合理配置负载均衡算法</li>
+                                        <li>启用压缩和缓存</li>
+                                        <li>配置连接池和超时</li>
+                                        <li>监控和日志记录</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="../../assets/js/mermaid.min.js"></script>
+    <script src="../../assets/js/bootstrap.min.js"></script>
+    <script src="../../assets/js/script.js"></script>
+</body>
+</html>

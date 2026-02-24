@@ -1,9 +1,315 @@
-<div class="card concept-card h-100">
-    <div class="card-body text-center">
-        <i class="material-icons material-icons-large text-info">device_hub</i>
-        <h3 class="card-title mt-3">Service</h3>
-        <p class="card-text">为 Pod 提供稳定的网络访问入口</p>
-        <button class="btn btn-info concept-btn" data-topic="service">了解更多</button>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service - Kubernetes 学习教程</title>
+    <link href="../../assets/css/bootstrap-local.css" rel="stylesheet">
+    <link href="../../assets/css/fonts-local.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Left Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <span>K8s 教程</span>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#architecture" data-target="architecture">
+                        <span>架构图</span>
+                    </a>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link active" href="../../index.html#concepts" data-target="concepts">
+                        <span>核心概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../../index.html#concept-pod">Pod</a></li>
+                        <li><a href="../../index.html#concept-deployment">Deployment</a></li>
+                        <li><a href="#" class="active">Service</a></li>
+                        <li><a href="../../index.html#concept-node">Node</a></li>
+                        <li><a href="../../index.html#concept-configmap">ConfigMap</a></li>
+                        <li><a href="../../index.html#concept-secret">Secret</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="../../index.html#advanced-concepts" data-target="advanced-concepts">
+                        <span>高级概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../../index.html#concept-helm">Helm</a></li>
+                        <li><a href="../../index.html#concept-networking">网络原理</a></li>
+                        <li><a href="../../index.html#concept-storage">存储</a></li>
+                        <li><a href="../../index.html#concept-namespace">命名空间</a></li>
+                        <li><a href="../../index.html#concept-labels">标签与选择器</a></li>
+                        <li><a href="../../index.html#concept-certificates">证书管理</a></li>
+                        <li><a href="../../index.html#concept-scaling">节点扩缩容</a></li>
+                        <li><a href="../../index.html#concept-upgrades">集群版本升级</a></li>
+                        <li><a href="../../index.html#concept-helm-charts">Helm Chart 编写</a></li>
+                        <li><a href="../../index.html#concept-coredns">CoreDNS</a></li>
+                        <li><a href="../../index.html#concept-stateful-apps">数据库/中间件部署</a></li>
+                        <li><a href="../../index.html#concept-ingress">Ingress 高级配置</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#installation" data-target="installation">
+                        <span>安装指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#practice" data-target="practice">
+                        <span>实践指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#troubleshooting" data-target="troubleshooting">
+                        <span>常见问题</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#best-practices" data-target="best-practices">
+                        <span>最佳实践</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#rancher" data-target="rancher">
+                        <span>Rancher</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <section class="py-5" id="concept-service">
+                <div class="container">
+                    <h2 class="text-center mb-5">Service</h2>
+                    
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <p>Service 为一组 Pod 提供稳定的网络访问入口，实现服务发现和负载均衡。</p>
+                            
+                            <h5 class="mt-4">工作原理</h5>
+                            <div class="architecture-diagram bg-light p-4 rounded">
+                                <pre class="mermaid">
+flowchart LR
+    C[Client] --> S[Service]
+    S --> P1[Pod 1]
+    S --> P2[Pod 2]
+    S --> P3[Pod 3]
+                                </pre>
+                            </div>
+                            
+                            <h5 class="mt-4">Service 类型</h5>
+                            <table class="table table-bordered">
+                                <thead class="table-info">
+                                    <tr><th>类型</th><th>访问范围</th><th>适用场景</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>ClusterIP</td><td>集群内部</td><td>内部服务</td></tr>
+                                    <tr><td>NodePort</td><td>集群外部</td><td>开发测试</td></tr>
+                                    <tr><td>LoadBalancer</td><td>公网访问</td><td>生产环境</td></tr>
+                                    <tr><td>ExternalName</td><td>外部服务映射</td><td>映射外部服务到集群内部</td></tr>
+                                </tbody>
+                            </table>
+                            
+                            <h5 class="mt-4">Service 流量转发机制</h5>
+                            <div class="row mt-4">
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h5 class="card-title text-primary">ClusterIP 流量转发</h5>
+                                            <p><strong>工作原理：</strong>ClusterIP Service分配一个集群内部虚拟IP，通过iptables或IPVS规则将流量转发到后端Pod。</p>
+                                            <div class="architecture-diagram bg-light p-3 rounded">
+                                                <pre class="mermaid">
+graph LR
+    Client[集群内客户端] --> SVC[ClusterIP Service<br/>10.96.0.10:80]
+    SVC --> EP1[Pod A<br/>10.1.1.10:8080]
+    SVC --> EP2[Pod B<br/>10.1.1.11:8080]
+    SVC --> EP3[Pod C<br/>10.1.1.12:8080]
+    
+    style SVC fill:#e3f2fd
+    style EP1 fill:#e8f5e8
+    style EP2 fill:#e8f5e8
+    style EP3 fill:#e8f5e8
+                                                </pre>
+                                            </div>
+                                            <p><strong>实现方式：</strong> kube-proxy监听Service和Endpoints变化，动态更新iptables规则或IPVS条目，实现负载均衡。</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h5 class="card-title text-success">NodePort 流量转发</h5>
+                                            <p><strong>工作原理：</strong>在每个节点上开放一个端口，外部通过NodeIP:NodePort访问，流量先到达节点端口，再转发到ClusterIP Service，最后转发到Pod。</p>
+                                            <div class="architecture-diagram bg-light p-3 rounded">
+                                                <pre class="mermaid">
+graph LR
+    ExtClient[外部客户端] --> NodePort[NodeIP:30080]
+    NodePort --> SVC[ClusterIP Service<br/>10.96.0.10:80]
+    SVC --> EP1[Pod A<br/>10.1.1.10:8080]
+    SVC --> EP2[Pod B<br/>10.1.1.11:8080]
+    
+    style NodePort fill:#fff3e0
+    style SVC fill:#e3f2fd
+                                                </pre>
+                                            </div>
+                                            <p><strong>实现方式：</strong> NodePort实际上是ClusterIP的扩展，在每个节点上开放端口，并通过iptables规则将该端口流量重定向到Service的ClusterIP。</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h5 class="card-title text-warning">LoadBalancer 流量转发</h5>
+                                            <p><strong>工作原理：</strong>在公有云环境中，LoadBalancer会创建云提供商的负载均衡器，并将其路由到节点上的NodePort，再转发到Pod。</p>
+                                            <div class="architecture-diagram bg-light p-3 rounded">
+                                                <pre class="mermaid">
+graph LR
+    subgraph "云环境"
+        ExtClient[外部客户端]
+        LB[云负载均衡器]
+    end
+    
+    subgraph "K8s 集群"
+        NodePort[NodePort<br/>30080]
+        SVC[ClusterIP Service<br/>10.96.0.10:80]
+        EP1[Pod A]
+        EP2[Pod B]
+    end
+    
+    ExtClient --> LB
+    LB --> NodePort
+    NodePort --> SVC
+    SVC --> EP1
+    SVC --> EP2
+                                                </pre>
+                                            </div>
+                                            <p><strong>实现方式：</strong> LoadBalancer依赖于云提供商的控制器，创建外部负载均衡器资源，并配置其将流量导向集群节点。</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h5 class="card-title text-info">ExternalName 流量转发</h5>
+                                            <p><strong>工作原理：</strong>ExternalName Service不通过kube-proxy处理，而是直接在集群DNS中创建CNAME记录，将服务名映射到指定的外部域名。</p>
+                                            <div class="architecture-diagram bg-light p-3 rounded">
+                                                <pre class="mermaid">
+graph LR
+    App[集群内应用] --> DNS[集群DNS]
+    DNS -.-> CNAME["CNAME 记录<br/>my-service --> external.example.com"]
+    App -.-> Ext[外部服务<br/>external.example.com]
+    
+    style DNS fill:#f3e5f5
+    style Ext fill:#ffebee
+                                                </pre>
+                                            </div>
+                                            <p><strong>实现方式：</strong> 当应用访问Service名称时，集群DNS直接返回CNAME记录，将请求转发到外部域名，不经过kube-proxy或任何Pod。</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">kube-proxy 工作模式</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="table-light">
+                                        <tr><th>模式</th><th>实现方式</th><th>特点</th><th>性能</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>userspace</td>
+                                            <td>在用户空间处理流量转发</td>
+                                            <td>最早的实现方式，性能较低</td>
+                                            <td>低</td>
+                                        </tr>
+                                        <tr>
+                                            <td>iptables</td>
+                                            <td>使用Linux内核iptables规则</td>
+                                            <td>目前主流方式，性能好</td>
+                                            <td>高</td>
+                                        </tr>
+                                        <tr>
+                                            <td>IPVS</td>
+                                            <td>使用Linux内核IPVS模块</td>
+                                            <td>最新方式，支持更多负载均衡算法</td>
+                                            <td>最高</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h5 class="mt-4">ExternalName 类型详解</h5>
+                            <p>ExternalName Service 是一种特殊类型的 Service，它不指向 Pod，而是将服务映射到 DNS 名称。这种类型的 Service 通过返回 CNAME 记录和其映射的值来工作。</p>
+                            
+                            <div class="architecture-diagram bg-light p-4 rounded">
+                                <pre class="mermaid">
+flowchart LR
+    subgraph "K8s Cluster"
+        App[应用 Pod]
+        S[ExternalName Service<br/>my-external-service]
+    end
+    
+    S -.-> EX[External Service<br/>external.example.com]
+    
+    App --> S
+    S --> EX
+                                </pre>
+                            </div>
+                            
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 创建 ExternalName 类型的 Service</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: v1<br>kind: Service<br>metadata:<br>&nbsp;&nbsp;name: my-external-service<br>spec:<br>&nbsp;&nbsp;type: ExternalName<br>&nbsp;&nbsp;externalName: external.example.com</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 使用 kubectl 创建 ExternalName Service</span><br>
+                                    <code class="command-code">kubectl create service externalname my-external-service --external-name external.example.com</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 验证 ExternalName Service</span><br>
+                                    <code class="command-code">kubectl get service my-external-service</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 测试 DNS 解析</span><br>
+                                    <code class="command-code">nslookup my-external-service.default.svc.cluster.local</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">常用命令</h5>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 暴露 Deployment 为 Service</span><br>
+                                    <code class="command-code">kubectl expose deployment nginx --port=80 --target-port=80</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 创建 NodePort 类型 Service</span><br>
+                                    <code class="command-code">kubectl expose deployment nginx --port=80 --type=NodePort</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 查看所有 Service</span><br>
+                                    <code class="command-code">kubectl get services</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 查看 Endpoints</span><br>
+                                    <code class="command-code">kubectl get endpoints nginx</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
     </div>
-    <div class="concept-detail-content d-none" id="service-detail"></div>
-</div>
+
+    <script src="../../assets/js/mermaid.min.js"></script>
+    <script src="../../assets/js/bootstrap.min.js"></script>
+    <script src="../../assets/js/script.js"></script>
+</body>
+</html>

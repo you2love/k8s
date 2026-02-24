@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>节点扩缩容 - Kubernetes 学习教程</title>
+    <link href="../../assets/css/bootstrap-local.css" rel="stylesheet">
+    <link href="../../assets/css/fonts-local.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Left Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <span>K8s 教程</span>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#architecture" data-target="architecture">
+                        <span>架构图</span>
+                    </a>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="../../index.html#concepts" data-target="concepts">
+                        <span>核心概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../../index.html#concept-pod">Pod</a></li>
+                        <li><a href="../../index.html#concept-deployment">Deployment</a></li>
+                        <li><a href="../../index.html#concept-service">Service</a></li>
+                        <li><a href="../../index.html#concept-node">Node</a></li>
+                        <li><a href="../../index.html#concept-configmap">ConfigMap</a></li>
+                        <li><a href="../../index.html#concept-secret">Secret</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link active" href="../../index.html#advanced-concepts" data-target="advanced-concepts">
+                        <span>高级概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../../index.html#concept-helm">Helm</a></li>
+                        <li><a href="../../index.html#concept-networking">网络原理</a></li>
+                        <li><a href="../../index.html#concept-storage">存储</a></li>
+                        <li><a href="../../index.html#concept-namespace">命名空间</a></li>
+                        <li><a href="../../index.html#concept-labels">标签与选择器</a></li>
+                        <li><a href="../../index.html#concept-certificates">证书管理</a></li>
+                        <li><a href="#" class="active">节点扩缩容</a></li>
+                        <li><a href="../../index.html#concept-upgrades">集群版本升级</a></li>
+                        <li><a href="../../index.html#concept-helm-charts">Helm Chart 编写</a></li>
+                        <li><a href="../../index.html#concept-coredns">CoreDNS</a></li>
+                        <li><a href="../../index.html#concept-stateful-apps">数据库/中间件部署</a></li>
+                        <li><a href="../../index.html#concept-ingress">Ingress 高级配置</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#installation" data-target="installation">
+                        <span>安装指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#practice" data-target="practice">
+                        <span>实践指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#troubleshooting" data-target="troubleshooting">
+                        <span>常见问题</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#best-practices" data-target="best-practices">
+                        <span>最佳实践</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#rancher" data-target="rancher">
+                        <span>Rancher</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <section class="py-5" id="concept-scaling">
+                <div class="container">
+                    <h2 class="text-center mb-5">节点扩缩容</h2>
+                    
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <p>节点扩缩容是 Kubernetes 集群管理的重要功能，允许根据工作负载需求动态调整集群节点数量。这包括节点的手动扩缩容和自动扩缩容两种方式。</p>
+                            
+                            <h5 class="mt-4">节点扩缩容架构</h5>
+                            <div class="architecture-diagram bg-light p-4 rounded">
+                                <pre class="mermaid">
+graph TB
+    subgraph "K8s_集群" 
+        subgraph "Master_节点"
+            API[API_Server]
+            SCHED[Scheduler]
+            CM[Controller_Manager]
+        end
+        
+        subgraph "Worker_节点组"
+            NODE1[Worker_Node_1]
+            NODE2[Worker_Node_2]
+            NODE3[Worker_Node_3]
+            NODEn[Worker_Node_N]
+        end
+        
+        subgraph "扩缩容控制器"
+            HPA[Horizontal_Pod_Autoscaler]
+            VPA[Vertical_Pod_Autoscaler]
+            CA[Cluster_Autoscaler]
+        end
+    end
+    
+    API --> SCHED
+    API --> CM
+    API --> NODE1
+    API --> NODE2
+    API --> NODE3
+    API --> NODEn
+    HPA --> NODE1
+    CA --> NODE1
+    CA --> NODE2
+    CA --> NODE3
+    CA --> NODEn
+                                </pre>
+                            </div>
+                            
+                            <h5 class="mt-4">扩缩容类型</h5>
+                            <div class="row mt-4">
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <i class="material-icons text-primary" style="font-size: 2.5rem;">add_circle</i>
+                                            <h5 class="card-title mt-3">手动扩缩容</h5>
+                                            <p class="card-text">通过 kubectl 命令或云平台控制台手动调整节点数量</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <i class="material-icons text-success" style="font-size: 2.5rem;">auto_mode</i>
+                                            <h5 class="card-title mt-3">自动扩缩容</h5>
+                                            <p class="card-text">通过 Cluster Autoscaler 自动调整节点数量</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">手动节点扩缩容</h5>
+                            <p>手动扩缩容适用于可预测的工作负载变化或计划性扩容。</p>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 查看当前节点</span><br>
+                                    <code class="command-code">kubectl get nodes</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 标记节点不可调度（缩容前）</span><br>
+                                    <code class="command-code">kubectl cordon &lt;node-name&gt;</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 驱逐节点上的 Pod</span><br>
+                                    <code class="command-code">kubectl drain &lt;node-name&gt; --ignore-daemonsets --delete-emptydir-data</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 删除节点</span><br>
+                                    <code class="command-code">kubectl delete node &lt;node-name&gt;</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 添加新节点（使用 kubeadm）</span><br>
+                                    <code class="command-code">kubeadm join &lt;control-plane-host&gt;:6443 --token &lt;token&gt; --discovery-token-ca-cert-hash sha256:&lt;hash&gt;</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">自动节点扩缩容 (Cluster Autoscaler)</h5>
+                            <p>Cluster Autoscaler 根据 Pod 调度需求自动调整集群节点数量。</p>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># Cluster Autoscaler 部署示例</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: apps/v1<br>kind: Deployment<br>metadata:<br>&nbsp;&nbsp;name: cluster-autoscaler<br>&nbsp;&nbsp;namespace: kube-system<br>spec:<br>&nbsp;&nbsp;replicas: 1<br>&nbsp;&nbsp;selector:<br>&nbsp;&nbsp;&nbsp;&nbsp;matchLabels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: cluster-autoscaler<br>&nbsp;&nbsp;template:<br>&nbsp;&nbsp;&nbsp;&nbsp;metadata:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;labels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: cluster-autoscaler<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: cluster-autoscaler<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;image: k8s.gcr.io/autoscaling/cluster-autoscaler:v1.21.0<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;command:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- ./cluster-autoscaler<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- --v=4<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- --stderrthreshold=info<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- --cloud-provider=aws<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- --skip-nodes-with-local-storage=false<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- --expander=least-waste<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- --node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/&lt;CLUSTER-NAME&gt;</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">扩缩容策略对比</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="table-info">
+                                        <tr><th>策略</th><th>适用场景</th><th>优势</th><th>挑战</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>手动扩缩容</td><td>计划性扩容、维护操作</td><td>精确控制、可预测</td><td>需要人工干预、响应慢</td></tr>
+                                        <tr><td>自动扩缩容</td><td>动态工作负载、突发流量</td><td>自动响应、节省成本</td><td>配置复杂、可能过度扩容</td></tr>
+                                        <tr><td>定时扩缩容</td><td>规律性变化的工作负载</td><td>成本效益高</td><td>需要准确预测工作负载模式</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h5 class="mt-4">节点扩缩容最佳实践</h5>
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <h6>扩容前准备</h6>
+                                    <ul>
+                                        <li>检查集群资源使用情况</li>
+                                        <li>确认新节点类型和配置</li>
+                                        <li>验证节点就绪时间</li>
+                                        <li>规划 Pod 调度策略</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>缩容注意事项</h6>
+                                    <ul>
+                                        <li>确保 Pod 可以安全迁移</li>
+                                        <li>检查节点污点和容忍</li>
+                                        <li>验证 Pod 亲和性设置</li>
+                                        <li>监控应用健康状况</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="../../assets/js/mermaid.min.js"></script>
+    <script src="../../assets/js/bootstrap.min.js"></script>
+    <script src="../../assets/js/script.js"></script>
+</body>
+</html>

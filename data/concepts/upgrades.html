@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>集群版本升级 - Kubernetes 学习教程</title>
+    <link href="../../assets/css/bootstrap-local.css" rel="stylesheet">
+    <link href="../../assets/css/fonts-local.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Left Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <span>K8s 教程</span>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#architecture" data-target="architecture">
+                        <span>架构图</span>
+                    </a>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="../../index.html#concepts" data-target="concepts">
+                        <span>核心概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../../index.html#concept-pod">Pod</a></li>
+                        <li><a href="../../index.html#concept-deployment">Deployment</a></li>
+                        <li><a href="../../index.html#concept-service">Service</a></li>
+                        <li><a href="../../index.html#concept-node">Node</a></li>
+                        <li><a href="../../index.html#concept-configmap">ConfigMap</a></li>
+                        <li><a href="../../index.html#concept-secret">Secret</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link active" href="../../index.html#advanced-concepts" data-target="advanced-concepts">
+                        <span>高级概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../../index.html#concept-helm">Helm</a></li>
+                        <li><a href="../../index.html#concept-networking">网络原理</a></li>
+                        <li><a href="../../index.html#concept-storage">存储</a></li>
+                        <li><a href="../../index.html#concept-namespace">命名空间</a></li>
+                        <li><a href="../../index.html#concept-labels">标签与选择器</a></li>
+                        <li><a href="../../index.html#concept-certificates">证书管理</a></li>
+                        <li><a href="../../index.html#concept-scaling">节点扩缩容</a></li>
+                        <li><a href="#" class="active">集群版本升级</a></li>
+                        <li><a href="../../index.html#concept-helm-charts">Helm Chart 编写</a></li>
+                        <li><a href="../../index.html#concept-coredns">CoreDNS</a></li>
+                        <li><a href="../../index.html#concept-stateful-apps">数据库/中间件部署</a></li>
+                        <li><a href="../../index.html#concept-ingress">Ingress 高级配置</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#installation" data-target="installation">
+                        <span>安装指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#practice" data-target="practice">
+                        <span>实践指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#troubleshooting" data-target="troubleshooting">
+                        <span>常见问题</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#best-practices" data-target="best-practices">
+                        <span>最佳实践</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#rancher" data-target="rancher">
+                        <span>Rancher</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <section class="py-5" id="concept-upgrades">
+                <div class="container">
+                    <h2 class="text-center mb-5">集群版本升级</h2>
+                    
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <p>集群版本升级是 Kubernetes 生命周期管理的重要环节，涉及 Master 节点和 Worker 节点的升级。升级过程需要谨慎规划，以确保集群的稳定性和应用的连续性。</p>
+                            
+                            <h5 class="mt-4">升级架构流程</h5>
+                            <div class="architecture-diagram bg-light p-4 rounded">
+                                <pre class="mermaid">
+graph TD
+    subgraph "升级前"
+        API1[API Server v1.24]
+        KUBE1[kubelet v1.24]
+        PROXY1[kube-proxy v1.24]
+    end
+    
+    subgraph "升级过程"
+        CHECK[检查兼容性]
+        BACKUP[备份集群]
+        MASTERS[升级 Master 节点]
+        WORKERS[升级 Worker 节点]
+    end
+    
+    subgraph "升级后"
+        API2[API Server v1.25]
+        KUBE2[kubelet v1.25]
+        PROXY2[kube-proxy v1.25]
+    end
+    
+    API1 --> CHECK
+    KUBE1 --> CHECK
+    CHECK --> BACKUP
+    BACKUP --> MASTERS
+    MASTERS --> WORKERS
+    MASTERS --> API2
+    WORKERS --> KUBE2
+    WORKERS --> PROXY2
+                                </pre>
+                            </div>
+                            
+                            <h5 class="mt-4">升级策略</h5>
+                            <div class="row mt-4">
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <i class="material-icons text-warning" style="font-size: 2.5rem;">sync_alt</i>
+                                            <h5 class="card-title mt-3">蓝绿升级</h5>
+                                            <p class="card-text">创建全新集群，将流量切换到新集群</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <i class="material-icons text-success" style="font-size: 2.5rem;">linear_scale</i>
+                                            <h5 class="card-title mt-3">滚动升级</h5>
+                                            <p class="card-text">逐个节点升级，保持服务连续性</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">使用 kubeadm 进行升级</h5>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 检查可升级版本</span><br>
+                                    <code class="command-code">sudo kubeadm upgrade plan</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 升级 Master 节点</span><br>
+                                    <code class="command-code">sudo kubeadm upgrade apply v1.25.0</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 升级 kubectl 和 kubelet</span><br>
+                                    <code class="command-code">sudo apt-mark unhold kubectl kubelet kubeadm<br>sudo apt-get update<br>sudo apt-get install -y kubectl=1.25.0-00 kubelet=1.25.0-00 kubeadm=1.25.0-00<br>sudo apt-mark hold kubectl kubelet kubeadm</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 重启 kubelet 服务</span><br>
+                                    <code class="command-code">sudo systemctl daemon-reload<br>sudo systemctl restart kubelet</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 升级 Worker 节点 (在每个 Worker 节点执行)</span><br>
+                                    <code class="command-code">sudo kubeadm upgrade node</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">云提供商升级</h5>
+                            <p>在云平台上升级集群通常更简单，但需要遵循特定流程：</p>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># AWS EKS 升级</span><br>
+                                    <code class="command-code">aws eks update-cluster-version --name my-cluster --kubernetes-version 1.25</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># GCP GKE 升级</span><br>
+                                    <code class="command-code">gcloud container clusters upgrade my-cluster --master --zone=us-central1-a</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># Azure AKS 升级</span><br>
+                                    <code class="command-code">az aks upgrade --resource-group myResourceGroup --name myAKSCluster --kubernetes-version 1.25.0</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">升级注意事项</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="table-warning">
+                                        <tr><th>事项</th><th>说明</th><th>建议</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>版本兼容性</td><td>确保应用与新版本兼容</td><td>在测试环境验证</td></tr>
+                                        <tr><td>备份策略</td><td>升级前备份集群状态</td><td>使用 Velero 或其他备份工具</td></tr>
+                                        <tr><td>API 废弃</td><td>检查使用的 API 版本是否被废弃</td><td>使用 kubectl convert 迁移资源</td></tr>
+                                        <tr><td>节点维护</td><td>避免同时升级所有节点</td><td>使用节点池分批升级</td></tr>
+                                        <tr><td>时间窗口</td><td>选择业务低峰期进行升级</td><td>计划维护窗口</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h5 class="mt-4">升级后验证</h5>
+                            <p>升级完成后需要验证集群功能是否正常：</p>
+                            <ul>
+                                <li>检查所有节点状态：kubectl get nodes</li>
+                                <li>验证核心组件运行状态</li>
+                                <li>确认应用正常运行</li>
+                                <li>测试集群功能（如调度、网络、存储）</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="../../assets/js/mermaid.min.js"></script>
+    <script src="../../assets/js/bootstrap.min.js"></script>
+    <script src="../../assets/js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网络原理 - Kubernetes 学习教程</title>
+    <link href="../../assets/css/bootstrap-local.css" rel="stylesheet">
+    <link href="../../assets/css/fonts-local.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Left Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <span>K8s 教程</span>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#architecture" data-target="architecture">
+                        <span>架构图</span>
+                    </a>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="../../index.html#concepts" data-target="concepts">
+                        <span>核心概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../../index.html#concept-pod">Pod</a></li>
+                        <li><a href="../../index.html#concept-deployment">Deployment</a></li>
+                        <li><a href="../../index.html#concept-service">Service</a></li>
+                        <li><a href="../../index.html#concept-node">Node</a></li>
+                        <li><a href="../../index.html#concept-configmap">ConfigMap</a></li>
+                        <li><a href="../../index.html#concept-secret">Secret</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link active" href="../../index.html#advanced-concepts" data-target="advanced-concepts">
+                        <span>高级概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../../index.html#concept-helm">Helm</a></li>
+                        <li><a href="#" class="active">网络原理</a></li>
+                        <li><a href="../../index.html#concept-storage">存储</a></li>
+                        <li><a href="../../index.html#concept-namespace">命名空间</a></li>
+                        <li><a href="../../index.html#concept-labels">标签与选择器</a></li>
+                        <li><a href="../../index.html#concept-certificates">证书管理</a></li>
+                        <li><a href="../../index.html#concept-scaling">节点扩缩容</a></li>
+                        <li><a href="../../index.html#concept-upgrades">集群版本升级</a></li>
+                        <li><a href="../../index.html#concept-helm-charts">Helm Chart 编写</a></li>
+                        <li><a href="../../index.html#concept-coredns">CoreDNS</a></li>
+                        <li><a href="../../index.html#concept-stateful-apps">数据库/中间件部署</a></li>
+                        <li><a href="../../index.html#concept-ingress">Ingress 高级配置</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#installation" data-target="installation">
+                        <span>安装指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#practice" data-target="practice">
+                        <span>实践指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#troubleshooting" data-target="troubleshooting">
+                        <span>常见问题</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#best-practices" data-target="best-practices">
+                        <span>最佳实践</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#rancher" data-target="rancher">
+                        <span>Rancher</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <section class="py-5" id="concept-networking">
+                <div class="container">
+                    <h2 class="text-center mb-5">网络原理</h2>
+                    
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <p>Kubernetes 网络是集群内部通信的核心机制，它确保了 Pod、Service、Node 之间能够高效、可靠地通信。K8s 网络模型定义了四个基本要求：</p>
+                            <ul>
+                                <li>所有 Pod 都可以在不使用 NAT 的情况下直接通信</li>
+                                <li>所有 Node 都可以在不使用 NAT 的情况下与所有 Pod 通信</li>
+                                <li>Pod 看到的 IP 地址与其它 Pod 看到的该 Pod 的 IP 地址相同</li>
+                                <li>每个 Pod 的 IP 都是唯一的，不会与其他 Pod 冲突</li>
+                            </ul>
+                            
+                            <h5 class="mt-4">网络通信模型</h5>
+                            <div class="architecture-diagram bg-light p-4 rounded">
+                                <pre class="mermaid">
+graph TB
+    subgraph "K8s 集群"
+        subgraph "Master"
+            APIS[API Server]
+        end
+        
+        subgraph "Node 1"
+            P1[Pod 1]
+            P2[Pod 2]
+            K1[kubelet]
+            C1[Container Runtime]
+            PRC1[Pod 网络容器]
+        end
+        
+        subgraph "Node 2"
+            P3[Pod 3]
+            P4[Pod 4]
+            K2[kubelet]
+            C2[Container Runtime]
+            PRC2[Pod 网络容器]
+        end
+        
+        subgraph "网络插件"
+            NP[CNI 网络插件]
+        end
+        
+        subgraph "物理网络"
+            LB[负载均衡器]
+            EXTERNAL[外部网络]
+        end
+    end
+    
+    P1 <--> PRC1
+    P2 <--> PRC1
+    P3 <--> PRC2
+    P4 <--> PRC2
+    
+    PRC1 <--> NP
+    PRC2 <--> NP
+    
+    P1 <--> P3
+    P2 <--> P4
+    
+    APIS <--> P1
+    APIS <--> P4
+    
+    NP <--> LB
+    LB <--> EXTERNAL
+                                </pre>
+                            </div>
+                            
+                            <h5 class="mt-4">四种网络通信场景</h5>
+                            <div class="row mt-4">
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <i class="material-icons text-primary" style="font-size: 2.5rem;">swap_horiz</i>
+                                            <h5 class="card-title mt-3">容器到容器</h5>
+                                            <p class="card-text">同一个 Pod 内的容器通过 localhost 通信，共享网络命名空间</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <i class="material-icons text-success" style="font-size: 2.5rem;">share</i>
+                                            <h5 class="card-title mt-3">Pod 到 Pod</h5>
+                                            <p class="card-text">不同 Node 上的 Pod 通过底层网络插件实现通信</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <i class="material-icons text-warning" style="font-size: 2.5rem;">cloud</i>
+                                            <h5 class="card-title mt-3">Pod 到 Service</h5>
+                                            <p class="card-text">通过 kube-proxy 和 iptables/iptables 规则实现负载均衡</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <i class="material-icons text-info" style="font-size: 2.5rem;">public</i>
+                                            <h5 class="card-title mt-3">外部到 Service</h5>
+                                            <p class="card-text">通过 NodePort、LoadBalancer 或 Ingress 暴露服务到外部</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">CNI (Container Network Interface) 插件</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="table-info">
+                                        <tr><th>插件</th><th>特点</th><th>适用场景</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>Flannel</td><td>简单易用，支持 VXLAN、UDP 等多种后端</td><td>中小型集群，简单网络需求</td></tr>
+                                        <tr><td>Calico</td><td>基于 BGP 的纯三层网络，支持网络策略</td><td>对安全和性能要求高的场景</td></tr>
+                                        <tr><td>Weave</td><td>自愈能力强，支持网络加密</td><td>需要网络加密的场景</td></tr>
+                                        <tr><td>Cilium</td><td>基于 eBPF，性能优异，支持 L7 策略</td><td>对性能和安全要求极高的场景</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h5 class="mt-4">Service 网络实现原理</h5>
+                            <div class="architecture-diagram bg-light p-4 rounded">
+                                <pre class="mermaid">
+graph LR
+    subgraph "Client Pod"
+        C[客户端请求]
+    end
+    
+    C --> S[Service Virtual IP]
+    
+    subgraph "kube-proxy (iptables 模式)"
+        IP[iptables 规则]
+    end
+    
+    S --> IP
+    
+    IP --> P1[Pod 1]
+    IP --> P2[Pod 2]
+    IP --> P3[Pod 3]
+    
+    subgraph "Endpoints"
+        EP[Pod IP 列表]
+    end
+    
+    EP -.-> IP
+                                </pre>
+                            </div>
+                            
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <h6>ClusterIP 服务通信</h6>
+                                    <ul>
+                                        <li>为 Service 分配集群内部虚拟 IP</li>
+                                        <li>通过 kube-proxy 实现负载均衡</li>
+                                        <li>仅集群内部可访问</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>NodePort 服务通信</h6>
+                                    <ul>
+                                        <li>在每个节点上开放端口</li>
+                                        <li>外部通过 NodeIP:NodePort 访问</li>
+                                        <li>实际流量仍路由到 ClusterIP</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">网络策略 (Network Policy)</h5>
+                            <div class="architecture-diagram bg-light p-4 rounded">
+                                <pre class="mermaid">
+graph TD
+    subgraph "Namespace A"
+        PA1[Pod A1]
+        PA2[Pod A2]
+    end
+    
+    subgraph "Namespace B"
+        PB1[Pod B1]
+        PB2[Pod B2]
+    end
+    
+    subgraph "Network Policy"
+        NP["策略: A1 可访问 B1"]
+    end
+    
+    PA1 <--> PB1
+
+    PA2 -. "被阻止" .- PB2
+    PA1 -. "被阻止" .- PB2
+    PA2 -. "被阻止" .- PB1
+    
+    NP --> PA1
+    NP --> PB1
+                                </pre>
+                            </div>
+                            
+                            <div class="table-responsive mt-4">
+                                <table class="table table-bordered">
+                                    <thead class="table-info">
+                                        <tr><th>策略类型</th><th>说明</th><th>配置示例</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>入口策略</td><td>控制哪些流量可以进入 Pod</td><td>spec.ingress</td></tr>
+                                        <tr><td>出口策略</td><td>控制 Pod 可以访问哪些外部资源</td><td>spec.egress</td></tr>
+                                        <tr><td>选择器</td><td>定义策略适用的 Pod</td><td>spec.podSelector</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h5 class="mt-4">网络故障排查</h5>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 检查 Pod 网络配置</span><br>
+                                    <code class="command-code">kubectl exec -it &lt;pod-name&gt; -- ip addr show</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 测试 Pod 间连通性</span><br>
+                                    <code class="command-code">kubectl exec -it &lt;pod-name&gt; -- ping &lt;target-pod-ip&gt;</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 查看 Service 规则</span><br>
+                                    <code class="command-code">kubectl get endpoints &lt;service-name&gt;</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 检查 iptables 规则（Node 级别）</span><br>
+                                    <code class="command-code">sudo iptables -L -t nat | grep KUBE</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 检查网络策略</span><br>
+                                    <code class="command-code">kubectl get networkpolicy</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="../../assets/js/mermaid.min.js"></script>
+    <script src="../../assets/js/bootstrap.min.js"></script>
+    <script src="../../assets/js/script.js"></script>
+</body>
+</html>

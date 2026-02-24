@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据库/中间件部署 - Kubernetes 学习教程</title>
+    <link href="../../assets/css/bootstrap-local.css" rel="stylesheet">
+    <link href="../../assets/css/fonts-local.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Left Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <span>K8s 教程</span>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#architecture" data-target="architecture">
+                        <span>架构图</span>
+                    </a>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="../../index.html#concepts" data-target="concepts">
+                        <span>核心概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../../index.html#concept-pod">Pod</a></li>
+                        <li><a href="../../index.html#concept-deployment">Deployment</a></li>
+                        <li><a href="../../index.html#concept-service">Service</a></li>
+                        <li><a href="../../index.html#concept-node">Node</a></li>
+                        <li><a href="../../index.html#concept-configmap">ConfigMap</a></li>
+                        <li><a href="../../index.html#concept-secret">Secret</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link active" href="../../index.html#advanced-concepts" data-target="advanced-concepts">
+                        <span>高级概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../../index.html#concept-helm">Helm</a></li>
+                        <li><a href="../../index.html#concept-networking">网络原理</a></li>
+                        <li><a href="../../index.html#concept-storage">存储</a></li>
+                        <li><a href="../../index.html#concept-namespace">命名空间</a></li>
+                        <li><a href="../../index.html#concept-labels">标签与选择器</a></li>
+                        <li><a href="../../index.html#concept-certificates">证书管理</a></li>
+                        <li><a href="../../index.html#concept-scaling">节点扩缩容</a></li>
+                        <li><a href="../../index.html#concept-upgrades">集群版本升级</a></li>
+                        <li><a href="../../index.html#concept-helm-charts">Helm Chart 编写</a></li>
+                        <li><a href="../../index.html#concept-coredns">CoreDNS</a></li>
+                        <li><a href="#" class="active">数据库/中间件部署</a></li>
+                        <li><a href="../../index.html#concept-ingress">Ingress 高级配置</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#installation" data-target="installation">
+                        <span>安装指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#practice" data-target="practice">
+                        <span>实践指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#troubleshooting" data-target="troubleshooting">
+                        <span>常见问题</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#best-practices" data-target="best-practices">
+                        <span>最佳实践</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../index.html#rancher" data-target="rancher">
+                        <span>Rancher</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <section class="py-5" id="concept-stateful-apps">
+                <div class="container">
+                    <h2 class="text-center mb-5">数据库/中间件部署</h2>
+                    
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <p>数据库和中间件是有状态应用的典型代表，部署这些应用需要特殊考虑数据持久性、网络标识和启动顺序等问题。Kubernetes 提供了 StatefulSet、PersistentVolume 等资源来支持有状态应用的部署。</p>
+                            
+                            <h5 class="mt-4">有状态应用架构</h5>
+                            <div class="architecture-diagram bg-light p-4 rounded">
+                                <pre class="mermaid">
+graph TB
+    subgraph "K8s 集群"
+        subgraph "控制平面"
+            API[API Server]
+            ETCD[etcd]
+        end
+        
+        subgraph "数据库/中间件"
+            subgraph "MySQL 集群"
+                MYSQL1[MySQL-0<br/>固定网络标识]
+                MYSQL2[MySQL-1<br/>固定网络标识]
+                MYSQL3[MySQL-2<br/>固定网络标识]
+            end
+            
+            subgraph "PostgreSQL 集群"
+                PG1[PostgreSQL-0<br/>持久化存储]
+                PG2[PostgreSQL-1<br/>持久化存储]
+            end
+            
+            subgraph "Redis 集群"
+                REDIS1[Redis-0<br/>主节点]
+                REDIS2[Redis-1<br/>从节点]
+                REDIS3[Redis-2<br/>从节点]
+            end
+            
+            subgraph "Kafka 集群"
+                KAFKA1[Kafka-0<br/>Broker ID: 0]
+                KAFKA2[Kafka-1<br/>Broker ID: 1]
+                KAFKA3[Kafka-2<br/>Broker ID: 2]
+            end
+        end
+        
+        subgraph "存储层"
+            PV1[PV-MySQL-0]
+            PV2[PV-MySQL-1]
+            PV3[PV-MySQL-2]
+            PGP1[PV-PostgreSQL-0]
+            PGP2[PV-PostgreSQL-1]
+            REDISPV1[PV-Redis-0]
+            REDISPV2[PV-Redis-1]
+            REDISPV3[PV-Redis-2]
+        end
+        
+        API --> MYSQL1
+        API --> PG1
+        API --> REDIS1
+        API --> KAFKA1
+        MYSQL1 --> PV1
+        MYSQL2 --> PV2
+        MYSQL3 --> PV3
+        PG1 --> PGP1
+        PG2 --> PGP2
+        REDIS1 --> REDISPV1
+        REDIS2 --> REDISPV2
+        REDIS3 --> REDISPV3
+                                </pre>
+                            </div>
+                            
+                            <h5 class="mt-4">数据库与中间件对比</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="table-danger">
+                                        <tr><th>应用类型</th><th>数据特点</th><th>部署要求</th><th>典型用途</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>MySQL</td><td>关系型数据，ACID特性</td><td>主从复制，高可用</td><td>事务处理，数据存储</td></tr>
+                                        <tr><td>PostgreSQL</td><td>关系型数据，扩展性强</td><td>主从复制，读写分离</td><td>复杂查询，数据分析</td></tr>
+                                        <tr><td>Redis</td><td>键值存储，内存为主</td><td>主从复制，集群模式</td><td>缓存，会话存储</td></tr>
+                                        <tr><td>Kafka</td><td>分布式消息队列</td><td>分区复制，持久化</td><td>实时数据流处理</td></tr>
+                                        <tr><td>RabbitMQ</td><td>消息队列，多种协议</td><td>镜像队列，集群</td><td>异步消息传递</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h5 class="mt-4">MySQL 部署示例</h5>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># MySQL StatefulSet 示例</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: apps/v1<br>kind: StatefulSet<br>metadata:<br>&nbsp;&nbsp;name: mysql<br>spec:<br>&nbsp;&nbsp;serviceName: mysql<br>&nbsp;&nbsp;replicas: 3<br>&nbsp;&nbsp;selector:<br>&nbsp;&nbsp;&nbsp;&nbsp;matchLabels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: mysql<br>&nbsp;&nbsp;template:<br>&nbsp;&nbsp;&nbsp;&nbsp;metadata:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;labels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: mysql<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: mysql<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;image: mysql:8.0<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;env:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: MYSQL_ROOT_PASSWORD<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;valueFrom:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;secretKeyRef:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name: mysql-secret<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;key: password<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ports:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- containerPort: 3306<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name: mysql<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;volumeMounts:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: mysql-persistent-storage<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mountPath: /var/lib/mysql<br>&nbsp;&nbsp;volumeClaimTemplates:<br>&nbsp;&nbsp;- metadata:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name: mysql-persistent-storage<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accessModes: [ "ReadWriteOnce" ]<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resources:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;requests:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;storage: 20Gi</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># MySQL Headless Service</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: v1<br>kind: Service<br>metadata:<br>&nbsp;&nbsp;name: mysql<br>&nbsp;&nbsp;labels:<br>&nbsp;&nbsp;&nbsp;&nbsp;app: mysql<br>spec:<br>&nbsp;&nbsp;ports:<br>&nbsp;&nbsp;- port: 3306<br>&nbsp;&nbsp;&nbsp;&nbsp;name: mysql<br>&nbsp;&nbsp;clusterIP: None<br>&nbsp;&nbsp;selector:<br>&nbsp;&nbsp;&nbsp;&nbsp;app: mysql</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">PostgreSQL 部署示例</h5>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># PostgreSQL StatefulSet 示例</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: apps/v1<br>kind: StatefulSet<br>metadata:<br>&nbsp;&nbsp;name: postgresql<br>spec:<br>&nbsp;&nbsp;serviceName: postgresql<br>&nbsp;&nbsp;replicas: 2<br>&nbsp;&nbsp;selector:<br>&nbsp;&nbsp;&nbsp;&nbsp;matchLabels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: postgresql<br>&nbsp;&nbsp;template:<br>&nbsp;&nbsp;&nbsp;&nbsp;metadata:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;labels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: postgresql<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: postgresql<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;image: postgres:13<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;env:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: POSTGRES_DB<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;value: "mydb"<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: POSTGRES_USER<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;valueFrom:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;secretKeyRef:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name: postgresql-secret<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;key: user<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: POSTGRES_PASSWORD<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;valueFrom:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;secretKeyRef:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name: postgresql-secret<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;key: password<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ports:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- containerPort: 5432<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name: postgresql<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;volumeMounts:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: postgresql-persistent-storage<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mountPath: /var/lib/postgresql/data<br>&nbsp;&nbsp;volumeClaimTemplates:<br>&nbsp;&nbsp;- metadata:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name: postgresql-persistent-storage<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accessModes: [ "ReadWriteOnce" ]<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resources:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;requests:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;storage: 30Gi</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">Redis 部署示例</h5>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># Redis 集群 StatefulSet 示例</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: apps/v1<br>kind: StatefulSet<br>metadata:<br>&nbsp;&nbsp;name: redis<br>spec:<br>&nbsp;&nbsp;serviceName: redis<br>&nbsp;&nbsp;replicas: 6<br>&nbsp;&nbsp;selector:<br>&nbsp;&nbsp;&nbsp;&nbsp;matchLabels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: redis<br>&nbsp;&nbsp;template:<br>&nbsp;&nbsp;&nbsp;&nbsp;metadata:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;labels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: redis<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: redis<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;image: redis:6.2-alpine<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;command:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- redis-server<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- /etc/redis/redis.conf<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ports:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- containerPort: 6379<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name: redis<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;volumeMounts:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: redis-config<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mountPath: /etc/redis<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: redis-persistent-storage<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mountPath: /data<br>&nbsp;&nbsp;&nbsp;&nbsp;volumes:<br>&nbsp;&nbsp;&nbsp;&nbsp;- name: redis-config<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;configMap:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name: redis-config<br>&nbsp;&nbsp;volumeClaimTemplates:<br>&nbsp;&nbsp;- metadata:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name: redis-persistent-storage<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accessModes: [ "ReadWriteOnce" ]<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resources:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;requests:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;storage: 10Gi</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">Kafka 部署示例</h5>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># Kafka StatefulSet 示例</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: apps/v1<br>kind: StatefulSet<br>metadata:<br>&nbsp;&nbsp;name: kafka<br>spec:<br>&nbsp;&nbsp;serviceName: kafka<br>&nbsp;&nbsp;replicas: 3<br>&nbsp;&nbsp;selector:<br>&nbsp;&nbsp;&nbsp;&nbsp;matchLabels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: kafka<br>&nbsp;&nbsp;template:<br>&nbsp;&nbsp;&nbsp;&nbsp;metadata:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;labels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: kafka<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: kafka<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;image: confluentinc/cp-kafka:latest<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ports:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- containerPort: 9092<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name: kafka<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;env:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: KAFKA_BROKER_ID<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;valueFrom:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fieldRef:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fieldPath: metadata.name<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: KAFKA_ZOOKEEPER_CONNECT<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;value: "zookeeper:2181"<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: KAFKA_ADVERTISED_LISTENERS<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;value: "PLAINTEXT://$(HOSTNAME).kafka:9092"<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;volumeMounts:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: kafka-persistent-storage<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mountPath: /var/lib/kafka/data<br>&nbsp;&nbsp;volumeClaimTemplates:<br>&nbsp;&nbsp;- metadata:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name: kafka-persistent-storage<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accessModes: [ "ReadWriteOnce" ]<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resources:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;requests:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;storage: 50Gi</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">有状态应用部署最佳实践</h5>
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <h6>存储最佳实践</h6>
+                                    <ul>
+                                        <li>使用 PersistentVolume 和 PersistentVolumeClaim</li>
+                                        <li>选择合适的存储类型和访问模式</li>
+                                        <li>配置存储类 (StorageClass) 以实现动态供应</li>
+                                        <li>定期备份和恢复策略</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>网络最佳实践</h6>
+                                    <ul>
+                                        <li>使用 Headless Service 保持稳定的网络标识</li>
+                                        <li>配置正确的 Pod 亲和性和反亲和性</li>
+                                        <li>设置合理的健康检查探针</li>
+                                        <li>使用 NetworkPolicy 控制访问</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">常见部署问题与解决方案</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="table-light">
+                                        <tr><th>问题</th><th>原因</th><th>解决方案</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>Pod 无法启动</td><td>PVC 绑定失败</td><td>检查 StorageClass 是否可用，PV 是否足够</td></tr>
+                                        <tr><td>数据丢失</td><td>存储卷配置错误</td><td>使用 volumeClaimTemplates 确保数据持久化</td></tr>
+                                        <tr><td>网络连接失败</td><td>Headless Service 配置错误</td><td>确保 Service 配置正确，Pod 间网络通畅</td></tr>
+                                        <tr><td>启动顺序问题</td><td>缺少启动顺序控制</td><td>使用 init containers 或自定义启动脚本</td></tr>
+                                        <tr><td>性能问题</td><td>存储性能不足</td><td>使用高性能存储，优化 I/O 配置</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h5 class="mt-4">部署验证</h5>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 检查 StatefulSet 状态</span><br>
+                                    <code class="command-code">kubectl get statefulsets</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 查看 Pod 状态</span><br>
+                                    <code class="command-code">kubectl get pods -l app=mysql</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 检查持久化卷</span><br>
+                                    <code class="command-code">kubectl get pvc -l app=mysql</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 测试数据库连接</span><br>
+                                    <code class="command-code">kubectl run -it --rm debug --image=mysql:8.0 --restart=Never -- mysql -h mysql-0.mysql -uroot -p</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="../../assets/js/mermaid.min.js"></script>
+    <script src="../../assets/js/bootstrap.min.js"></script>
+    <script src="../../assets/js/script.js"></script>
+</body>
+</html>

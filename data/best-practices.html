@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>最佳实践 - Kubernetes 学习教程</title>
+    <link href="../assets/css/bootstrap-local.css" rel="stylesheet">
+    <link href="../assets/css/fonts-local.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Left Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <span>K8s 教程</span>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="../index.html#architecture" data-target="architecture">
+                        <span>架构图</span>
+                    </a>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="../index.html#concepts" data-target="concepts">
+                        <span>核心概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../index.html#concept-pod">Pod</a></li>
+                        <li><a href="../index.html#concept-deployment">Deployment</a></li>
+                        <li><a href="../index.html#concept-service">Service</a></li>
+                        <li><a href="../index.html#concept-node">Node</a></li>
+                        <li><a href="../index.html#concept-configmap">ConfigMap</a></li>
+                        <li><a href="../index.html#concept-secret">Secret</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="../index.html#advanced-concepts" data-target="advanced-concepts">
+                        <span>高级概念</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li><a href="../index.html#concept-helm">Helm</a></li>
+                        <li><a href="../index.html#concept-networking">网络原理</a></li>
+                        <li><a href="../index.html#concept-storage">存储</a></li>
+                        <li><a href="../index.html#concept-namespace">命名空间</a></li>
+                        <li><a href="../index.html#concept-labels">标签与选择器</a></li>
+                        <li><a href="../index.html#concept-certificates">证书管理</a></li>
+                        <li><a href="../index.html#concept-scaling">节点扩缩容</a></li>
+                        <li><a href="../index.html#concept-upgrades">集群版本升级</a></li>
+                        <li><a href="../index.html#concept-helm-charts">Helm Chart 编写</a></li>
+                        <li><a href="../index.html#concept-coredns">CoreDNS</a></li>
+                        <li><a href="../index.html#concept-stateful-apps">数据库/中间件部署</a></li>
+                        <li><a href="../index.html#concept-ingress">Ingress 高级配置</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../index.html#installation" data-target="installation">
+                        <span>安装指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../index.html#practice" data-target="practice">
+                        <span>实践指南</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../index.html#troubleshooting" data-target="troubleshooting">
+                        <span>常见问题</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="#best-practices" data-target="best-practices">
+                        <span>最佳实践</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../index.html#rancher" data-target="rancher">
+                        <span>Rancher</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <section class="py-5 bg-light" id="best-practices">
+                <div class="container">
+                    <h2 class="text-center mb-5">最佳实践</h2>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="accordion" id="bestPracticesAccordion">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#best1">
+                                            安全最佳实践
+                                        </button>
+                                    </h2>
+                                    <div id="best1" class="accordion-collapse collapse show" data-bs-parent="#bestPracticesAccordion">
+                                        <div class="accordion-body">
+                                            <h5>1. 使用命名空间隔离</h5>
+                                            <pre><code># 创建专用命名空间
+kubectl create namespace production
+kubectl create namespace development
+
+# 设置默认命名空间
+kubectl config set-context --current --namespace=production</code></pre>
+                                            <h5 class="mt-4">2. 最小权限原则（RBAC）</h5>
+                                            <pre><code># 创建 ServiceAccount
+kubectl create serviceaccount myapp-sa
+
+# 创建 Role
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: default
+  name: pod-reader
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "watch", "list"]
+
+# 绑定 Role
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: read-pods
+  namespace: default
+subjects:
+- kind: ServiceAccount
+  name: myapp-sa
+  namespace: default
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io</code></pre>
+                                            <h5 class="mt-4">3. 使用 Secret 存储敏感信息</h5>
+                                            <pre><code># 避免在环境变量中直接传递密码
+# 使用 Secret 或外部密钥管理系统（如 Vault）</code></pre>
+                                            <h5 class="mt-4">4. 网络策略</h5>
+                                            <pre><code># 限制 Pod 间通信
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress</code></pre>
+                                            <h5 class="mt-4">5. 镜像安全</h5>
+                                            <ul>
+                                                <li>使用官方或可信的镜像</li>
+                                                <li>定期扫描镜像漏洞</li>
+                                                <li>使用最小化基础镜像（如 alpine）</li>
+                                                <li>避免使用 root 用户运行容器</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#best2">
+                                            资源管理最佳实践
+                                        </button>
+                                    </h2>
+                                    <div id="best2" class="accordion-collapse collapse" data-bs-parent="#bestPracticesAccordion">
+                                        <div class="accordion-body">
+                                            <h5>1. 始终设置资源请求和限制</h5>
+                                            <pre><code>resources:
+  requests:
+    memory: "256Mi"
+    cpu: "500m"
+  limits:
+    memory: "512Mi"
+    cpu: "1000m"</code></pre>
+                                            <h5 class="mt-4">2. 使用 Horizontal Pod Autoscaler（HPA）</h5>
+                                            <pre><code># 创建 HPA
+kubectl autoscale deployment myapp \
+  --cpu-percent=50 \
+  --min=2 \
+  --max=10
+
+# YAML 定义
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: myapp-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: myapp
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50</code></pre>
+                                            <h5 class="mt-4">3. 使用资源配额（Resource Quotas）</h5>
+                                            <pre><code>apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: compute-resources
+  namespace: development
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    limits.cpu: "8"
+    limits.memory: 16Gi</code></pre>
+                                            <h5 class="mt-4">4. 使用 LimitRange</h5>
+                                            <pre><code>apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-limits
+  namespace: default
+spec:
+  limits:
+  - default:
+      memory: 512Mi
+      cpu: "1"
+    defaultRequest:
+      memory: 256Mi
+      cpu: "500m"
+    type: Container</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#best3">
+                                            健康检查最佳实践
+                                        </button>
+                                    </h2>
+                                    <div id="best3" class="accordion-collapse collapse" data-bs-parent="#bestPracticesAccordion">
+                                        <div class="accordion-body">
+                                            <h5>1. 配置 Liveness Probe</h5>
+                                            <pre><code>livenessProbe:
+  httpGet:
+    path: /health
+    port: 8080
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3</code></pre>
+                                            <h5 class="mt-4">2. 配置 Readiness Probe</h5>
+                                            <pre><code>readinessProbe:
+  httpGet:
+    path: /ready
+    port: 8080
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3</code></pre>
+                                            <h5 class="mt-4">3. 使用 Startup Probe（慢启动应用）</h5>
+                                            <pre><code>startupProbe:
+  httpGet:
+    path: /startup
+    port: 8080
+  initialDelaySeconds: 0
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 30  # 最多等待 150 秒</code></pre>
+                                            <h5 class="mt-4">4. 探针配置建议</h5>
+                                            <ul>
+                                                <li><strong>initialDelaySeconds</strong>：给应用足够的启动时间</li>
+                                                <li><strong>periodSeconds</strong>：不要过于频繁，避免浪费资源</li>
+                                                <li><strong>timeoutSeconds</strong>：根据应用响应时间设置</li>
+                                                <li><strong>failureThreshold</strong>：避免因暂时性问题导致频繁重启</li>
+                                                <li>使用 TCP、HTTP、EXEC 三种探针类型</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#best4">
+                                            部署和更新最佳实践
+                                        </button>
+                                    </h2>
+                                    <div id="best4" class="accordion-collapse collapse" data-bs-parent="#bestPracticesAccordion">
+                                        <div class="accordion-body">
+                                            <h5>1. 使用声明式配置</h5>
+                                            <pre><code># 使用 YAML 文件管理部署
+kubectl apply -f deployment.yaml
+
+# 使用 git 管理 YAML 文件
+git add deployment.yaml
+git commit -m "Update deployment"
+git push</code></pre>
+                                            <h5 class="mt-4">2. 配置滚动更新</h5>
+                                            <pre><code>strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 25%
+    maxUnavailable: 25%</code></pre>
+                                            <h5 class="mt-4">3. 使用多个副本</h5>
+                                            <pre><code># 生产环境至少 2-3 个副本
+replicas: 3</code></pre>
+                                            <h5 class="mt-4">4. 使用标签组织资源</h5>
+                                            <pre><code>metadata:
+  labels:
+    app: myapp
+    version: v1.0.0
+    environment: production
+    team: backend</code></pre>
+                                            <h5 class="mt-4">5. 配置反亲和性</h5>
+                                            <pre><code>affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        labelSelector:
+          matchExpressions:
+          - key: app
+            operator: In
+            values:
+            - myapp
+        topologyKey: kubernetes.io/hostname</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#best5">
+                                            监控和日志最佳实践
+                                        </button>
+                                    </h2>
+                                    <div id="best5" class="accordion-collapse collapse" data-bs-parent="#bestPracticesAccordion">
+                                        <div class="accordion-body">
+                                            <h5>1. 集中式日志收集</h5>
+                                            <ul>
+                                                <li>使用 ELK Stack（Elasticsearch、Logstash、Kibana）</li>
+                                                <li>使用 EFK Stack（Elasticsearch、Fluentd、Kibana）</li>
+                                                <li>使用 Loki + Grafana</li>
+                                            </ul>
+                                            <h5 class="mt-4">2. 监控指标</h5>
+                                            <ul>
+                                                <li>使用 Prometheus + Grafana</li>
+                                                <li>监控 Pod、Node、Cluster 指标</li>
+                                                <li>设置告警规则</li>
+                                            </ul>
+                                            <h5 class="mt-4">3. 使用标签和注释</h5>
+                                            <pre><code>metadata:
+  labels:
+    app: myapp
+    version: v1.0.0
+  annotations:
+    description: "My application"
+    owner: "team@example.com"</code></pre>
+                                            <h5 class="mt-4">4. 日志规范</h5>
+                                            <ul>
+                                                <li>使用结构化日志（JSON 格式）</li>
+                                                <li>包含时间戳、日志级别、请求 ID</li>
+                                                <li>避免记录敏感信息</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#best6">
+                                            配置管理最佳实践
+                                        </button>
+                                    </h2>
+                                    <div id="best6" class="accordion-collapse collapse" data-bs-parent="#bestPracticesAccordion">
+                                        <div class="accordion-body">
+                                            <h5>1. 配置与代码分离</h5>
+                                            <ul>
+                                                <li>使用 ConfigMap 存储非敏感配置</li>
+                                                <li>使用 Secret 存储敏感信息</li>
+                                                <li>考虑使用外部配置中心（如 Consul）</li>
+                                            </ul>
+                                            <h5 class="mt-4">2. 使用不可变 ConfigMap</h5>
+                                            <pre><code>apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: immutable-config
+immutable: true</code></pre>
+                                            <h5 class="mt-4">3. 配置版本管理</h5>
+                                            <ul>
+                                                <li>使用 git 管理 YAML 配置文件</li>
+                                                <li>使用标签区分不同环境配置</li>
+                                                <li>使用 ConfigMap 版本控制</li>
+                                            </ul>
+                                            <h5 class="mt-4">4. 使用 Helm 管理复杂应用</h5>
+                                            <pre><code># 安装 Helm
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+# 使用 Helm 部署应用
+helm install myapp ./myapp-chart
+
+# 升级应用
+helm upgrade myapp ./myapp-chart
+
+# 回滚应用
+helm rollback myapp</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="../assets/js/mermaid.min.js"></script>
+    <script src="../assets/js/bootstrap.min.js"></script>
+    <script src="../assets/js/script.js"></script>
+</body>
+</html>

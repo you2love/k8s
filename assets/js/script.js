@@ -150,13 +150,14 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.sidebar-nav a').forEach(anchor => {
         anchor.addEventListener('click', function(e) {
             const href = this.getAttribute('href');
+            const target = this.getAttribute('data-target');
             
             // Check if it's an internal anchor link (starts with #)
             if (href && href.startsWith('#')) {
                 e.preventDefault();
-                const target = document.querySelector(href);
-                if (target) {
-                    target.scrollIntoView({
+                const targetElement = document.querySelector(href);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
                         behavior: 'smooth',
                         block: 'start'
                     });
@@ -168,8 +169,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 this.classList.add('active');
             }
-            // For external links (to other HTML pages), let them navigate normally
-            // but we'll let the destination page handle the active state
+            // For links to other HTML pages, let them navigate normally
+            // For links with data-target (submenu toggles), handle as toggle
+            else if (target) {
+                // This is a submenu toggle, let the other event handler handle it
+            }
+            // For other links, no special handling needed
         });
     });
     
@@ -199,19 +204,18 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Sidebar submenu toggle - use data-target instead of href for submenu toggling
+    // Sidebar submenu toggle - handle submenu toggling separately
     document.querySelectorAll('.nav-item.has-submenu > .nav-link').forEach(link => {
         link.addEventListener('click', function(e) {
             // Check if this link has a data-target attribute for submenu
             const target = this.getAttribute('data-target');
             if (target) {
-                // Only prevent default for anchor links (not .html links)
-                if (this.getAttribute('href') && !this.getAttribute('href').includes('.html')) {
-                    e.preventDefault();
-                }
+                // This is a submenu toggle, prevent default and toggle the submenu
+                e.preventDefault();
                 const parent = this.parentElement;
                 parent.classList.toggle('open');
             }
+            // If no data-target, let the link behave normally (for page navigation)
         });
     });
     
@@ -300,6 +304,126 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             } else if (link.textContent.trim() === 'Secret' && currentPage.includes('secret.html')) {
+                link.classList.add('active');
+                
+                const parentItem = link.closest('.nav-item.has-submenu');
+                if (parentItem) {
+                    const parentLink = parentItem.querySelector('.nav-link');
+                    if (parentLink) {
+                        parentLink.classList.add('active');
+                    }
+                }
+            } else if (link.textContent.trim() === 'Helm' && currentPage.includes('helm.html')) {
+                link.classList.add('active');
+                
+                const parentItem = link.closest('.nav-item.has-submenu');
+                if (parentItem) {
+                    const parentLink = parentItem.querySelector('.nav-link');
+                    if (parentLink) {
+                        parentLink.classList.add('active');
+                    }
+                }
+            } else if (link.textContent.trim() === '网络原理' && currentPage.includes('networking.html')) {
+                link.classList.add('active');
+                
+                const parentItem = link.closest('.nav-item.has-submenu');
+                if (parentItem) {
+                    const parentLink = parentItem.querySelector('.nav-link');
+                    if (parentLink) {
+                        parentLink.classList.add('active');
+                    }
+                }
+            } else if (link.textContent.trim() === '存储' && currentPage.includes('storage.html')) {
+                link.classList.add('active');
+                
+                const parentItem = link.closest('.nav-item.has-submenu');
+                if (parentItem) {
+                    const parentLink = parentItem.querySelector('.nav-link');
+                    if (parentLink) {
+                        parentLink.classList.add('active');
+                    }
+                }
+            } else if (link.textContent.trim() === '命名空间' && currentPage.includes('namespace.html')) {
+                link.classList.add('active');
+                
+                const parentItem = link.closest('.nav-item.has-submenu');
+                if (parentItem) {
+                    const parentLink = parentItem.querySelector('.nav-link');
+                    if (parentLink) {
+                        parentLink.classList.add('active');
+                    }
+                }
+            } else if (link.textContent.trim() === '标签与选择器' && currentPage.includes('labels.html')) {
+                link.classList.add('active');
+                
+                const parentItem = link.closest('.nav-item.has-submenu');
+                if (parentItem) {
+                    const parentLink = parentItem.querySelector('.nav-link');
+                    if (parentLink) {
+                        parentLink.classList.add('active');
+                    }
+                }
+            } else if (link.textContent.trim() === '证书管理' && currentPage.includes('certificates.html')) {
+                link.classList.add('active');
+                
+                const parentItem = link.closest('.nav-item.has-submenu');
+                if (parentItem) {
+                    const parentLink = parentItem.querySelector('.nav-link');
+                    if (parentLink) {
+                        parentLink.classList.add('active');
+                    }
+                }
+            } else if (link.textContent.trim() === '节点扩缩容' && currentPage.includes('scaling.html')) {
+                link.classList.add('active');
+                
+                const parentItem = link.closest('.nav-item.has-submenu');
+                if (parentItem) {
+                    const parentLink = parentItem.querySelector('.nav-link');
+                    if (parentLink) {
+                        parentLink.classList.add('active');
+                    }
+                }
+            } else if (link.textContent.trim() === '集群版本升级' && currentPage.includes('upgrades.html')) {
+                link.classList.add('active');
+                
+                const parentItem = link.closest('.nav-item.has-submenu');
+                if (parentItem) {
+                    const parentLink = parentItem.querySelector('.nav-link');
+                    if (parentLink) {
+                        parentLink.classList.add('active');
+                    }
+                }
+            } else if (link.textContent.trim() === 'Helm Chart 编写' && currentPage.includes('helm-charts.html')) {
+                link.classList.add('active');
+                
+                const parentItem = link.closest('.nav-item.has-submenu');
+                if (parentItem) {
+                    const parentLink = parentItem.querySelector('.nav-link');
+                    if (parentLink) {
+                        parentLink.classList.add('active');
+                    }
+                }
+            } else if (link.textContent.trim() === 'CoreDNS' && currentPage.includes('coredns.html')) {
+                link.classList.add('active');
+                
+                const parentItem = link.closest('.nav-item.has-submenu');
+                if (parentItem) {
+                    const parentLink = parentItem.querySelector('.nav-link');
+                    if (parentLink) {
+                        parentLink.classList.add('active');
+                    }
+                }
+            } else if (link.textContent.trim() === '数据库/中间件部署' && currentPage.includes('stateful-apps.html')) {
+                link.classList.add('active');
+                
+                const parentItem = link.closest('.nav-item.has-submenu');
+                if (parentItem) {
+                    const parentLink = parentItem.querySelector('.nav-link');
+                    if (parentLink) {
+                        parentLink.classList.add('active');
+                    }
+                }
+            } else if (link.textContent.trim() === 'Ingress 高级配置' && currentPage.includes('ingress.html')) {
                 link.classList.add('active');
                 
                 const parentItem = link.closest('.nav-item.has-submenu');

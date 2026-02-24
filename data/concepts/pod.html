@@ -134,6 +134,150 @@ stateDiagram-v2
                                 </tbody>
                             </table>
                             
+                            <h5 class="mt-4">Pod 部署示例</h5>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># 基础 Pod 配置示例</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: v1<br>kind: Pod<br>metadata:<br>&nbsp;&nbsp;name: nginx-pod<br>&nbsp;&nbsp;labels:<br>&nbsp;&nbsp;&nbsp;&nbsp;app: nginx<br>spec:<br>&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;- name: nginx-container<br>&nbsp;&nbsp;&nbsp;&nbsp;image: nginx:1.21<br>&nbsp;&nbsp;&nbsp;&nbsp;ports:<br>&nbsp;&nbsp;&nbsp;&nbsp;- containerPort: 80<br>&nbsp;&nbsp;&nbsp;&nbsp;resources:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;requests:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;memory: "64Mi"<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cpu: "250m"<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;limits:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;memory: "128Mi"<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cpu: "500m"</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">Pod 部署策略</h5>
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <h6>单容器 Pod</h6>
+                                    <ul>
+                                        <li>适用于简单应用部署</li>
+                                        <li>管理简单，资源开销小</li>
+                                        <li>适合无状态服务</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>多容器 Pod (边车模式)</h6>
+                                    <ul>
+                                        <li>主容器 + 辅助容器</li>
+                                        <li>共享网络和存储</li>
+                                        <li>适合日志收集、监控等场景</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">GPU Pod 部署</h5>
+                            <p>GPU Pod 是指在 Kubernetes 中部署并使用图形处理器（GPU）资源的 Pod。GPU 在机器学习、深度学习、科学计算、视频处理等需要大量并行计算的场景中发挥着重要作用。</p>
+                            
+                            <div class="architecture-diagram bg-light p-4 rounded">
+                                <pre class="mermaid">
+graph TB
+    API["API Server"] --> SCHED["Scheduler"]
+    SCHED --> KUBELET["kubelet"]
+    KUBELET --> APP["应用容器"]
+    KUBELET --> DEVICE_PLUGIN["NVIDIA Device Plugin"]
+    APP --> CUDA["CUDA Runtime"]
+    CUDA --> NVIDIA_DRV["NVIDIA 驱动"]
+    NVIDIA_DRV --> GPU["物理 GPU"]
+    
+    style API fill:#e1f5fe
+    style SCHED fill:#e1f5fe
+    style KUBELET fill:#f3e5f5
+    style APP fill:#e8f5e8
+    style CUDA fill:#e8f5e8
+    style NVIDIA_DRV fill:#fff3e0
+    style GPU fill:#ffebee
+    style DEVICE_PLUGIN fill:#f1f8e9
+                                </pre>
+                            </div>
+                            
+                            <h5 class="mt-4">GPU 资源对比</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="table-warning">
+                                        <tr><th>资源类型</th><th>CPU</th><th>GPU</th><th>适用场景</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>计算方式</td><td>串行计算</td><td>并行计算</td><td>不同计算模式</td></tr>
+                                        <tr><td>核心数量</td><td>几到几十核</td><td>数千个 CUDA 核心</td><td>并行处理能力</td></tr>
+                                        <tr><td>内存架构</td><td>统一内存</td><td>显存 + 系统内存</td><td>内存管理机制</td></tr>
+                                        <tr><td>资源调度</td><td>request/limit</td><td>nvidia.com/gpu</td><td>资源分配方式</td></tr>
+                                        <tr><td>编程模型</td><td>CPU 指令集</td><td>CUDA/OpenCL</td><td>开发模型</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h5 class="mt-4">GPU Pod 部署示例</h5>
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <h6>基础 GPU Pod 配置</h6>
+                                    <div class="command-block">
+                                        <div class="command-item">
+                                            <span class="command-prompt"># 基础 GPU 资源请求</span>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">apiVersion: v1<br>kind: Pod<br>metadata:<br>&nbsp;&nbsp;name: gpu-pod<br>spec:<br>&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;- name: gpu-container<br>&nbsp;&nbsp;&nbsp;&nbsp;image: tensorflow/tensorflow:latest-gpu<br>&nbsp;&nbsp;&nbsp;&nbsp;resources:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;limits:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nvidia.com/gpu: 1<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;requests:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nvidia.com/gpu: 1<br>&nbsp;&nbsp;nodeSelector:<br>&nbsp;&nbsp;&nbsp;&nbsp;kubernetes.io/hostname: gpu-node-1</code>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>多 GPU Pod 配置</h6>
+                                    <div class="command-block">
+                                        <div class="command-item">
+                                            <span class="command-prompt"># 多 GPU 资源请求</span>
+                                        </div>
+                                        <div class="command-item">
+                                            <code class="command-code">apiVersion: v1<br>kind: Pod<br>metadata:<br>&nbsp;&nbsp;name: multi-gpu-pod<br>spec:<br>&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;- name: multi-gpu-container<br>&nbsp;&nbsp;&nbsp;&nbsp;image: pytorch/pytorch:latest<br>&nbsp;&nbsp;&nbsp;&nbsp;resources:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;limits:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nvidia.com/gpu: 2<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;requests:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nvidia.com/gpu: 2<br>&nbsp;&nbsp;nodeSelector:<br>&nbsp;&nbsp;&nbsp;&nbsp;gpu-node: "true"</code>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">NVIDIA Device Plugin 配置</h5>
+                            <p>NVIDIA Device Plugin 是 Kubernetes 中用于管理 GPU 资源的关键组件，它使 Kubernetes 调度器能够识别和调度 GPU 资源。</p>
+                            <div class="command-block">
+                                <div class="command-item">
+                                    <span class="command-prompt"># NVIDIA Device Plugin 部署配置</span>
+                                </div>
+                                <div class="command-item">
+                                    <code class="command-code">apiVersion: apps/v1<br>kind: DaemonSet<br>metadata:<br>&nbsp;&nbsp;name: nvidia-device-plugin-daemonset<br>&nbsp;&nbsp;namespace: kube-system<br>spec:<br>&nbsp;&nbsp;selector:<br>&nbsp;&nbsp;&nbsp;&nbsp;matchLabels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name: nvidia-device-plugin-ds<br>&nbsp;&nbsp;template:<br>&nbsp;&nbsp;&nbsp;&nbsp;metadata:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;labels:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name: nvidia-device-plugin-ds<br>&nbsp;&nbsp;&nbsp;&nbsp;spec:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tolerations:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- key: nvidia.com/gpu<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;operator: Exists<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;effect: NoSchedule<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containers:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: nvidia-device-plugin-ctr<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;image: nvidia/k8s-device-plugin:1.0.0-beta4<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;securityContext:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;allowPrivilegeEscalation: false<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;capabilities:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;drop: ["ALL"]<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;volumeMounts:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: device-plugin<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mountPath: /var/lib/kubelet/device-plugins<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;volumes:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- name: device-plugin<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hostPath:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;path: /var/lib/kubelet/device-plugins<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;type: DirectoryOrCreate</code>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">GPU Pod 最佳实践</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="table-info">
+                                        <tr><th>实践</th><th>说明</th><th>配置示例</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>资源请求与限制</td>
+                                            <td>明确指定 GPU 资源数量</td>
+                                            <td>resources.limits.nvidia.com/gpu: 1</td>
+                                        </tr>
+                                        <tr>
+                                            <td>节点亲和性</td>
+                                            <td>确保 Pod 调度到有 GPU 的节点</td>
+                                            <td>nodeSelector 或 nodeAffinity</td>
+                                        </tr>
+                                        <tr>
+                                            <td>容忍度配置</td>
+                                            <td>容忍 GPU 节点的特殊污点</td>
+                                            <td>tolerations 配置</td>
+                                        </tr>
+                                        <tr>
+                                            <td>存储优化</td>
+                                            <td>使用高速存储减少 I/O 瓶颈</td>
+                                            <td>SSD 或 NVMe 存储</td>
+                                        </tr>
+                                        <tr>
+                                            <td>网络优化</td>
+                                            <td>高带宽低延迟网络连接</td>
+                                            <td>InfiniBand 或高速以太网</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
                             <h5 class="mt-4">常用命令</h5>
                             <div class="command-block">
                                 <div class="command-item">
@@ -155,6 +299,14 @@ stateDiagram-v2
                                 <div class="command-item">
                                     <span class="command-prompt"># 删除 Pod</span><br>
                                     <code class="command-code">kubectl delete pod nginx</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 检查节点 GPU 资源</span><br>
+                                    <code class="command-code">kubectl describe nodes | grep -i nvidia</code>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-prompt"># 检查 GPU 使用情况</span><br>
+                                    <code class="command-code">kubectl exec -it &lt;gpu-pod&gt; -- nvidia-smi</code>
                                 </div>
                             </div>
                         </div>

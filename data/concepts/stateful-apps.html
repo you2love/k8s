@@ -124,6 +124,12 @@ graph TB
                 KAFKA2[Kafka-1<br/>Broker ID: 1]
                 KAFKA3[Kafka-2<br/>Broker ID: 2]
             end
+            
+            subgraph "RabbitMQ 集群"
+                RMQ1[RabbitMQ-0<br/>节点名称固定]
+                RMQ2[RabbitMQ-1<br/>镜像队列]
+                RMQ3[RabbitMQ-2<br/>镜像队列]
+            end
         end
         
         subgraph "存储层"
@@ -135,12 +141,16 @@ graph TB
             REDISPV1[PV-Redis-0]
             REDISPV2[PV-Redis-1]
             REDISPV3[PV-Redis-2]
+            RMQPV1[PV-RabbitMQ-0]
+            RMQPV2[PV-RabbitMQ-1]
+            RMQPV3[PV-RabbitMQ-2]
         end
         
         API --> MYSQL1
         API --> PG1
         API --> REDIS1
         API --> KAFKA1
+        API --> RMQ1
         MYSQL1 --> PV1
         MYSQL2 --> PV2
         MYSQL3 --> PV3
@@ -149,7 +159,34 @@ graph TB
         REDIS1 --> REDISPV1
         REDIS2 --> REDISPV2
         REDIS3 --> REDISPV3
+        RMQ1 --> RMQPV1
+        RMQ2 --> RMQPV2
+        RMQ3 --> RMQPV3
                                 </pre>
+                            </div>
+
+                            <h5 class="mt-4">数据库/中间件部署详解</h5>
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <h6>关系型数据库 (MySQL/PostgreSQL)</h6>
+                                    <p>关系型数据库需要持久化存储和稳定的网络标识，适合使用 StatefulSet 部署。</p>
+                                    <ul>
+                                        <li>使用 PersistentVolume 保证数据持久性</li>
+                                        <li>通过 Headless Service 提供稳定的网络标识</li>
+                                        <li>配置主从复制或集群模式实现高可用</li>
+                                        <li>使用 Secret 管理数据库凭证</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>缓存/消息中间件 (Redis/Kafka/RabbitMQ)</h6>
+                                    <p>中间件通常需要特定的配置和集群模式，也适合使用 StatefulSet 部署。</p>
+                                    <ul>
+                                        <li>Redis: 配置主从复制或集群模式</li>
+                                        <li>Kafka: 保证分区和副本的持久性</li>
+                                        <li>RabbitMQ: 设置镜像队列确保高可用</li>
+                                        <li>所有中间件都需要持久化存储</li>
+                                    </ul>
+                                </div>
                             </div>
                             
                             <h5 class="mt-4">数据库与中间件对比</h5>
@@ -214,6 +251,57 @@ graph TB
                                 </div>
                             </div>
                             
+                            <h5 class="mt-4">数据库/中间件部署策略</h5>
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <h6>MySQL 部署策略</h6>
+                                    <p>MySQL 作为关系型数据库，需要考虑数据一致性、高可用性、备份恢复等关键问题。</p>
+                                    <ul>
+                                        <li>使用 StatefulSet 确保 Pod 有序部署和稳定的网络标识</li>
+                                        <li>配置主从复制或组复制实现高可用</li>
+                                        <li>使用 PersistentVolume 确保数据持久存储</li>
+                                        <li>配置合适的资源限制和请求</li>
+                                        <li>设置定期备份和监控告警</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>PostgreSQL 部署策略</h6>
+                                    <p>PostgreSQL 是功能强大的开源关系型数据库，支持复杂查询和扩展功能。</p>
+                                    <ul>
+                                        <li>利用 StatefulSet 的特性部署主从架构</li>
+                                        <li>配置流复制实现数据同步</li>
+                                        <li>使用专用存储确保 I/O 性能</li>
+                                        <li>配置连接池优化性能</li>
+                                        <li>定期执行维护任务（VACUUM, ANALYZE 等）</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <h6>Redis 部署策略</h6>
+                                    <p>Redis 作为高性能缓存和数据结构存储，支持多种部署模式。</p>
+                                    <ul>
+                                        <li>主从模式：实现读写分离和高可用</li>
+                                        <li>哨兵模式：自动故障转移</li>
+                                        <li>集群模式：数据分片和高可用</li>
+                                        <li>持久化策略：RDB 和 AOF 配置</li>
+                                        <li>内存管理：配置合适的 maxmemory 和淘汰策略</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Kafka & RabbitMQ 部署策略</h6>
+                                    <p>消息中间件需要高吞吐量和可靠的消息传递。</p>
+                                    <ul>
+                                        <li>Kafka: 配置副本因子确保数据可靠性</li>
+                                        <li>Kafka: 调整分区数量平衡性能和吞吐量</li>
+                                        <li>RabbitMQ: 配置镜像队列确保高可用</li>
+                                        <li>持久化消息存储防止数据丢失</li>
+                                        <li>监控消费者滞后（Consumer Lag）</li>
+                                    </ul>
+                                </div>
+                            </div>
+
                             <h5 class="mt-4">有状态应用部署最佳实践</h5>
                             <div class="row mt-4">
                                 <div class="col-md-6">
@@ -252,6 +340,65 @@ graph TB
                                 </table>
                             </div>
                             
+                            <h5 class="mt-4">数据库/中间件运维要点</h5>
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <h6>监控与告警</h6>
+                                    <ul>
+                                        <li>数据库性能指标：连接数、查询延迟、QPS、TPS</li>
+                                        <li>存储空间使用率：磁盘空间、I/O 延迟</li>
+                                        <li>缓存命中率：Redis 命中率、内存使用</li>
+                                        <li>消息队列：队列长度、消费者滞后、吞吐量</li>
+                                        <li>集群健康状态：节点可用性、副本同步状态</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>备份与恢复</h6>
+                                    <ul>
+                                        <li>定期执行逻辑备份（mysqldump, pg_dump）</li>
+                                        <li>配置物理备份（WAL 归档、快照备份）</li>
+                                        <li>测试恢复流程确保备份有效性</li>
+                                        <li>配置备份保留策略</li>
+                                        <li>考虑跨区域备份以防灾难</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="row mt-4">
+                                <div class="col-md-12">
+                                    <h6>安全配置</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <thead class="table-success">
+                                                <tr><th>应用类型</th><th>安全配置要点</th><th>实施方法</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>MySQL/PostgreSQL</td>
+                                                    <td>认证、授权、加密传输</td>
+                                                    <td>使用 Secret 管理凭证，启用 SSL/TLS，配置角色权限</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Redis</td>
+                                                    <td>访问控制、网络隔离</td>
+                                                    <td>设置密码认证，使用 NetworkPolicy 限制访问</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Kafka</td>
+                                                    <td>SSL/TLS、SASL 认证</td>
+                                                    <td>配置加密通信，启用用户认证和授权</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>RabbitMQ</td>
+                                                    <td>用户管理、TLS 加密</td>
+                                                    <td>创建专用用户，配置 SSL 证书，限制权限</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
                             <h5 class="mt-4">部署验证</h5>
                             <div class="command-block">
                                 <div class="command-item">

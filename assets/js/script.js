@@ -312,4 +312,22 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    
+    // Default expand the "核心概念" (Core Concepts) menu
+    const conceptsMenu = document.querySelector('.nav-item.has-submenu a[data-target="concepts"]');
+    if (conceptsMenu) {
+        const parentItem = conceptsMenu.closest('.nav-item.has-submenu');
+        if (parentItem) {
+            parentItem.classList.add('open');
+        }
+    }
+    
+    // Default expand the "高级概念" (Advanced Concepts) menu
+    const advancedConceptsMenu = document.querySelector('.nav-item.has-submenu a[data-target="advanced-concepts"]');
+    if (advancedConceptsMenu) {
+        const parentItem = advancedConceptsMenu.closest('.nav-item.has-submenu');
+        if (parentItem) {
+            parentItem.classList.add('open');
+        }
+    }
 });

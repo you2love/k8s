@@ -1,9 +1,6 @@
 // Initialize Mermaid for all diagrams
 function initializeMermaid() {
-    console.log('Initializing Mermaid...');
-    
     if (typeof mermaid === 'undefined') {
-        console.error('Mermaid library not loaded!');
         return false;
     }
     
@@ -34,28 +31,21 @@ function initializeMermaid() {
         };
         
         mermaid.initialize(config);
-        console.log('Mermaid initialized successfully');
         return true;
     } catch (error) {
-        console.error('Failed to initialize Mermaid:', error);
         return false;
     }
 }
 
 // Function to manually render all mermaid diagrams
 function renderAllMermaidDiagrams() {
-    console.log('Looking for Mermaid diagrams to render...');
-    
     if (typeof mermaid === 'undefined') {
-        console.error('Cannot render: Mermaid library not loaded');
         return;
     }
     
     const diagrams = document.querySelectorAll('pre.mermaid');
-    console.log(`Found ${diagrams.length} Mermaid diagram(s)`);
     
     if (diagrams.length === 0) {
-        console.warn('No Mermaid diagrams found on page');
         return;
     }
     
@@ -63,39 +53,31 @@ function renderAllMermaidDiagrams() {
         
         // Check if Mermaid has already processed this diagram
         if (diagram.getAttribute('data-processed')) {
-            console.log(`Diagram ${index + 1} already processed by Mermaid`);
             return;
         }
         
         // Different Mermaid versions have different APIs
         if (typeof mermaid.run === 'function') {
             // Version 10+ API
-            console.log(`Using mermaid.run() for diagram ${index + 1}`);
             try {
                 mermaid.run({ nodes: [diagram] });
-                console.log(`Diagram ${index + 1} rendered successfully`);
             } catch (error) {
-                console.error(`Failed to render diagram ${index + 1}:`, error);
             }
         } else if (typeof mermaid.render === 'function') {
             // Older API
-            console.log(`Using mermaid.render() for diagram ${index + 1}`);
             try {
                 const content = diagram.textContent.trim();
                 const id = 'mermaid-diagram-' + Date.now() + '-' + index;
                 const { svg } = mermaid.render(id, content);
                 diagram.innerHTML = svg;
-                console.log(`Diagram ${index + 1} rendered successfully`);
             } catch (error) {
-                console.error(`Failed to render diagram ${index + 1}:`, error);
             }
         } else {
-            console.error(`No known Mermaid rendering API found for diagram ${index + 1}`);
         }
     });
 }
 
-// Global function for debugging Mermaid
+// Global function for debugging Mermaid - kept for development purposes
 window.debugMermaid = function() {
     console.log('=== Mermaid Debug Information ===');
     console.log('Mermaid library loaded:', typeof mermaid !== 'undefined');
@@ -122,7 +104,6 @@ window.debugMermaid = function() {
 
 // Main initialization
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM fully loaded, initializing page...');
     
     // Initialize Mermaid
     const mermaidInitialized = initializeMermaid();
@@ -138,7 +119,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const withoutSvg = Array.from(diagrams).filter(diag => !diag.querySelector('svg'));
                 
                 if (withoutSvg.length > 0) {
-                    console.log(`Retrying rendering for ${withoutSvg.length} diagram(s)`);
                     renderAllMermaidDiagrams();
                 }
             }, 500);

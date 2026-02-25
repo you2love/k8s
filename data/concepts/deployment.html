@@ -122,14 +122,9 @@ flowchart TB
                                 <div class="col-12 mb-4">
                                     <div class="card deployment-card">
                                         <div class="card-body">
-                                            <div class="d-flex align-items-start">
-                                                <div class="deployment-icon me-3">
-                                                    <i class="material-icons text-primary">sync</i>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    <h6 class="card-title deployment-title">1. 滚动更新 (Rolling Update)</h6>
-                                                    <p class="card-text deployment-description">逐步替换旧版本 Pod，确保服务始终可用。</p>
-                                                </div>
+                                            <div class="flex-grow-1">
+                                                <h3 class="card-title deployment-title">1. 滚动更新 (Rolling Update)</h3>
+                                                <p class="card-text deployment-description">逐步替换旧版本 Pod，确保服务始终可用。</p>
                                             </div>
                                             <div class="architecture-diagram bg-light p-3 rounded my-3">
                                                 <pre class="mermaid mb-0">
@@ -163,11 +158,8 @@ flowchart LR
                                     <div class="card deployment-card">
                                         <div class="card-body">
                                             <div class="d-flex align-items-start">
-                                                <div class="deployment-icon me-3">
-                                                    <i class="material-icons text-success">swap_horiz</i>
-                                                </div>
                                                 <div class="flex-grow-1">
-                                                    <h6 class="card-title deployment-title">2. 蓝绿部署 (Blue-Green Deployment)</h6>
+                                                    <h3 class="card-title deployment-title">2. 蓝绿部署 (Blue-Green Deployment)</h3>
                                                     <p class="card-text deployment-description">同时运行两个完全相同的环境（蓝和绿），通过切换流量实现零停机部署。</p>
                                                 </div>
                                             </div>
@@ -203,11 +195,8 @@ flowchart LR
                                     <div class="card deployment-card">
                                         <div class="card-body">
                                             <div class="d-flex align-items-start">
-                                                <div class="deployment-icon me-3">
-                                                    <i class="material-icons text-warning">flag</i>
-                                                </div>
                                                 <div class="flex-grow-1">
-                                                    <h6 class="card-title deployment-title">3. 金丝雀部署 (Canary Deployment)</h6>
+                                                    <h3 class="card-title deployment-title">3. 金丝雀部署 (Canary Deployment)</h3>
                                                     <p class="card-text deployment-description">先向少量用户发布新版本，验证无误后逐步扩大范围。</p>
                                                 </div>
                                             </div>
@@ -244,11 +233,8 @@ flowchart LR
                                     <div class="card deployment-card">
                                         <div class="card-body">
                                             <div class="d-flex align-items-start">
-                                                <div class="deployment-icon me-3">
-                                                    <i class="material-icons text-info">analytics</i>
-                                                </div>
                                                 <div class="flex-grow-1">
-                                                    <h6 class="card-title deployment-title">4. A/B 测试部署</h6>
+                                                    <h3 class="card-title deployment-title">4. A/B 测试部署</h3>
                                                     <p class="card-text deployment-description">同时运行两个不同版本，根据用户特征分配流量进行测试。</p>
                                                 </div>
                                             </div>

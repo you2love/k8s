@@ -99,53 +99,53 @@
 graph TB
     subgraph "K8s 集群"
         subgraph "控制平面"
-            API[API Server]
-            ETCD[etcd]
+            API("API Server")
+            ETCD("etcd")
         end
         
         subgraph "数据库/中间件"
             subgraph "MySQL 集群"
-                MYSQL1["MySQL-0|固定网络标识"]
-                MYSQL2["MySQL-1|固定网络标识"]
-                MYSQL3["MySQL-2|固定网络标识"]
+                MYSQL1("MySQL-0|固定网络标识")
+                MYSQL2("MySQL-1|固定网络标识")
+                MYSQL3("MySQL-2|固定网络标识")
             end
             
             subgraph "PostgreSQL 集群"
-                PG1["PostgreSQL-0|持久化存储"]
-                PG2["PostgreSQL-1|持久化存储"]
+                PG1("PostgreSQL-0|持久化存储")
+                PG2("PostgreSQL-1|持久化存储")
             end
             
             subgraph "Redis 集群"
-                REDIS1["Redis-0|主节点"]
-                REDIS2["Redis-1|从节点"]
-                REDIS3["Redis-2|从节点"]
+                REDIS1("Redis-0|主节点")
+                REDIS2("Redis-1|从节点")
+                REDIS3("Redis-2|从节点")
             end
             
             subgraph "Kafka 集群"
-                KAFKA1["Kafka-0|Broker ID: 0"]
-                KAFKA2["Kafka-1|Broker ID: 1"]
-                KAFKA3["Kafka-2|Broker ID: 2"]
+                KAFKA1("Kafka-0|Broker ID: 0")
+                KAFKA2("Kafka-1|Broker ID: 1")
+                KAFKA3("Kafka-2|Broker ID: 2")
             end
             
             subgraph "RabbitMQ 集群"
-                RMQ1["RabbitMQ-0|节点名称固定"]
-                RMQ2["RabbitMQ-1|镜像队列"]
-                RMQ3["RabbitMQ-2|镜像队列"]
+                RMQ1("RabbitMQ-0|节点名称固定")
+                RMQ2("RabbitMQ-1|镜像队列")
+                RMQ3("RabbitMQ-2|镜像队列")
             end
         end
         
         subgraph "存储层"
-            PV1[PV-MySQL-0]
-            PV2[PV-MySQL-1]
-            PV3[PV-MySQL-2]
-            PGP1[PV-PostgreSQL-0]
-            PGP2[PV-PostgreSQL-1]
-            REDISPV1[PV-Redis-0]
-            REDISPV2[PV-Redis-1]
-            REDISPV3[PV-Redis-2]
-            RMQPV1[PV-RabbitMQ-0]
-            RMQPV2[PV-RabbitMQ-1]
-            RMQPV3[PV-RabbitMQ-2]
+            PV1("PV-MySQL-0")
+            PV2("PV-MySQL-1")
+            PV3("PV-MySQL-2")
+            PGP1("PV-PostgreSQL-0")
+            PGP2("PV-PostgreSQL-1")
+            REDISPV1("PV-Redis-0")
+            REDISPV2("PV-Redis-1")
+            REDISPV3("PV-Redis-2")
+            RMQPV1("PV-RabbitMQ-0")
+            RMQPV2("PV-RabbitMQ-1")
+            RMQPV3("PV-RabbitMQ-2")
         end
         
         API --> MYSQL1

@@ -169,12 +169,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 this.classList.add('active');
             }
-            // For links to other HTML pages, let them navigate normally
             // For links with data-target (submenu toggles), handle as toggle
             else if (target) {
                 // This is a submenu toggle, let the other event handler handle it
             }
-            // For other links, no special handling needed
+            // For other links (external HTML pages), allow default navigation
+            else {
+                // Let the default behavior occur (page navigation)
+            }
         });
     });
     

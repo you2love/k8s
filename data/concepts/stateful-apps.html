@@ -96,45 +96,63 @@
                             <h5 class="mt-4">有状态应用架构</h5>
                             <div class="architecture-diagram bg-light p-4 rounded">
                                 <pre class="mermaid">
-graph TB
-    subgraph "K8s 集群"
-        subgraph "控制平面"
-            API("API Server")
-            ETCD("etcd")
+graph LR
+    API[(API Server)] --> MYSQL1
+    API --> PG1
+    API --> REDIS1
+    API --> KAFKA1
+    API --> RMQ1
+    
+    MYSQL1 --> PV1
+    MYSQL2 --> PV2
+    MYSQL3 --> PV3
+    PG1 --> PGP1
+    PG2 --> PGP2
+    REDIS1 --> REDISPV1
+    REDIS2 --> REDISPV2
+    REDIS3 --> REDISPV3
+    RMQ1 --> RMQPV1
+    RMQ2 --> RMQPV2
+    RMQ3 --> RMQPV3
+
+    subgraph "K8s Cluster"
+        subgraph "Control Plane"
+            API
+            ETCD[(etcd)]
         end
         
-        subgraph "数据库/中间件"
-            subgraph "MySQL 集群"
-                MYSQL1("MySQL-0|固定网络标识")
-                MYSQL2("MySQL-1|固定网络标识")
-                MYSQL3("MySQL-2|固定网络标识")
+        subgraph "Databases and Middleware"
+            subgraph "MySQL Cluster"
+                MYSQL1("MySQL-0")
+                MYSQL2("MySQL-1")
+                MYSQL3("MySQL-2")
             end
             
-            subgraph "PostgreSQL 集群"
-                PG1("PostgreSQL-0|持久化存储")
-                PG2("PostgreSQL-1|持久化存储")
+            subgraph "PostgreSQL Cluster"
+                PG1("PostgreSQL-0")
+                PG2("PostgreSQL-1")
             end
             
-            subgraph "Redis 集群"
-                REDIS1("Redis-0|主节点")
-                REDIS2("Redis-1|从节点")
-                REDIS3("Redis-2|从节点")
+            subgraph "Redis Cluster"
+                REDIS1("Redis-0")
+                REDIS2("Redis-1")
+                REDIS3("Redis-2")
             end
             
-            subgraph "Kafka 集群"
-                KAFKA1("Kafka-0|Broker ID: 0")
-                KAFKA2("Kafka-1|Broker ID: 1")
-                KAFKA3("Kafka-2|Broker ID: 2")
+            subgraph "Kafka Cluster"
+                KAFKA1("Kafka-0")
+                KAFKA2("Kafka-1")
+                KAFKA3("Kafka-2")
             end
             
-            subgraph "RabbitMQ 集群"
-                RMQ1("RabbitMQ-0|节点名称固定")
-                RMQ2("RabbitMQ-1|镜像队列")
-                RMQ3("RabbitMQ-2|镜像队列")
+            subgraph "RabbitMQ Cluster"
+                RMQ1("RabbitMQ-0")
+                RMQ2("RabbitMQ-1")
+                RMQ3("RabbitMQ-2")
             end
         end
         
-        subgraph "存储层"
+        subgraph "Storage Layer"
             PV1("PV-MySQL-0")
             PV2("PV-MySQL-1")
             PV3("PV-MySQL-2")
@@ -147,23 +165,7 @@ graph TB
             RMQPV2("PV-RabbitMQ-1")
             RMQPV3("PV-RabbitMQ-2")
         end
-        
-        API --> MYSQL1
-        API --> PG1
-        API --> REDIS1
-        API --> KAFKA1
-        API --> RMQ1
-        MYSQL1 --> PV1
-        MYSQL2 --> PV2
-        MYSQL3 --> PV3
-        PG1 --> PGP1
-        PG2 --> PGP2
-        REDIS1 --> REDISPV1
-        REDIS2 --> REDISPV2
-        REDIS3 --> REDISPV3
-        RMQ1 --> RMQPV1
-        RMQ2 --> RMQPV2
-        RMQ3 --> RMQPV3
+    end
                                 </pre>
                             </div>
 

@@ -11,7 +11,7 @@ function initializeMermaid() {
             theme: 'default',
             securityLevel: 'loose',
             flowchart: {
-                htmlLabels: true,
+                htmlLabels: false,
                 curve: 'basis'
             },
             sequence: {
@@ -60,8 +60,14 @@ function renderAllMermaidDiagrams() {
         if (typeof mermaid.run === 'function') {
             // Version 10+ API
             try {
-                mermaid.run({ nodes: [diagram] });
+                mermaid.run({ 
+                    nodes: [diagram],
+                    suppressErrors: true 
+                });
             } catch (error) {
+                console.error('Mermaid rendering error:', error.message);
+                // Show error in diagram container as fallback
+                diagram.innerHTML = `<div class="mermaid-error">图表渲染失败: ${error.message.substring(0, 100)}...</div>`;
             }
         } else if (typeof mermaid.render === 'function') {
             // Older API
@@ -71,8 +77,13 @@ function renderAllMermaidDiagrams() {
                 const { svg } = mermaid.render(id, content);
                 diagram.innerHTML = svg;
             } catch (error) {
+                console.error('Mermaid rendering error:', error.message);
+                // Show error in diagram container as fallback
+                diagram.innerHTML = `<div class="mermaid-error">图表渲染失败: ${error.message.substring(0, 100)}...</div>`;
             }
         } else {
+            // If no known API is available, show error
+            diagram.innerHTML = '<div class="mermaid-error">Mermaid API 不可用</div>';
         }
     });
 }

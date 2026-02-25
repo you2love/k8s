@@ -170,7 +170,7 @@ graph TB
                             <h5 class="mt-4">数据库/中间件部署详解</h5>
                             <div class="row mt-4">
                                 <div class="col-md-6">
-                                    <h6>关系型数据库 (MySQL/PostgreSQL)</h6>
+                                    <h3>关系型数据库 (MySQL/PostgreSQL)</h3>
                                     <p>关系型数据库需要持久化存储和稳定的网络标识，适合使用 StatefulSet 部署。</p>
                                     <ul>
                                         <li>使用 PersistentVolume 保证数据持久性</li>
@@ -180,7 +180,7 @@ graph TB
                                     </ul>
                                 </div>
                                 <div class="col-md-6">
-                                    <h6>缓存/消息中间件 (Redis/Kafka/RabbitMQ)</h6>
+                                    <h3>缓存/消息中间件 (Redis/Kafka/RabbitMQ)</h3>
                                     <p>中间件通常需要特定的配置和集群模式，也适合使用 StatefulSet 部署。</p>
                                     <ul>
                                         <li>Redis: 配置主从复制或集群模式</li>
@@ -256,7 +256,7 @@ graph TB
                             <h5 class="mt-4">数据库/中间件部署策略</h5>
                             <div class="row mt-4">
                                 <div class="col-md-6">
-                                    <h6>MySQL 部署策略</h6>
+                                    <h3>MySQL 部署策略</h3>
                                     <p>MySQL 作为关系型数据库，需要考虑数据一致性、高可用性、备份恢复等关键问题。</p>
                                     <ul>
                                         <li>使用 StatefulSet 确保 Pod 有序部署和稳定的网络标识</li>
@@ -267,7 +267,7 @@ graph TB
                                     </ul>
                                 </div>
                                 <div class="col-md-6">
-                                    <h6>PostgreSQL 部署策略</h6>
+                                    <h3>PostgreSQL 部署策略</h3>
                                     <p>PostgreSQL 是功能强大的开源关系型数据库，支持复杂查询和扩展功能。</p>
                                     <ul>
                                         <li>利用 StatefulSet 的特性部署主从架构</li>
@@ -281,7 +281,7 @@ graph TB
 
                             <div class="row mt-4">
                                 <div class="col-md-6">
-                                    <h6>Redis 部署策略</h6>
+                                    <h3>Redis 部署策略</h3>
                                     <p>Redis 作为高性能缓存和数据结构存储，支持多种部署模式。</p>
                                     <ul>
                                         <li>主从模式：实现读写分离和高可用</li>
@@ -292,7 +292,7 @@ graph TB
                                     </ul>
                                 </div>
                                 <div class="col-md-6">
-                                    <h6>Kafka & RabbitMQ 部署策略</h6>
+                                    <h3>Kafka & RabbitMQ 部署策略</h3>
                                     <p>消息中间件需要高吞吐量和可靠的消息传递。</p>
                                     <ul>
                                         <li>Kafka: 配置副本因子确保数据可靠性</li>
@@ -307,7 +307,7 @@ graph TB
                             <h5 class="mt-4">有状态应用部署最佳实践</h5>
                             <div class="row mt-4">
                                 <div class="col-md-6">
-                                    <h6>存储最佳实践</h6>
+                                    <h3>存储最佳实践</h3>
                                     <ul>
                                         <li>使用 PersistentVolume 和 PersistentVolumeClaim</li>
                                         <li>选择合适的存储类型和访问模式</li>
@@ -316,7 +316,7 @@ graph TB
                                     </ul>
                                 </div>
                                 <div class="col-md-6">
-                                    <h6>网络最佳实践</h6>
+                                    <h3>网络最佳实践</h3>
                                     <ul>
                                         <li>使用 Headless Service 保持稳定的网络标识</li>
                                         <li>配置正确的 Pod 亲和性和反亲和性</li>
@@ -345,7 +345,7 @@ graph TB
                             <h5 class="mt-4">数据库/中间件运维要点</h5>
                             <div class="row mt-4">
                                 <div class="col-md-6">
-                                    <h6>监控与告警</h6>
+                                    <h3>监控与告警</h3>
                                     <ul>
                                         <li>数据库性能指标：连接数、查询延迟、QPS、TPS</li>
                                         <li>存储空间使用率：磁盘空间、I/O 延迟</li>
@@ -355,7 +355,7 @@ graph TB
                                     </ul>
                                 </div>
                                 <div class="col-md-6">
-                                    <h6>备份与恢复</h6>
+                                    <h3>备份与恢复</h3>
                                     <ul>
                                         <li>定期执行逻辑备份（mysqldump, pg_dump）</li>
                                         <li>配置物理备份（WAL 归档、快照备份）</li>
@@ -368,7 +368,7 @@ graph TB
 
                             <div class="row mt-4">
                                 <div class="col-md-12">
-                                    <h6>安全配置</h6>
+                                    <h2>安全配置</h2>
                                     <div class="table-responsive">
                                         <table class="table table-bordered">
                                             <thead class="table-success">

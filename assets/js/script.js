@@ -60,7 +60,6 @@ function renderAllMermaidDiagrams() {
     }
     
     diagrams.forEach((diagram, index) => {
-        console.log(`Processing diagram ${index + 1}`);
         
         // Check if Mermaid has already processed this diagram
         if (diagram.getAttribute('data-processed')) {
